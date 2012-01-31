@@ -1,0 +1,17 @@
+--------------------Configuration: ctf - Win32 Debug Alpha--------------------
+Begining build with project "G:\quake2\code\ctf\ctf.dsp", at root.
+Active configuration is Win32 (ALPHA) Dynamic-Link Library (based on Win32 (ALPHA) Dynamic-Link Library)
+
+Project's tools are:
+			"OLE Type Library Maker" with flags "/nologo /D "_DEBUG" /mktyplib203 /o NUL /win32 "
+			"C/C++ Compiler for Alpha" with flags "/nologo /MTd /Gt0 /W3 /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /FR".\DebugAXP/" /Fp".\DebugAXP/ctf.pch" /YX /Fo".\DebugAXP/" /Fd".\DebugAXP/" /FD /c "
+			"Win32 Resource Compiler" with flags "/l 0x409 /d "_DEBUG" "
+			"Browser Database Maker" with flags "/nologo /o"..\DebugAXP/ctf.bsc" "
+			"COFF Linker for Alpha" with flags "winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /subsystem:windows /dll /incremental:no /pdb:"..\DebugAXP/gameaxp.pdb" /map:".\DebugAXP/gameaxp.map" /debug /machine:ALPHA /def:".\ctf.def" /out:".\debugAXP\gameaxp.dll" /implib:"..\DebugAXP/gameaxp.lib" /pdbtype:sept "
+			"Custom Build" with flags ""
+			"<Component 0xa>" with flags ""
+
+
+
+
+gameaxp.dll - 0 error(s), 0 warning(s)

@@ -1,0 +1,16 @@
+
+switching teams during setup should clear ready
+center stuff should be left aligned on admin
+match command for ingame match request
+admin kick option (menu)
+can't join team when match PREGAME (menu was still open)
+server pause in 3.15?
+
+*time changes are broken
+*ghosting in makes you invisible (svf_noclient?)
+*ghost doesn't restore frags
+*resetall needs to clear grapple (and match start)
+*reset all techs at match start
+*'and admin'
+*timelimit/fraglimit disabled in match mode
+*telefrags at start of match [needs tested]

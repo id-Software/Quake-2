@@ -1,0 +1,159 @@
+#
+# Quake2 gamei386.so Makefile for Linux 2.0
+#
+# Jan '98 by Zoid <zoid@idsoftware.com>
+#
+# ELF only
+#
+# Probably requires GNU make
+#
+# This builds the gamei386.so for Linux based on the q2source_12_11.zip
+# release.  
+# Put his Makefile in the game subdirectory you get when you unzip
+# q2source_12_11.zip.
+#
+# There are two compiler errors you'll get, the following fixes
+# are necessary:
+#
+# In g_local.h (around line 828), you must change the 
+#    typedef struct g_client_s { ... } gclient_t;
+# to just:
+#    struct g_client_s { ... };
+# The typedef is already defined elsewhere (seems to compile fine under
+# MSCV++ for Win32 for some reason).
+#
+# m_player.h has a Ctrl-Z at the end (damn DOS editors).  Remove it or
+# gcc complains.
+#
+# Note that the source in q2source_12_11.zip is for version 3.05.  To
+# get it to run with Linux 3.10, change the following in game.h:
+#    #define	GAME_API_VERSION	1
+# change it to:
+#    #define	GAME_API_VERSION	2
+
+ARCH=i386
+CC=gcc
+BASE_CFLAGS=-Dstricmp=strcasecmp
+
+#use these cflags to optimize it
+CFLAGS=$(BASE_CFLAGS) -m486 -O6 -ffast-math -funroll-loops \
+	-fomit-frame-pointer -fexpensive-optimizations -malign-loops=2 \
+	-malign-jumps=2 -malign-functions=2
+#use these when debugging 
+#CFLAGS=$(BASE_CFLAGS) -g
+
+OBJDIR=linux
+
+LDFLAGS=-ldl -lm
+SHLIBEXT=so
+SHLIBCFLAGS=-fPIC
+SHLIBLDFLAGS=-shared
+
+DO_CC=$(CC) $(CFLAGS) $(SHLIBCFLAGS) -o $@ -c $<
+
+#############################################################################
+# SETUP AND BUILD
+# GAME
+#############################################################################
+
+GAME_OBJS = \
+	$(OBJDIR)/g_ai.o $(OBJDIR)/p_client.o $(OBJDIR)/g_svcmds.o $(OBJDIR)/g_cmds.o \
+	$(OBJDIR)/g_combat.o $(OBJDIR)/g_func.o $(OBJDIR)/g_items.o \
+	$(OBJDIR)/g_main.o $(OBJDIR)/g_misc.o $(OBJDIR)/g_monster.o $(OBJDIR)/g_phys.o \
+	$(OBJDIR)/g_save.o $(OBJDIR)/g_spawn.o \
+	$(OBJDIR)/g_target.o $(OBJDIR)/g_trigger.o $(OBJDIR)/g_utils.o $(OBJDIR)/g_weapon.o \
+	$(OBJDIR)/m_move.o \
+	$(OBJDIR)/p_hud.o $(OBJDIR)/p_trail.o $(OBJDIR)/p_view.o $(OBJDIR)/p_weapon.o \
+	$(OBJDIR)/q_shared.o $(OBJDIR)/g_ctf.o $(OBJDIR)/p_menu.o $(OBJDIR)/g_chase.o
+
+game$(ARCH).$(SHLIBEXT) : $(GAME_OBJS)
+	$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(GAME_OBJS)
+
+$(OBJDIR)/g_ai.o       : g_ai.c     
+	$(DO_CC)
+
+$(OBJDIR)/p_client.o   : p_client.c 
+	$(DO_CC)
+
+$(OBJDIR)/g_svcmds.o   : g_svcmds.c 
+	$(DO_CC)
+
+$(OBJDIR)/g_cmds.o     : g_cmds.c   
+	$(DO_CC)
+
+$(OBJDIR)/g_combat.o   : g_combat.c 
+	$(DO_CC)
+
+$(OBJDIR)/g_func.o     : g_func.c   
+	$(DO_CC)
+
+$(OBJDIR)/g_items.o    : g_items.c  
+	$(DO_CC)
+
+$(OBJDIR)/g_main.o     : g_main.c   
+	$(DO_CC)
+
+$(OBJDIR)/g_misc.o     : g_misc.c   
+	$(DO_CC)
+
+$(OBJDIR)/g_monster.o  : g_monster.c
+	$(DO_CC)
+
+$(OBJDIR)/g_phys.o     : g_phys.c   
+	$(DO_CC)
+
+$(OBJDIR)/g_save.o     : g_save.c   
+	$(DO_CC)
+
+$(OBJDIR)/g_spawn.o    : g_spawn.c  
+	$(DO_CC)
+
+$(OBJDIR)/g_target.o   : g_target.c 
+	$(DO_CC)
+
+$(OBJDIR)/g_trigger.o  : g_trigger.c
+	$(DO_CC)
+
+$(OBJDIR)/g_utils.o    : g_utils.c  
+	$(DO_CC)
+
+$(OBJDIR)/g_weapon.o   : g_weapon.c 
+	$(DO_CC)
+
+$(OBJDIR)/m_move.o     : m_move.c   
+	$(DO_CC)
+
+$(OBJDIR)/p_hud.o      : p_hud.c    
+	$(DO_CC)
+
+$(OBJDIR)/p_trail.o    : p_trail.c  
+	$(DO_CC)
+
+$(OBJDIR)/p_view.o     : p_view.c   
+	$(DO_CC)
+
+$(OBJDIR)/p_weapon.o   : p_weapon.c 
+	$(DO_CC)
+
+$(OBJDIR)/q_shared.o   : q_shared.c 
+	$(DO_CC)
+
+$(OBJDIR)/g_ctf.o      : g_ctf.c    
+	$(DO_CC)
+
+$(OBJDIR)/p_menu.o     : p_menu.c   
+	$(DO_CC)
+
+$(OBJDIR)/g_chase.o    : g_chase.c  
+	$(DO_CC)
+
+#############################################################################
+# MISC
+#############################################################################
+
+clean:
+	-rm -f $(GAME_OBJS)
+
+depend:
+	gcc -MM $(GAME_OBJS:.o=.c)
+
