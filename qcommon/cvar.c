@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // cvar.c -- dynamic variable tracking
 
 #include "qcommon.h"
+// Knightmare- added wildcards
+#include "wildcard.h"
 
 cvar_t	*cvar_vars;
 
@@ -419,6 +421,32 @@ void Cvar_Set_f (void)
 
 
 /*
+=================
+Cvar_Toggle_f
+
+Allows toggling of arbitrary cvars from console
+=================
+*/	
+void Cvar_Toggle_f (void)
+{
+	cvar_t	*var;
+
+	if (Cmd_Argc() != 2){
+		Com_Printf("Usage: toggle <variable>\n");
+		return;
+	}
+
+	var = Cvar_FindVar(Cmd_Argv(1));
+	if (!var) {
+		Com_Printf("'%s' is not a variable\n", Cmd_Argv(1));
+		return;
+	}
+
+	Cvar_Set2(var->name, va("%i", !((int)var->value)), false);
+}
+
+
+/*
 ============
 Cvar_WriteVariables
 
@@ -450,10 +478,71 @@ Cvar_List_f
 
 ============
 */
+#if 1
 void Cvar_List_f (void)
 {
 	cvar_t	*var;
-	int		i;
+	int		i, j, c;
+	char	*wc;
+
+	// RIOT's Quake3-sytle cvarlist
+	c = Cmd_Argc();
+
+	if (c != 1 && c!= 2)
+	{
+		Com_Printf ("usage: cvarlist [wildcard]\n");
+		return;
+	}
+
+	if (c == 2)
+		wc = Cmd_Argv(1);
+	else
+		wc = "*";
+
+	i = 0;
+	j = 0;
+	for (var = cvar_vars; var; var = var->next, i++)
+	{
+		if (wildcardfit (wc, var->name))
+		//if (strstr (var->name, Cmd_Argv(1)))
+		{
+			j++;
+			if (var->flags & CVAR_ARCHIVE)
+				Com_Printf ("A");
+			else
+				Com_Printf (" ");
+
+			if (var->flags & CVAR_USERINFO)
+				Com_Printf ("U");
+			else
+				Com_Printf (" ");
+
+			if (var->flags & CVAR_SERVERINFO)
+				Com_Printf ("S");
+			else
+				Com_Printf (" ");
+
+			if (var->flags & CVAR_NOSET)
+				Com_Printf ("-");
+			else if (var->flags & CVAR_LATCH)
+				Com_Printf ("L");
+			else
+				Com_Printf (" ");
+
+			// show latched value if applicable
+			if ((var->flags & CVAR_LATCH) && var->latched_string)
+				Com_Printf (" %s \"%s\" - latched: \"%s\"\n", var->name, var->string, var->latched_string);
+			else
+				Com_Printf (" %s \"%s\"\n", var->name, var->string);
+		}
+	}
+	Com_Printf (" %i cvars, %i matching\n", i, j);
+}
+#else
+void Cvar_List_f (void)
+{
+	cvar_t	*var;
+	int		i, j, c;
 
 	i = 0;
 	for (var = cvar_vars ; var ; var = var->next, i++)
@@ -480,7 +569,7 @@ void Cvar_List_f (void)
 	}
 	Com_Printf ("%i cvars\n", i);
 }
-
+#endif
 
 qboolean userinfo_modified;
 
@@ -522,6 +611,7 @@ Reads in all archived cvars
 void Cvar_Init (void)
 {
 	Cmd_AddCommand ("set", Cvar_Set_f);
+	Cmd_AddCommand ("toggle", Cvar_Toggle_f); // Knightmare- added cvar toggling
 	Cmd_AddCommand ("cvarlist", Cvar_List_f);
 
 }

@@ -44,6 +44,56 @@ glwstate_t glw_state;
 extern cvar_t *vid_fullscreen;
 extern cvar_t *vid_ref;
 
+// Knightmare- added Vic's hardware gammaramp
+WORD original_ramp[3][256];	// Knightmare- hardware gamma 
+WORD gamma_ramp[3][256];
+
+void InitGammaRamp (void)
+{
+	if (!r_ignorehwgamma->value)
+		gl_state.gammaRamp = GetDeviceGammaRamp ( glw_state.hDC, original_ramp );
+	else
+		gl_state.gammaRamp = false;
+
+	if (gl_state.gammaRamp)
+		vid_gamma->modified = true;
+}
+
+void ShutdownGammaRamp (void)
+{
+//	if (r_ignorehwgamma->value)
+	if (!gl_state.gammaRamp)
+		return;
+
+	SetDeviceGammaRamp (glw_state.hDC, original_ramp);
+}
+
+void UpdateGammaRamp (void)
+{
+	int i, o;
+
+	if (!gl_state.gammaRamp)
+		return;
+	
+	memcpy (gamma_ramp, original_ramp, sizeof(original_ramp));
+
+	for (o = 0; o < 3; o++) 
+	{
+		for (i = 0; i < 256; i++) 
+		{
+			signed int v;
+
+			v = 255 * pow ((i+0.5)/255.5, vid_gamma->value ) + 0.5;
+			if (v > 255) v = 255;
+			if (v < 0) v = 0;
+			gamma_ramp[o][i] = ((WORD)v) << 8;
+		}
+	}
+
+	SetDeviceGammaRamp ( glw_state.hDC, gamma_ramp );
+}
+// end Vic's hardware gammaramp
+
 static qboolean VerifyDriver( void )
 {
 	char buffer[1024];
@@ -194,6 +244,14 @@ rserr_t GLimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen 
 		dm.dmPelsHeight = height;
 		dm.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT;
 
+		// Knightmare- added refresh rate control
+		if ( r_displayrefresh->value != 0 )
+		{
+			dm.dmDisplayFrequency = (int)r_displayrefresh->value;
+			dm.dmFields |= DM_DISPLAYFREQUENCY;
+			ri.Con_Printf( PRINT_ALL, "...using r_displayrefresh of %d\n", (int)r_displayrefresh->value );
+		}
+
 		if ( gl_bitdepth->value != 0 )
 		{
 			dm.dmBitsPerPel = gl_bitdepth->value;
@@ -299,8 +357,12 @@ rserr_t GLimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen 
 ** for the window.  The state structure is also nulled out.
 **
 */
+
 void GLimp_Shutdown( void )
 {
+	// Knightmare- added Vic's hardware gamma ramp
+	ShutdownGammaRamp ();
+
 	if ( qwglMakeCurrent && !qwglMakeCurrent( NULL, NULL ) )
 		ri.Con_Printf( PRINT_ALL, "ref_gl::R_Shutdown() - wglMakeCurrent failed\n");
 	if ( glw_state.hGLRC )
@@ -397,14 +459,16 @@ qboolean GLimp_InitGL (void)
 		PFD_SUPPORT_OPENGL |			// support OpenGL
 		PFD_DOUBLEBUFFER,				// double buffered
 		PFD_TYPE_RGBA,					// RGBA type
-		24,								// 24-bit color depth
+		// Knightmare- was 24-bit, changed for stencil buffer
+		32,								// 32-bit color depth 
 		0, 0, 0, 0, 0, 0,				// color bits ignored
 		0,								// no alpha buffer
 		0,								// shift bit ignored
 		0,								// no accumulation buffer
 		0, 0, 0, 0, 					// accum bits ignored
-		32,								// 32-bit z-buffer	
-		0,								// no stencil buffer
+		// Knightmare- stencil buffer, was 32-bit z-buffer, no stencil buffer
+		24,								// 24-bit z-buffer
+		8,								// 8-bit stencil buffer
 		0,								// no auxiliary buffer
 		PFD_MAIN_PLANE,					// main layer
 		0,								// reserved
@@ -531,6 +595,31 @@ qboolean GLimp_InitGL (void)
 	*/
 	ri.Con_Printf( PRINT_ALL, "GL PFD: color(%d-bits) Z(%d-bit)\n", ( int ) pfd.cColorBits, ( int ) pfd.cDepthBits );
 
+	// Knightmare- Vic's hardware gamma stuff
+	InitGammaRamp ();
+
+	// Knightmare- stencil buffer
+	{
+		char buffer[1024];
+
+		gl_config.have_stencil = false;
+		strcpy( buffer, qglGetString( GL_RENDERER ) );
+		strlwr( buffer );
+		if (strstr(buffer, "Voodoo3")) {
+			ri.Con_Printf( PRINT_ALL, "... Voodoo3 has no stencil buffer\n" );
+		} else {
+			if (pfd.cStencilBits) {
+				ri.Con_Printf( PRINT_ALL, "... Using stencil buffer\n" );
+				gl_config.have_stencil = true; // Stencil shadows - MrG
+			}
+			else
+				ri.Con_Printf( PRINT_ALL, "... Stencil buffer not found\n" );
+		}
+	}
+	// if (pfd.cStencilBits)
+	//	gl_config.have_stencil = true;
+	// end Knightmare
+
 	return true;
 
 fail:
@@ -547,6 +636,7 @@ fail:
 	}
 	return false;
 }
+
 
 /*
 ** GLimp_BeginFrame
@@ -589,7 +679,12 @@ void GLimp_EndFrame (void)
 	int		err;
 
 	err = qglGetError();
-	assert( err == GL_NO_ERROR );
+//	assert( err == GL_NO_ERROR );
+	// Knightmare- Output error code instead
+	if (err != GL_NO_ERROR)
+	//	ri.Con_Printf (PRINT_DEVELOPER, "GLimp_EndFrame: OpenGL Error 0x%x\n", err);
+		GL_PrintError (err, "GLimp_EndFrame");
+	// end Knightmare
 
 	if ( stricmp( gl_drawbuffer->string, "GL_BACK" ) == 0 )
 	{

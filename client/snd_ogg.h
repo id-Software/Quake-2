@@ -18,10 +18,37 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-int		CDAudio_Init(void);
-void	CDAudio_Shutdown(void);
-void	CDAudio_Play(int track, qboolean looping);
-void	CDAudio_Stop(void);
-void	CDAudio_Update(void);
-void	CDAudio_Activate (qboolean active);
-qboolean CDAudio_Active (void); // Knightmare added
+// snd_ogg.h -- Ogg Vorbis streaming functions
+
+#ifndef _SND_OGG_H_
+#define _SND_OGG_H_
+
+// bypass filesystem for streaming audio to get around FS_Read 0 bytes error
+#define OGG_DIRECT_FILE
+
+typedef enum {
+	PLAY,
+	PAUSE,
+	STOP
+} ogg_status_t;
+
+typedef enum {
+	ABS,
+	REL
+} ogg_seek_t;
+
+// snd_stream.c
+extern int sound_started;
+
+void S_UpdateBackgroundTrack (void);
+void S_StartBackgroundTrack (const char *introTrack, const char *loopTrack);
+void S_StopBackgroundTrack (void);
+void S_StartStreaming (void);
+void S_StopStreaming (void);
+void S_OGG_Init (void);
+void S_OGG_Shutdown (void);
+void S_OGG_Restart (void);
+void S_OGG_LoadFileList (void);
+void S_OGG_ParseCmd (void);
+
+#endif

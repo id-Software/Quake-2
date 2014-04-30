@@ -48,6 +48,8 @@ cvar_t	*maxentities;
 cvar_t	*g_select_empty;
 cvar_t	*dedicated;
 
+cvar_t	*filterban;
+
 cvar_t	*sv_maxvelocity;
 cvar_t	*sv_gravity;
 
@@ -145,7 +147,8 @@ void Sys_Error (char *error, ...)
 	char		text[1024];
 
 	va_start (argptr, error);
-	vsprintf (text, error, argptr);
+//	vsprintf (text, error, argptr);
+	Q_vsnprintf (text, sizeof(text), error, argptr);	// Knightmare- buffer overflow fix
 	va_end (argptr);
 
 	gi.error (ERR_FATAL, "%s", text);
@@ -157,7 +160,8 @@ void Com_Printf (char *msg, ...)
 	char		text[1024];
 
 	va_start (argptr, msg);
-	vsprintf (text, msg, argptr);
+//	vsprintf (text, msg, argptr);
+	Q_vsnprintf (text, sizeof(text), msg, argptr);	// Knightmare- buffer overflow fix
 	va_end (argptr);
 
 	gi.dprintf ("%s", text);

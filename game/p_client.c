@@ -1056,8 +1056,8 @@ void spectator_respawn (edict_t *ent)
 		}
 	}
 
-	// clear score on respawn
-	ent->client->pers.score = ent->client->resp.score = 0;
+	// clear client on respawn
+	ent->client->resp.score = ent->client->pers.score = 0;
 
 	ent->svflags &= ~SVF_NOCLIENT;
 	PutClientInServer (ent);
@@ -1104,6 +1104,8 @@ void PutClientInServer (edict_t *ent)
 	int		i;
 	client_persistant_t	saved;
 	client_respawn_t	resp;
+	// Knightmare- added fix to keep same player model
+    char				userinfo[MAX_INFO_STRING];
 
 	// find a spawn point
 	// do it before setting health back up, so farthest
@@ -1147,6 +1149,9 @@ void PutClientInServer (edict_t *ent)
 	{
 		memset (&resp, 0, sizeof(resp));
 	}
+	// Knightmare- added fix to keep same player model
+	memcpy (userinfo, client->pers.userinfo, sizeof(userinfo));
+	ClientUserinfoChanged (ent, userinfo);
 
 	// clear everything but the persistant data
 	saved = client->pers;
@@ -1221,7 +1226,9 @@ void PutClientInServer (edict_t *ent)
 
 	// set the delta angle
 	for (i=0 ; i<3 ; i++)
+	{
 		client->ps.pmove.delta_angles[i] = ANGLE2SHORT(spawn_angles[i] - client->resp.cmd_angles[i]);
+	}
 
 	ent->s.angles[PITCH] = 0;
 	ent->s.angles[YAW] = spawn_angles[YAW];
@@ -1253,6 +1260,10 @@ void PutClientInServer (edict_t *ent)
 	// force the current weapon up
 	client->newweapon = client->pers.weapon;
 	ChangeWeapon (ent);
+
+	// Knightmare- added Paril's fix for this getting reset after map changes
+	if (!ent->client->pers.connected)
+		ent->client->pers.connected = true;
 }
 
 /*
@@ -1272,11 +1283,18 @@ void ClientBeginDeathmatch (edict_t *ent)
 	// locate ent at a spawn point
 	PutClientInServer (ent);
 
-	// send effect
-	gi.WriteByte (svc_muzzleflash);
-	gi.WriteShort (ent-g_edicts);
-	gi.WriteByte (MZ_LOGIN);
-	gi.multicast (ent->s.origin, MULTICAST_PVS);
+	if (level.intermissiontime)
+	{
+		MoveClientToIntermission (ent);
+	}
+	else
+	{
+		// send effect
+		gi.WriteByte (svc_muzzleflash);
+		gi.WriteShort (ent-g_edicts);
+		gi.WriteByte (MZ_LOGIN);
+		gi.multicast (ent->s.origin, MULTICAST_PVS);
+	}
 
 	gi.bprintf (PRINT_HIGH, "%s entered the game\n", ent->client->pers.netname);
 
@@ -1489,6 +1507,7 @@ qboolean ClientConnect (edict_t *ent, char *userinfo)
 	if (game.maxclients > 1)
 		gi.dprintf ("%s connected\n", ent->client->pers.netname);
 
+	ent->svflags = 0; // make sure we start with known default
 	ent->client->pers.connected = true;
 	return true;
 }

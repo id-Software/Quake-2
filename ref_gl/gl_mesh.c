@@ -295,7 +295,6 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 }
 
 
-#if 1
 /*
 =============
 GL_DrawAliasShadow
@@ -303,7 +302,7 @@ GL_DrawAliasShadow
 */
 extern	vec3_t			lightspot;
 
-void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
+void GL_DrawAliasShadow (entity_t *e, dmdl_t *paliashdr, int posenum)
 {
 	dtrivertx_t	*verts;
 	int		*order;
@@ -318,11 +317,32 @@ void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
 		+ currententity->frame * paliashdr->framesize);
 	verts = frame->verts;
 
-	height = 0;
-
+//	height = 0;
 	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
+	height = -lheight + 0.1f; // was 1.0f, lowered shadows to ground more - MrG
 
-	height = -lheight + 1.0;
+	// Knightmare- don't draw shadow above entity
+	if ((currententity->origin[2]+height) > currententity->origin[2])
+		return;
+
+	// Knightmare- don't draw shadows above view origin
+	if (r_newrefdef.vieworg[2] < (currententity->origin[2] + height))
+		return;
+
+	qglPushMatrix ();
+	R_RotateForEntity (e, false);
+	qglDisable (GL_TEXTURE_2D);
+	qglEnable (GL_BLEND);
+	qglColor4f (0, 0, 0, gl_shadowalpha->value); // was 0.5
+
+	// Knightmare- Stencil shadows by MrG
+	if (gl_config.have_stencil)
+	{
+		qglEnable(GL_STENCIL_TEST);
+		qglStencilFunc(GL_EQUAL, 1, 2);
+		qglStencilOp(GL_KEEP,GL_KEEP,GL_INCR);
+	}
+	// End Stencil shadows - MrG
 
 	while (1)
 	{
@@ -362,10 +382,18 @@ void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
 		} while (--count);
 
 		qglEnd ();
-	}	
+	}
+
+	// Knightmare- disable Stencil shadows
+	if (gl_config.have_stencil)
+		qglDisable(GL_STENCIL_TEST);
+	
+	qglColor4f (1,1,1,1);
+	qglEnable (GL_TEXTURE_2D);
+	qglDisable (GL_BLEND);
+	qglPopMatrix ();
 }
 
-#endif
 
 /*
 ** R_CullAliasModel
@@ -436,6 +464,25 @@ static qboolean R_CullAliasModel( vec3_t bbox[8], entity_t *e )
 		}
 	}
 
+#if 1	// Knightmare- jitspore's fix for correct bbox rotation
+	//
+	// compute bounding box and rotate
+	//
+	VectorCopy( e->angles, angles );
+	AngleVectors( angles, vectors[0], vectors[1], vectors[2] );
+	VectorSubtract(vec3_origin, vectors[1], vectors[1]); // AngleVectors returns "right" instead of "left"
+	for (i = 0; i < 8; i++)
+	{
+		vec3_t   tmp;
+		tmp[0] = ((i & 1) ? mins[0] : maxs[0]);
+		tmp[1] = ((i & 2) ? mins[1] : maxs[1]);
+		tmp[2] = ((i & 4) ? mins[2] : maxs[2]);
+
+		bbox[i][0] = vectors[0][0] * tmp[0] + vectors[1][0] * tmp[1] + vectors[2][0] * tmp[2] + e->origin[0];
+		bbox[i][1] = vectors[0][1] * tmp[0] + vectors[1][1] * tmp[1] + vectors[2][1] * tmp[2] + e->origin[1];
+		bbox[i][2] = vectors[0][2] * tmp[0] + vectors[1][2] * tmp[1] + vectors[2][2] * tmp[2] + e->origin[2];
+	}
+#else
 	/*
 	** compute a full bounding box
 	*/
@@ -480,7 +527,9 @@ static qboolean R_CullAliasModel( vec3_t bbox[8], entity_t *e )
 
 		VectorAdd( e->origin, bbox[i], bbox[i] );
 	}
+#endif
 
+	// cull
 	{
 		int p, f, aggregatemask = ~0;
 
@@ -542,9 +591,30 @@ void R_DrawAliasModel (entity_t *e)
 	// get lighting information
 	//
 	// PMM - rewrote, reordered to handle new shells & mixing
+	// PMM - 3.20 code .. replaced with original way of doing it to keep mod authors happy
 	//
 	if ( currententity->flags & ( RF_SHELL_HALF_DAM | RF_SHELL_GREEN | RF_SHELL_RED | RF_SHELL_BLUE | RF_SHELL_DOUBLE ) )
 	{
+		VectorClear (shadelight);
+		if (currententity->flags & RF_SHELL_HALF_DAM)
+		{
+				shadelight[0] = 0.56;
+				shadelight[1] = 0.59;
+				shadelight[2] = 0.45;
+		}
+		if ( currententity->flags & RF_SHELL_DOUBLE )
+		{
+			shadelight[0] = 0.9;
+			shadelight[1] = 0.7;
+		}
+		if ( currententity->flags & RF_SHELL_RED )
+			shadelight[0] = 1.0;
+		if ( currententity->flags & RF_SHELL_GREEN )
+			shadelight[1] = 1.0;
+		if ( currententity->flags & RF_SHELL_BLUE )
+			shadelight[2] = 1.0;
+	}
+/*
 		// PMM -special case for godmode
 		if ( (currententity->flags & RF_SHELL_RED) &&
 			(currententity->flags & RF_SHELL_BLUE) &&
@@ -607,6 +677,7 @@ void R_DrawAliasModel (entity_t *e)
 	//			}
 	//		}
 	// pmm
+*/
 	else if ( currententity->flags & RF_FULLBRIGHT )
 	{
 		for (i=0 ; i<3 ; i++)
@@ -728,9 +799,11 @@ void R_DrawAliasModel (entity_t *e)
 	}
 
     qglPushMatrix ();
-	e->angles[PITCH] = -e->angles[PITCH];	// sigh.
-	R_RotateForEntity (e);
-	e->angles[PITCH] = -e->angles[PITCH];	// sigh.
+	e->angles[PITCH] = -e->angles[PITCH];				// sigh.
+	e->angles[ROLL] = e->angles[ROLL] * R_RollMult();	// Knightmare- roll is backwards
+	R_RotateForEntity (e, true);
+	e->angles[PITCH] = -e->angles[PITCH];				// sigh.
+	e->angles[ROLL] = e->angles[ROLL] * R_RollMult();	// Knightmare- roll is backwards
 
 	// select skin
 	if (currententity->skin)
@@ -788,20 +861,48 @@ void R_DrawAliasModel (entity_t *e)
 
 	qglPopMatrix ();
 
-#if 0
-	qglDisable( GL_CULL_FACE );
-	qglPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-	qglDisable( GL_TEXTURE_2D );
-	qglBegin( GL_TRIANGLE_STRIP );
-	for ( i = 0; i < 8; i++ )
+//#if 1
+	if (gl_showbbox->value)	// Knightmare- show bbox option
 	{
-		qglVertex3fv( bbox[i] );
+		qglColor4f (1.0f, 1.0f, 1.0f, 1.0f);
+		qglDisable( GL_CULL_FACE );
+		qglPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		qglDisable( GL_TEXTURE_2D );
+	/*	qglBegin( GL_TRIANGLE_STRIP );
+		for ( i = 0; i < 8; i++ )
+		{
+			qglVertex3fv( bbox[i] );
+		}
+		qglEnd();*/
+		qglBegin( GL_QUADS );
+
+		qglVertex3fv( bbox[0] );
+		qglVertex3fv( bbox[1] );
+		qglVertex3fv( bbox[3] );
+		qglVertex3fv( bbox[2] );
+
+		qglVertex3fv( bbox[4] );
+		qglVertex3fv( bbox[5] );
+		qglVertex3fv( bbox[7] );
+		qglVertex3fv( bbox[6] );
+
+		qglVertex3fv( bbox[0] );
+		qglVertex3fv( bbox[1] );
+		qglVertex3fv( bbox[5] );
+		qglVertex3fv( bbox[4] );
+
+		qglVertex3fv( bbox[2] );
+		qglVertex3fv( bbox[3] );
+		qglVertex3fv( bbox[7] );
+		qglVertex3fv( bbox[6] );
+
+		qglEnd();
+
+		qglEnable( GL_TEXTURE_2D );
+		qglPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		qglEnable( GL_CULL_FACE );
 	}
-	qglEnd();
-	qglEnable( GL_TEXTURE_2D );
-	qglPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-	qglEnable( GL_CULL_FACE );
-#endif
+//#endif
 
 	if ( ( currententity->flags & RF_WEAPONMODEL ) && ( r_lefthand->value == 1.0F ) )
 	{
@@ -819,20 +920,20 @@ void R_DrawAliasModel (entity_t *e)
 	if (currententity->flags & RF_DEPTHHACK)
 		qglDepthRange (gldepthmin, gldepthmax);
 
-#if 1
 	if (gl_shadows->value && !(currententity->flags & (RF_TRANSLUCENT | RF_WEAPONMODEL)))
 	{
-		qglPushMatrix ();
-		R_RotateForEntity (e);
-		qglDisable (GL_TEXTURE_2D);
-		qglEnable (GL_BLEND);
-		qglColor4f (0,0,0,0.5);
-		GL_DrawAliasShadow (paliashdr, currententity->frame );
-		qglEnable (GL_TEXTURE_2D);
-		qglDisable (GL_BLEND);
-		qglPopMatrix ();
+	//	qglPushMatrix ();
+	//	R_RotateForEntity (e, false);
+	//	qglDisable (GL_TEXTURE_2D);
+	//	qglEnable (GL_BLEND);
+	//	qglColor4f (0, 0, 0, gl_shadowalpha->value); // was 0.5
+
+		GL_DrawAliasShadow (e, paliashdr, currententity->frame );
+
+	//	qglEnable (GL_TEXTURE_2D);
+	//	qglDisable (GL_BLEND);
+	//	qglPopMatrix ();
 	}
-#endif
 	qglColor4f (1,1,1,1);
 }
 

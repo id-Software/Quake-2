@@ -28,9 +28,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 HRESULT (WINAPI *pDirectSoundCreate)(GUID FAR *lpGUID, LPDIRECTSOUND FAR *lplpDS, IUnknown FAR *pUnkOuter);
 
 // 64K is > 1 second at 16-bit, 22050 Hz
-#define	WAV_BUFFERS				64
+#define	WAV_BUFFERS				128		// Knightmare- increased from 64
 #define	WAV_MASK				0x3F
-#define	WAV_BUFFER_SIZE			0x0400
+#define	WAV_BUFFER_SIZE			0x800	// Knightmare- increased from 0x0400
 #define SECONDARY_BUFFER_SIZE	0x10000
 
 typedef enum {SIS_SUCCESS, SIS_FAILURE, SIS_NOTAVAIL} sndinitstat;
@@ -357,9 +357,11 @@ sndinitstat SNDDMA_InitDirect (void)
 	dma.channels = 2;
 	dma.samplebits = 16;
 
-	if (s_khz->value == 44)
+	if (s_khz->value == 48)
+		dma.speed = 48000;
+	else if (s_khz->value == 44)
 		dma.speed = 44100;
-	if (s_khz->value == 22)
+	else if (s_khz->value == 22)
 		dma.speed = 22050;
 	else
 		dma.speed = 11025;
@@ -455,9 +457,11 @@ qboolean SNDDMA_InitWav (void)
 	dma.channels = 2;
 	dma.samplebits = 16;
 
-	if (s_khz->value == 44)
+	if (s_khz->value == 48)
+		dma.speed = 48000;
+	else if (s_khz->value == 44)
 		dma.speed = 44100;
-	if (s_khz->value == 22)
+	else if (s_khz->value == 22)
 		dma.speed = 22050;
 	else
 		dma.speed = 11025;

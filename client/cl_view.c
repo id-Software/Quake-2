@@ -352,7 +352,8 @@ void CL_PrepRefresh (void)
 	cl.force_refdef = true;	// make sure we have a valid refdef
 
 	// start the cd track
-	CDAudio_Play (atoi(cl.configstrings[CS_CDTRACK]), true);
+//	CDAudio_Play (atoi(cl.configstrings[CS_CDTRACK]), true);
+	CL_PlayBackgroundTrack ();
 }
 
 /*
@@ -503,6 +504,17 @@ void V_RenderView( float stereo_separation )
 		cl.refdef.y = scr_vrect.y;
 		cl.refdef.width = scr_vrect.width;
 		cl.refdef.height = scr_vrect.height;
+
+		// Knightmare- adjust fov for wide aspect ratio
+		if (cl_widescreen_fov->value)
+		{
+			float aspectRatio = (float)cl.refdef.width/(float)cl.refdef.height;
+			// changed to improved algorithm by Dopefish
+			if (aspectRatio > STANDARD_ASPECT_RATIO)
+				cl.refdef.fov_x = RAD2DEG( 2 * atan( (aspectRatio/ STANDARD_ASPECT_RATIO) * tan(DEG2RAD(cl.refdef.fov_x) * 0.5) ) );
+			//	cl.refdef.fov_x *= (1 + (0.5 * (aspectRatio / STANDARD_ASPECT_RATIO - 1)));
+			cl.refdef.fov_x = min(cl.refdef.fov_x, 160);
+		}
 		cl.refdef.fov_y = CalcFov (cl.refdef.fov_x, cl.refdef.width, cl.refdef.height);
 		cl.refdef.time = cl.time*0.001;
 

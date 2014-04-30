@@ -36,7 +36,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //#define DEMO
 
-qboolean s_win95;
+qboolean s_win9X;
+qboolean s_winnt;	// Knightmare added
 
 int			starttime;
 int			ActiveApp;
@@ -73,7 +74,8 @@ void Sys_Error (char *error, ...)
 	Qcommon_Shutdown ();
 
 	va_start (argptr, error);
-	vsprintf (text, error, argptr);
+//	vsprintf (text, error, argptr);
+	Q_vsnprintf (text, sizeof(text), error, argptr);
 	va_end (argptr);
 
 	MessageBox(NULL, text, "Error", 0 /* MB_OK */ );
@@ -142,6 +144,8 @@ char *Sys_ScanForCD (void)
 	char		drive[4];
 	FILE		*f;
 	char		test[MAX_QPATH];
+	qboolean	missionpack = false; // Knightmare added
+	int			i; // Knightmare added
 
 	if (done)		// don't re-check
 		return cddir;
@@ -156,12 +160,29 @@ char *Sys_ScanForCD (void)
 
 	done = true;
 
+	// Knightmare- check if mission pack gamedir is set
+	for (i=0; i<argc; i++)
+		if (!strcmp(argv[i], "game") && (i+1<argc))
+		{
+			if (!strcmp(argv[i+1], "rogue") || !strcmp(argv[i+1], "xatrix"))
+				missionpack = true;
+			break; // game parameter only appears once in command line
+		}
+
 	// scan the drives
 	for (drive[0] = 'c' ; drive[0] <= 'z' ; drive[0]++)
 	{
 		// where activision put the stuff...
-		sprintf (cddir, "%sinstall\\data", drive);
-		sprintf (test, "%sinstall\\data\\quake2.exe", drive);
+		if (missionpack) // Knightmare- mission packs have cinematics in different path
+		{
+			Com_sprintf (cddir, sizeof(cddir), "%sdata\\max", drive);
+			Com_sprintf (test, sizeof(test), "%sdata\\patch\\quake2.exe", drive);
+		}
+		else
+		{
+			Com_sprintf (cddir, sizeof(cddir), "%sinstall\\data", drive);
+			Com_sprintf (test, sizeof(test), "%sinstall\\data\\quake2.exe", drive);
+		}
 		f = fopen(test, "r");
 		if (f)
 		{
@@ -229,6 +250,10 @@ void Sys_Init (void)
 
 	timeBeginPeriod( 1 );
 
+	// Knightmare added
+	s_winnt = false;
+	s_win9X = false;
+
 	vinfo.dwOSVersionInfoSize = sizeof(vinfo);
 
 	if (!GetVersionEx (&vinfo))
@@ -238,8 +263,10 @@ void Sys_Init (void)
 		Sys_Error ("Quake2 requires windows version 4 or greater");
 	if (vinfo.dwPlatformId == VER_PLATFORM_WIN32s)
 		Sys_Error ("Quake2 doesn't run on Win32s");
+	else if ( vinfo.dwPlatformId == VER_PLATFORM_WIN32_NT )	// Knightmare added
+		s_winnt = true;
 	else if ( vinfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS )
-		s_win95 = true;
+		s_win9X = true;
 
 	if (dedicated->value)
 	{
@@ -363,6 +390,19 @@ void Sys_ConsoleOutput (char *string)
 
 	if (console_textlen)
 		WriteFile(houtput, console_text, console_textlen, &dummy, NULL);
+}
+
+
+/*
+================
+Sys_Sleep
+
+Knightmare- added this to fix CPU usage
+================
+*/
+void Sys_Sleep (int msec)
+{
+	Sleep (msec);
 }
 
 
@@ -508,6 +548,7 @@ void *Sys_GetGameAPI (void *parms)
 	}
 	else
 	{
+#ifdef DEBUG
 		// check the current directory for other development purposes
 		Com_sprintf (name, sizeof(name), "%s/%s", cwd, gamename);
 		game_library = LoadLibrary ( name );
@@ -516,6 +557,7 @@ void *Sys_GetGameAPI (void *parms)
 			Com_DPrintf ("LoadLibrary (%s)\n", name);
 		}
 		else
+#endif
 		{
 			// now run through the search paths
 			path = NULL;
@@ -596,6 +638,8 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
     MSG				msg;
 	int				time, oldtime, newtime;
 	char			*cddir;
+	int				i; // Knightmare added
+	qboolean		nocdscan = false; // Knightmare added
 
     /* previous instances do not exist in Win32 */
     if (hPrevInstance)
@@ -605,21 +649,31 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 	ParseCommandLine (lpCmdLine);
 
-	// if we find the CD, add a +set cddir xxx command line
-	cddir = Sys_ScanForCD ();
-	if (cddir && argc < MAX_NUM_ARGVS - 3)
-	{
-		int		i;
+	// Knightmare- scan for cd command line option
+	for (i=0; i<argc; i++)
+		if (!strcmp(argv[i], "noscanforcd")) {
+			nocdscan = true;
+			break;
+		}
 
-		// don't override a cddir on the command line
-		for (i=0 ; i<argc ; i++)
-			if (!strcmp(argv[i], "cddir"))
-				break;
-		if (i == argc)
+	// if we find the CD, add a +set cddir xxx command line
+	if (!nocdscan)
+	{
+		cddir = Sys_ScanForCD ();
+		if (cddir && argc < MAX_NUM_ARGVS - 3)
 		{
-			argv[argc++] = "+set";
-			argv[argc++] = "cddir";
-			argv[argc++] = cddir;
+			int		i;
+
+			// don't override a cddir on the command line
+			for (i=0 ; i<argc ; i++)
+				if (!strcmp(argv[i], "cddir"))
+					break;
+			if (i == argc)
+			{
+				argv[argc++] = "+set";
+				argv[argc++] = "cddir";
+				argv[argc++] = cddir;
+			}
 		}
 	}
 

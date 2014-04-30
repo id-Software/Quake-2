@@ -510,6 +510,107 @@ void CL_ParseClientinfo (int player)
 	CL_LoadClientinfo (ci, s);
 }
 
+// Knightmare added
+qboolean FS_ModType (char *name);
+/*
+================
+CL_MissionPackCDTrack
+Returns correct OGG track number for mission packs.
+This assumes that the standard Q2 CD was ripped
+as track02-track11, and the Rogue CD as track12-track21.
+================
+*/
+int CL_MissionPackCDTrack (int tracknum)
+{
+	if (FS_ModType("rogue") || cl_rogue_music->value)
+	{
+		if (tracknum >= 2 && tracknum <= 11)
+			return tracknum + 10;
+		else
+			return tracknum;
+	}
+	// an out-of-order mix from Q2 and Rogue CDs
+	else if (FS_ModType("xatrix") || cl_xatrix_music->value)
+	{
+		switch(tracknum)
+		{
+			case 2: return 9;	break;
+			case 3: return 13;	break;
+			case 4: return 14;	break;
+			case 5: return 7;	break;
+			case 6: return 16;	break;
+			case 7: return 2;	break;
+			case 8: return 15;	break;
+			case 9: return 3;	break;
+			case 10: return 4;	break;
+			case 11: return 18; break;
+			default: return tracknum; break;
+		}
+	}
+	else
+		return tracknum;
+}
+
+/*
+=================
+CL_PlayBackgroundTrack
+=================
+*/
+#ifdef OGG_SUPPORT
+
+#include "snd_ogg.h"
+
+void CL_PlayBackgroundTrack (void)
+{
+	char	name[MAX_QPATH];
+	int		track;
+
+	Com_DPrintf ("CL_PlayBackgroundTrack\n");	// debug
+
+	if (!cl.refresh_prepped)
+		return;
+
+	// using a named audio track intead of numbered
+	if (strlen(cl.configstrings[CS_CDTRACK]) > 2)
+	{
+		Com_sprintf (name, sizeof(name), "music/%s.ogg", cl.configstrings[CS_CDTRACK]);
+		if (FS_LoadFile(name, NULL) != -1)
+		{
+			CDAudio_Stop();
+			S_StartBackgroundTrack(name, name);
+			return;
+		}
+	}
+
+	track = atoi(cl.configstrings[CS_CDTRACK]);
+
+	if (track == 0)
+	{	// Stop any playing track
+		Com_DPrintf ("CL_PlayBackgroundTrack: stopping\n");	// debug
+		CDAudio_Stop();
+		S_StopBackgroundTrack();
+		return;
+	}
+
+	// If an OGG file exists play it, otherwise fall back to CD audio
+	Com_sprintf (name, sizeof(name), "music/track%02i.ogg", CL_MissionPackCDTrack(track));
+	if ( (FS_LoadFile(name, NULL) != -1) && cl_ogg_music->value ) {
+		Com_DPrintf ("CL_PlayBackgroundTrack: playing track %s\n", name);	// debug
+		S_StartBackgroundTrack(name, name);
+	}
+	else
+		CDAudio_Play(track, true);
+}
+
+#else
+
+void CL_PlayBackgroundTrack (void)
+{
+	CDAudio_Play (atoi(cl.configstrings[CS_CDTRACK]), true);
+}
+
+#endif // OGG_SUPPORT
+// end Knightmare
 
 /*
 ================
@@ -520,11 +621,16 @@ void CL_ParseConfigString (void)
 {
 	int		i;
 	char	*s;
+	char	olds[MAX_QPATH];
 
 	i = MSG_ReadShort (&net_message);
 	if (i < 0 || i >= MAX_CONFIGSTRINGS)
 		Com_Error (ERR_DROP, "configstring > MAX_CONFIGSTRINGS");
 	s = MSG_ReadString(&net_message);
+
+	strncpy (olds, cl.configstrings[i], sizeof(olds));
+	olds[sizeof(olds) - 1] = 0;
+
 	strcpy (cl.configstrings[i], s);
 
 	// do something apropriate 
@@ -534,7 +640,8 @@ void CL_ParseConfigString (void)
 	else if (i == CS_CDTRACK)
 	{
 		if (cl.refresh_prepped)
-			CDAudio_Play (atoi(cl.configstrings[CS_CDTRACK]), true);
+		//	CDAudio_Play (atoi(cl.configstrings[CS_CDTRACK]), true);
+			CL_PlayBackgroundTrack ();	// Knightmare changed
 	}
 	else if (i >= CS_MODELS && i < CS_MODELS+MAX_MODELS)
 	{
@@ -559,7 +666,7 @@ void CL_ParseConfigString (void)
 	}
 	else if (i >= CS_PLAYERSKINS && i < CS_PLAYERSKINS+MAX_CLIENTS)
 	{
-		if (cl.refresh_prepped)
+		if (cl.refresh_prepped && strcmp(olds, s))
 			CL_ParseClientinfo (i-CS_PLAYERSKINS);
 	}
 }

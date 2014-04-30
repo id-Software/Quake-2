@@ -180,12 +180,32 @@ char *Sys_FindFirst (char *path, unsigned musthave, unsigned canthave )
 
 	COM_FilePath (path, findbase);
 	findhandle = _findfirst (path, &findinfo);
-	if (findhandle == -1)
+
+/*	if (findhandle == -1)
 		return NULL;
 	if ( !CompareAttributes( findinfo.attrib, musthave, canthave ) )
 		return NULL;
 	Com_sprintf (findpath, sizeof(findpath), "%s/%s", findbase, findinfo.name);
 	return findpath;
+*/
+// Knightmare- AnthonyJ's player menu bug fix
+//(not loading dirs when loose files are present in baseq2/players/)
+	while ((findhandle != -1))
+	{
+		if (CompareAttributes(findinfo.attrib, musthave, canthave))
+		{
+			Com_sprintf (findpath, sizeof(findpath), "%s/%s", findbase, findinfo.name);
+			return findpath;
+		}
+		else if (_findnext(findhandle, &findinfo) == -1)
+		{
+			_findclose(findhandle);
+			findhandle = -1;
+		}
+	}
+
+	return NULL;
+//end Knightmare
 }
 
 char *Sys_FindNext ( unsigned musthave, unsigned canthave )
@@ -194,13 +214,27 @@ char *Sys_FindNext ( unsigned musthave, unsigned canthave )
 
 	if (findhandle == -1)
 		return NULL;
-	if (_findnext (findhandle, &findinfo) == -1)
+/*	if (_findnext (findhandle, &findinfo) == -1)
 		return NULL;
 	if ( !CompareAttributes( findinfo.attrib, musthave, canthave ) )
 		return NULL;
 
 	Com_sprintf (findpath, sizeof(findpath), "%s/%s", findbase, findinfo.name);
 	return findpath;
+*/
+// Knightmare- AnthonyJ's player menu bug fix
+//	(not loading dirs when loose files are present in baseq2/players/)
+	while (_findnext(findhandle, &findinfo) != -1)
+	{
+		if (CompareAttributes(findinfo.attrib, musthave, canthave))
+		{
+			Com_sprintf (findpath, sizeof(findpath), "%s/%s", findbase, findinfo.name);
+			return findpath;
+		}
+	}
+	
+	return NULL;
+//end Knightmare
 }
 
 void Sys_FindClose (void)

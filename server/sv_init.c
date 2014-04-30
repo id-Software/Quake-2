@@ -43,8 +43,20 @@ int SV_FindIndex (char *name, int start, int max, qboolean create)
 	if (!create)
 		return 0;
 
+	// Knightmare- Output a more useful error message to tell user what overflowed.
+	// And don't bomb out, either- instead, return last possible index.
 	if (i == max)
-		Com_Error (ERR_DROP, "*Index: overflow");
+	//	Com_Error (ERR_DROP, "*Index: overflow");
+	{
+		if (start == CS_MODELS)
+			Com_Printf ("Warning: Index overflow for models\n");
+		else if (start == CS_SOUNDS)
+			Com_Printf ("Warning: Index overflow for sounds\n");
+		else if (start == CS_IMAGES)
+			Com_Printf ("Warning: Index overflow for images\n");
+		return (max-1);	// return the last possible index
+	}
+	// end Knightmare
 
 	strncpy (sv.configstrings[start+i], name, sizeof(sv.configstrings[i]));
 
@@ -403,7 +415,9 @@ void SV_Map (qboolean attractloop, char *levelstring, qboolean loadgame)
 	if (sv.state == ss_dead && !sv.loadgame)
 		SV_InitGame ();	// the game is just starting
 
-	strcpy (level, levelstring);
+	// r1ch fix: buffer overflow
+//	strcpy (level, levelstring);
+	strncpy (level, levelstring, sizeof(level)-1);
 
 	// if there is a + in the map, set nextserver to the remainder
 	ch = strstr(level, "+");

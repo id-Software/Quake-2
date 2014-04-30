@@ -78,6 +78,9 @@ cvar_t		*s_khz;
 cvar_t		*s_show;
 cvar_t		*s_mixahead;
 cvar_t		*s_primary;
+#ifdef OGG_SUPPORT	// Knightmare added
+cvar_t		*s_musicvolume;
+#endif
 
 
 int		s_rawend;
@@ -125,17 +128,23 @@ void S_Init (void)
 	else
 	{
 		s_volume = Cvar_Get ("s_volume", "0.7", CVAR_ARCHIVE);
-		s_khz = Cvar_Get ("s_khz", "11", CVAR_ARCHIVE);
-		s_loadas8bit = Cvar_Get ("s_loadas8bit", "1", CVAR_ARCHIVE);
+		s_khz = Cvar_Get ("s_khz", "22", CVAR_ARCHIVE);	// Knightmare- increased from 11
+		s_loadas8bit = Cvar_Get ("s_loadas8bit", "0", CVAR_ARCHIVE);	// Knightmare- changed from 1
 		s_mixahead = Cvar_Get ("s_mixahead", "0.2", CVAR_ARCHIVE);
 		s_show = Cvar_Get ("s_show", "0", 0);
 		s_testsound = Cvar_Get ("s_testsound", "0", 0);
 		s_primary = Cvar_Get ("s_primary", "0", CVAR_ARCHIVE);	// win32 specific
+	#ifdef OGG_SUPPORT
+		s_musicvolume = Cvar_Get ("s_musicvolume", "1.0", CVAR_ARCHIVE); // Knightmare added
+	#endif
 
 		Cmd_AddCommand("play", S_Play);
 		Cmd_AddCommand("stopsound", S_StopAllSounds);
 		Cmd_AddCommand("soundlist", S_SoundList);
 		Cmd_AddCommand("soundinfo", S_SoundInfo_f);
+	#ifdef OGG_SUPPORT
+		Cmd_AddCommand("ogg_restart", S_OGG_Restart); // Knightmare added
+	#endif
 
 		if (!SNDDMA_Init())
 			return;
@@ -153,6 +162,11 @@ void S_Init (void)
 		S_StopAllSounds ();
 	}
 
+#ifdef OGG_SUPPORT
+//	Com_DPrintf ("S_Init: calling S_OGG_Init\n");	// debug
+	S_OGG_Init(); // Knightmare added
+#endif
+
 	Com_Printf("------------------------------------\n");
 }
 
@@ -169,6 +183,11 @@ void S_Shutdown(void)
 	if (!sound_started)
 		return;
 
+#ifdef OGG_SUPPORT
+//	Com_DPrintf ("S_Shutdown: calling S_OGG_Shutdown\n");	// debug
+	S_OGG_Shutdown(); // Knightmare added
+#endif
+
 	SNDDMA_Shutdown();
 
 	sound_started = 0;
@@ -177,6 +196,10 @@ void S_Shutdown(void)
 	Cmd_RemoveCommand("stopsound");
 	Cmd_RemoveCommand("soundlist");
 	Cmd_RemoveCommand("soundinfo");
+#ifdef OGG_SUPPORT
+	Cmd_RemoveCommand("ogg_restart"); // Knightmare added
+#endif
+
 
 	// free all sounds
 	for (i=0, sfx=known_sfx ; i < num_sfx ; i++,sfx++)
@@ -362,6 +385,12 @@ void S_EndRegistration (void)
 	}
 
 	s_registering = false;
+
+	// Knightmare added
+	// S_EndRegistration is only called while the refresh is prepped
+	// during a sound resart, so we can use this to restart the music track
+	if (cls.state == ca_active && cl.refresh_prepped && !CDAudio_Active())
+		CL_PlayBackgroundTrack ();
 }
 
 
@@ -387,6 +416,12 @@ channel_t *S_PickChannel(int entnum, int entchannel)
     life_left = 0x7fffffff;
     for (ch_idx=0 ; ch_idx < MAX_CHANNELS ; ch_idx++)
     {
+	#ifdef OGG_SUPPORT	//  Knightmare added
+		// Don't let game sounds override streaming sounds
+		if (channels[ch_idx].streaming)  // Q2E
+			continue;
+	#endif
+
 		if (entchannel != 0		// channel 0 never overrides
 		&& channels[ch_idx].entnum == entnum
 		&& channels[ch_idx].entchannel == entchannel)
@@ -805,6 +840,12 @@ void S_StopAllSounds(void)
 	// clear all the channels
 	memset(channels, 0, sizeof(channels));
 
+#ifdef OGG_SUPPORT
+	// Stop background track
+//	Com_DPrintf ("S_StopAllSounds: calling S_StopBackgroundTrack\n");	// debug
+	S_StopBackgroundTrack (); // Knightmare added
+#endif
+
 	S_ClearBuffer ();
 }
 
@@ -826,6 +867,7 @@ void S_AddLoopSounds (void)
 	sfx_t		*sfx;
 	sfxcache_t	*sc;
 	int			num;
+	vec3_t		origin_v;	// Knightmare added
 	entity_state_t	*ent;
 
 	if (cl_paused->value)
@@ -859,8 +901,32 @@ void S_AddLoopSounds (void)
 		num = (cl.frame.parse_entities + i)&(MAX_PARSE_ENTITIES-1);
 		ent = &cl_parse_entities[num];
 
+		// Knightmare- find correct origin for bmodels without origin brushes
+		if (ent->solid == 31) // special value for bmodels
+		{
+			cmodel_t	*cmodel;
+			qboolean	outofbounds = false;
+			int			k;
+
+			cmodel = cl.model_clip[ent->modelindex];
+			if (cmodel)
+			{
+				for (k=0; k<3; k++)
+					if (ent->origin[k] < cmodel->mins[k] || ent->origin[k] > cmodel->maxs[k])
+						outofbounds = true;
+			}
+			if (cmodel && outofbounds) {
+				for (k=0; k<3; k++)
+					origin_v[k] = ent->origin[k]+0.5*(cmodel->mins[k]+cmodel->maxs[k]);
+			}
+			else
+				VectorCopy (ent->origin, origin_v);
+		}
+		else
+			VectorCopy (ent->origin, origin_v);
+
 		// find the total contribution of all sounds of this type
-		S_SpatializeOrigin (ent->origin, 255.0, SOUND_LOOPATTENUATE,
+		S_SpatializeOrigin (origin_v, 255.0, SOUND_LOOPATTENUATE, // Knightmare changed, was ent->origin
 			&left_total, &right_total);
 		for (j=i+1 ; j<cl.frame.num_entities ; j++)
 		{
@@ -871,7 +937,7 @@ void S_AddLoopSounds (void)
 			num = (cl.frame.parse_entities + j)&(MAX_PARSE_ENTITIES-1);
 			ent = &cl_parse_entities[num];
 
-			S_SpatializeOrigin (ent->origin, 255.0, SOUND_LOOPATTENUATE, 
+			S_SpatializeOrigin (origin_v, 255.0, SOUND_LOOPATTENUATE,  // Knightmare changed, was ent->origin
 				&left, &right);
 			left_total += left;
 			right_total += right;
@@ -907,14 +973,25 @@ S_RawSamples
 Cinematic streaming and voice over network
 ============
 */
-void S_RawSamples (int samples, int rate, int width, int channels, byte *data)
+//void S_RawSamples (int samples, int rate, int width, int channels, byte *data)
+void S_RawSamples (int samples, int rate, int width, int channels, byte *data, qboolean music)
 {
 	int		i;
 	int		src, dst;
 	float	scale;
+	int		snd_vol;	// Knightmare added
 
 	if (!sound_started)
 		return;
+
+// Knightmare added
+#ifdef OGG_SUPPORT
+	if (music)
+		snd_vol = (int)(s_musicvolume->value * 256);
+	else
+#endif
+		snd_vol = (int)(s_volume->value * 256);
+// end Knightmare
 
 	if (s_rawend < paintedtime)
 		s_rawend = paintedtime;
@@ -930,9 +1007,9 @@ void S_RawSamples (int samples, int rate, int width, int channels, byte *data)
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
 				s_rawsamples[dst].left =
-				    LittleShort(((short *)data)[i*2]) << 8;
+				    LittleShort(((short *)data)[i*2]) * snd_vol;	// << 8; // Knightmare- changed to uses snd_vol
 				s_rawsamples[dst].right =
-				    LittleShort(((short *)data)[i*2+1]) << 8;
+				    LittleShort(((short *)data)[i*2+1]) * snd_vol;	// << 8; // Knightmare- changed to uses snd_vol
 			}
 		}
 		else
@@ -945,9 +1022,9 @@ void S_RawSamples (int samples, int rate, int width, int channels, byte *data)
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
 				s_rawsamples[dst].left =
-				    LittleShort(((short *)data)[src*2]) << 8;
+				    LittleShort(((short *)data)[src*2]) * snd_vol;	// << 8; // Knightmare- changed to use snd_vol
 				s_rawsamples[dst].right =
-				    LittleShort(((short *)data)[src*2+1]) << 8;
+				    LittleShort(((short *)data)[src*2+1]) * snd_vol;	// << 8; // Knightmare- changed to use snd_vol
 			}
 		}
 	}
@@ -961,9 +1038,9 @@ void S_RawSamples (int samples, int rate, int width, int channels, byte *data)
 			dst = s_rawend&(MAX_RAW_SAMPLES-1);
 			s_rawend++;
 			s_rawsamples[dst].left =
-			    LittleShort(((short *)data)[src]) << 8;
+			    LittleShort(((short *)data)[src]) * snd_vol;	// << 8; // Knightmare- changed to use snd_vol
 			s_rawsamples[dst].right =
-			    LittleShort(((short *)data)[src]) << 8;
+			    LittleShort(((short *)data)[src]) * snd_vol;	// << 8; // Knightmare- changed to use snd_vol
 		}
 	}
 	else if (channels == 2 && width == 1)
@@ -976,9 +1053,9 @@ void S_RawSamples (int samples, int rate, int width, int channels, byte *data)
 			dst = s_rawend&(MAX_RAW_SAMPLES-1);
 			s_rawend++;
 			s_rawsamples[dst].left =
-			    ((char *)data)[src*2] << 16;
+			    ( ((char *)data)[src*2] << 8 ) * snd_vol;	// << 16; // Knightmare- changed to use snd_vol
 			s_rawsamples[dst].right =
-			    ((char *)data)[src*2+1] << 16;
+			    ( ((char *)data)[src*2+1] << 8 ) * snd_vol;	// << 16; // Knightmare- changed to use snd_vol
 		}
 	}
 	else if (channels == 1 && width == 1)
@@ -990,9 +1067,9 @@ void S_RawSamples (int samples, int rate, int width, int channels, byte *data)
 				break;
 			dst = s_rawend&(MAX_RAW_SAMPLES-1);
 			s_rawend++;
-			s_rawsamples[dst].left =
-			    (((byte *)data)[src]-128) << 16;
-			s_rawsamples[dst].right = (((byte *)data)[src]-128) << 16;
+				s_rawsamples[dst].left =
+				( (((byte *)data)[src]-128) << 8 ) * snd_vol;	// << 16; // Knightmare- changed to use snd_vol
+			s_rawsamples[dst].right = ( (((byte *)data)[src]-128) << 8 ) * snd_vol;	// << 16; // Knightmare- changed to use snd_vol
 		}
 	}
 }
@@ -1074,6 +1151,11 @@ void S_Update(vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 		
 		Com_Printf ("----(%i)---- painted: %i\n", total, paintedtime);
 	}
+
+#ifdef OGG_SUPPORT
+//	Com_DPrintf ("S_Update: calling S_UpdateBackgroundTrack\n");	// debug
+	S_UpdateBackgroundTrack ();	//  Knightmare added
+#endif
 
 // mix some sound
 	S_Update_();

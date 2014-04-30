@@ -466,7 +466,7 @@ byte *SCR_ReadNextFrame (void)
 
 	FS_Read (samples, count*cin.s_width*cin.s_channels, cl.cinematic_file);
 
-	S_RawSamples (count, cin.s_rate, cin.s_width, cin.s_channels, samples);
+	S_RawSamples (count, cin.s_rate, cin.s_width, cin.s_channels, samples, false);
 
 	in.data = compressed;
 	in.count = size;
@@ -540,6 +540,9 @@ should be skipped
 */
 qboolean SCR_DrawCinematic (void)
 {
+	float	scale;
+	int		cinWidth, cinHeight, x, y, drawWidth, drawHeight;
+
 	if (cl.cinematictime <= 0)
 	{
 		return false;
@@ -561,8 +564,29 @@ qboolean SCR_DrawCinematic (void)
 	if (!cin.pic)
 		return true;
 
-	re.DrawStretchRaw (0, 0, viddef.width, viddef.height,
+//	re.DrawStretchRaw (0, 0, viddef.width, viddef.height,
+//		cin.width, cin.height, cin.pic);
+
+	// Knightmare- pillarbox / letterbox the frame to fit without changing aspect
+	// hack to get correct aspect ratio on 256x256 Xatrix cinematics
+	if (cin.width == 256 && cin.height == 256) {	
+		cinWidth = 320;
+		cinHeight = 240;
+	}
+	else {
+		cinWidth = cin.width;
+		cinHeight = cin.height;
+	}
+	scale = min( ((float)viddef.height / (float)cinHeight), ((float)viddef.width / (float)cinWidth) );
+	drawWidth = scale * (float)cinWidth;
+	drawHeight = scale * (float)cinHeight;
+	x = viddef.width / 2 - drawWidth / 2;
+	y = viddef.height / 2 - drawHeight / 2;
+
+	re.DrawFill (0, 0,viddef.width, viddef.height, 0);
+	re.DrawStretchRaw (x, y, drawWidth, drawHeight,
 		cin.width, cin.height, cin.pic);
+	// end Knightmare
 
 	return true;
 }
