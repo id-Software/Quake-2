@@ -1,9 +1,31 @@
+/*
+Copyright (C) 1997-2001 Id Software, Inc.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+*/
 #include "../client/client.h"
 #include "../client/qmenu.h"
 
 #define REF_SOFT	0
 #define REF_SOFTX11	1
-#define REF_OPENGL	2
+#define REF_MESA3D  2
+#define REF_3DFXGL 3
+#define REF_OPENGLX	4
+#define REF_MESA3DGLX 5
 
 extern cvar_t *vid_ref;
 extern cvar_t *vid_fullscreen;
@@ -98,7 +120,8 @@ static void ResetDefaults( void *unused )
 
 static void ApplyChanges( void *unused )
 {
-	float gamma;
+	float	gamma;
+	int		temp;
 
 	/*
 	** make values consistent
@@ -117,9 +140,13 @@ static void ApplyChanges( void *unused )
 	Cvar_SetValue( "gl_picmip", 3 - s_tq_slider.curvalue );
 	Cvar_SetValue( "vid_fullscreen", s_fs_box[s_current_menu_index].curvalue );
 	Cvar_SetValue( "gl_ext_palettedtexture", s_paletted_texture_box.curvalue );
-	Cvar_SetValue( "sw_mode", s_mode_list[SOFTWARE_MENU].curvalue );
-	Cvar_SetValue( "gl_mode", s_mode_list[OPENGL_MENU].curvalue );
-	Cvar_SetValue( "_windowed_mouse", s_windowed_mouse.curvalue);
+
+	temp = s_mode_list[SOFTWARE_MENU].curvalue;
+	Cvar_SetValue( "sw_mode", (temp == 0) ? -1 : temp + 2);	// Knightmare- use offset of 2 because of hidden modes
+	temp = s_mode_list[SOFTWARE_MENU].curvalue;
+	Cvar_SetValue( "gl_mode", (temp == 0) ? -1 : temp + 2);	// Knightmare- use offset of 2 because of hidden modes
+
+	Cvar_SetValue( "_windowed_mouse", s_windowed_mouse.curvalue );
 
 	switch ( s_ref_list[s_current_menu_index].curvalue )
 	{
@@ -129,9 +156,33 @@ static void ApplyChanges( void *unused )
 	case REF_SOFTX11:
 		Cvar_Set( "vid_ref", "softx" );
 		break;
-	case REF_OPENGL:
+
+	case REF_MESA3D :
 		Cvar_Set( "vid_ref", "gl" );
-		Cvar_Set( "gl_driver", "opengl32" );
+		Cvar_Set( "gl_driver", "libMesaGL.so.2" );
+		if (gl_driver->modified)
+			vid_ref->modified = true;
+		break;
+
+	case REF_OPENGLX :
+		Cvar_Set( "vid_ref", "glx" );
+		Cvar_Set( "gl_driver", "libGL.so" );
+		if (gl_driver->modified)
+			vid_ref->modified = true;
+		break;
+
+	case REF_MESA3DGLX :
+		Cvar_Set( "vid_ref", "glx" );
+		Cvar_Set( "gl_driver", "libMesaGL.so.2" );
+		if (gl_driver->modified)
+			vid_ref->modified = true;
+		break;
+
+	case REF_3DFXGL :
+		Cvar_Set( "vid_ref", "gl" );
+		Cvar_Set( "gl_driver", "lib3dfxgl.so" );
+		if (gl_driver->modified)
+			vid_ref->modified = true;
 		break;
 	}
 
@@ -172,23 +223,16 @@ void VID_MenuInit( void )
 {
 	static const char *resolutions[] = 
 	{
-		"[320 240  ]",
-		"[400 300  ]",
-		"[512 384  ]",
-		"[640 480  ]",
-		"[800 600  ]",
-		"[960 720  ]",
-		"[1024 768 ]",
-		"[1152 864 ]",
-		"[1280 1024]",
-		"[1600 1200]",
-		0
+#include "../qcommon/vid_resolutions.h"
 	};
 	static const char *refs[] =
 	{
-		"[software      ]",
-		"[software X11  ]",
-		"[default OpenGL]",
+		"[software       ]",
+		"[software X11   ]",
+		"[Mesa 3-D 3DFX  ]",
+		"[3DFXGL Miniport]",
+		"[OpenGL glX     ]",
+		"[Mesa 3-D glX   ]",
 		0
 	};
 	static const char *yesno_names[] =
@@ -197,10 +241,11 @@ void VID_MenuInit( void )
 		"yes",
 		0
 	};
-	int i;
+	int		i;
+	float	temp;
 
 	if ( !gl_driver )
-		gl_driver = Cvar_Get( "gl_driver", "opengl32", 0 );
+		gl_driver = Cvar_Get( "gl_driver", "libMesaGL.so.2", 0 );
 	if ( !gl_picmip )
 		gl_picmip = Cvar_Get( "gl_picmip", "0", 0 );
 	if ( !gl_mode )
@@ -216,8 +261,10 @@ void VID_MenuInit( void )
 	if ( !_windowed_mouse)
         _windowed_mouse = Cvar_Get( "_windowed_mouse", "0", CVAR_ARCHIVE );
 
-	s_mode_list[SOFTWARE_MENU].curvalue = sw_mode->value;
-	s_mode_list[OPENGL_MENU].curvalue = gl_mode->value;
+	temp = Cvar_VariableValue("sw_mode");
+	s_mode_list[SOFTWARE_MENU].curvalue = (temp == -1) ? 0 : max(temp - 2, 1);	// Knightmare- use offset of 2 because of hidden modes
+	temp = Cvar_VariableValue("gl_mode");
+	s_mode_list[OPENGL_MENU].curvalue = (temp == -1) ? 0 : max(temp - 2, 1);	// Knightmare- use offset of 2 because of hidden modes
 
 	if ( !scr_viewsize )
 		scr_viewsize = Cvar_Get ("viewsize", "100", CVAR_ARCHIVE);
@@ -238,17 +285,18 @@ void VID_MenuInit( void )
 	else if ( strcmp( vid_ref->string, "gl" ) == 0 )
 	{
 		s_current_menu_index = OPENGL_MENU;
-		s_ref_list[s_current_menu_index].curvalue = REF_OPENGL;
-#if 0
-		if ( strcmp( gl_driver->string, "3dfxgl" ) == 0 )
-			s_ref_list[s_current_menu_index].curvalue = REF_3DFX;
-		else if ( strcmp( gl_driver->string, "pvrgl" ) == 0 )
-			s_ref_list[s_current_menu_index].curvalue = REF_POWERVR;
-		else if ( strcmp( gl_driver->string, "opengl32" ) == 0 )
-			s_ref_list[s_current_menu_index].curvalue = REF_OPENGL;
+		if ( strcmp( gl_driver->string, "lib3dfxgl.so" ) == 0 )
+			s_ref_list[s_current_menu_index].curvalue = REF_3DFXGL;
 		else
-			s_ref_list[s_current_menu_index].curvalue = REF_VERITE;
-#endif
+			s_ref_list[s_current_menu_index].curvalue = REF_MESA3D;
+	}
+	else if ( strcmp( vid_ref->string, "glx" ) == 0 )
+	{
+		s_current_menu_index = OPENGL_MENU;
+		if ( strcmp( gl_driver->string, "libMesaGL.so.2" ) == 0 )
+			s_ref_list[s_current_menu_index].curvalue = REF_MESA3DGLX;
+		else
+			s_ref_list[s_current_menu_index].curvalue = REF_OPENGLX;
 	}
 
 	s_software_menu.x = viddef.width * 0.50;

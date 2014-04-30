@@ -59,6 +59,8 @@ cvar_t		*scr_graphscale;
 cvar_t		*scr_graphshift;
 cvar_t		*scr_drawall;
 
+cvar_t		*cl_drawfps;	// Knightmare added FPS counter
+
 typedef struct
 {
 	int		x1, y1, x2, y2;
@@ -69,9 +71,73 @@ dirty_t		scr_dirty, scr_old_dirty[2];
 char		crosshair_pic[MAX_QPATH];
 int			crosshair_width, crosshair_height;
 
+// Knightmare- moved these here
+#define STAT_MINUS		10	// num frame for '-' stats digit
+char		*sb_nums[2][11] = 
+{
+	{"num_0", "num_1", "num_2", "num_3", "num_4", "num_5",
+	"num_6", "num_7", "num_8", "num_9", "num_minus"},
+	{"anum_0", "anum_1", "anum_2", "anum_3", "anum_4", "anum_5",
+	"anum_6", "anum_7", "anum_8", "anum_9", "anum_minus"}
+};
+
+#define	ICON_WIDTH	24
+#define	ICON_HEIGHT	24
+#define	CHAR_WIDTH	16
+#define	ICON_SPACE	8
+// end Knightmare
+
 void SCR_TimeRefresh_f (void);
 void SCR_Loading_f (void);
 
+
+/*
+================
+SCR_ShowFPS
+FPS counter, code combined from BramBo and Q2E
+================
+*/
+#define FPS_FRAMES		4
+static void SCR_ShowFPS (void)
+{
+	static int	previousTimes[FPS_FRAMES];
+	static int	previousTime, index, fpscounter;
+	static char	fpsText[32];
+	int			i, time, total, fps, x, y, fragsSize;
+
+	if ((cls.state != ca_active) || !(cl_drawfps->value))
+		return;
+
+	if ((cl.time + 1000) < fpscounter)
+		fpscounter = cl.time + 100;
+
+	time = Sys_Milliseconds();
+	previousTimes[index % FPS_FRAMES] = time - previousTime;
+	previousTime = time;
+	index++;
+
+	if (index <= FPS_FRAMES)
+		return;
+
+	// Average multiple frames together to smooth changes out a bit
+	total = 0;
+	for (i = 0; i < FPS_FRAMES; i++)
+		total += previousTimes[i];
+	total = max (total, 1);
+	fps = 1000 * FPS_FRAMES / total;
+
+	if (cl.time > fpscounter) {
+	//	Com_sprintf(fpsText, sizeof(fpsText), "%3.0ffps", 1/cls.renderFrameTime);
+		Com_sprintf(fpsText, sizeof(fpsText), "%3ifps", fps);
+		fpscounter = cl.time + 100;
+	}
+
+	// leave space for 3-digit frag counter
+	fragsSize = (3 * CHAR_WIDTH) + 8;
+	x = (viddef.width - strlen(fpsText)*8 - fragsSize);
+	y = 4;
+	DrawString (x, y, fpsText); 
+}
 
 /*
 ===============================================================================
@@ -407,6 +473,7 @@ SCR_Init
 */
 void SCR_Init (void)
 {
+	cl_drawfps = Cvar_Get ("cl_drawfps", "0", CVAR_ARCHIVE);	// Knightmare added
 	scr_viewsize = Cvar_Get ("viewsize", "100", CVAR_ARCHIVE);
 	scr_conspeed = Cvar_Get ("scr_conspeed", "3", 0);
 	scr_showturtle = Cvar_Get ("scr_showturtle", "0", 0);
@@ -773,23 +840,6 @@ void SCR_TileClear (void)
 
 
 //===============================================================
-
-
-#define STAT_MINUS		10	// num frame for '-' stats digit
-char		*sb_nums[2][11] = 
-{
-	{"num_0", "num_1", "num_2", "num_3", "num_4", "num_5",
-	"num_6", "num_7", "num_8", "num_9", "num_minus"},
-	{"anum_0", "anum_1", "anum_2", "anum_3", "anum_4", "anum_5",
-	"anum_6", "anum_7", "anum_8", "anum_9", "anum_minus"}
-};
-
-#define	ICON_WIDTH	24
-#define	ICON_HEIGHT	24
-#define	CHAR_WIDTH	16
-#define	ICON_SPACE	8
-
-
 
 /*
 ================
@@ -1391,6 +1441,8 @@ void SCR_UpdateScreen (void)
 			SCR_DrawPause ();
 
 			SCR_DrawConsole ();
+
+			SCR_ShowFPS ();	// Knightmare- added FPS counter
 
 			M_Draw ();
 

@@ -258,6 +258,14 @@ extern	cvar_t	*cl_footsteps;
 extern	cvar_t	*cl_noskins;
 extern	cvar_t	*cl_autoskins;
 
+// Knightmare- whether to adjust fov for wide aspect rattio
+extern	cvar_t	*cl_widescreen_fov;
+
+// Knightmare- whether to try to play OGGs instead of CD tracks
+extern	cvar_t	*cl_ogg_music;
+extern	cvar_t	*cl_rogue_music; // whether to play Rogue tracks
+extern	cvar_t	*cl_xatrix_music; // whether to play Xatrix tracks
+
 extern	cvar_t	*cl_upspeed;
 extern	cvar_t	*cl_forwardspeed;
 extern	cvar_t	*cl_sidespeed;
@@ -378,7 +386,9 @@ typedef struct particle_s
 
 void CL_ClearEffects (void);
 void CL_ClearTEnts (void);
-void CL_BlasterTrail (vec3_t start, vec3_t end);
+void CL_BlasterParticles (vec3_t org, vec3_t dir, unsigned int color);
+//void CL_BlasterTrail (vec3_t start, vec3_t end);
+void CL_BlasterTrail (vec3_t start, vec3_t end, float color);
 void CL_QuadTrail (vec3_t start, vec3_t end);
 void CL_RailTrail (vec3_t start, vec3_t end);
 void CL_BubbleTrail (vec3_t start, vec3_t end);
@@ -389,8 +399,8 @@ void CL_IonripperTrail (vec3_t start, vec3_t end);
 
 // ========
 // PGM
-void CL_BlasterParticles2 (vec3_t org, vec3_t dir, unsigned int color);
-void CL_BlasterTrail2 (vec3_t start, vec3_t end);
+//void CL_BlasterParticles2 (vec3_t org, vec3_t dir, unsigned int color);
+//void CL_BlasterTrail2 (vec3_t start, vec3_t end);
 void CL_DebugTrail (vec3_t start, vec3_t end);
 void CL_SmokeTrail (vec3_t start, vec3_t end, int colorStart, int colorRun, int spacing);
 void CL_Flashlight (int ent, vec3_t pos);
@@ -420,6 +430,7 @@ void CL_ParseFrame (void);
 
 void CL_ParseTEnt (void);
 void CL_ParseConfigString (void);
+void CL_PlayBackgroundTrack (void); // Knightmare added
 void CL_ParseMuzzleFlash (void);
 void CL_ParseMuzzleFlash2 (void);
 void SmokeAndFlash(vec3_t origin);
@@ -452,6 +463,8 @@ void CL_ParseLayout (void);
 //
 extern	refexport_t	re;		// interface to refresh .dll
 
+float ClampCvar (float min, float max, float value);
+
 void CL_Init (void);
 
 void CL_FixUpGender(void);
@@ -461,6 +474,7 @@ void CL_GetChallengePacket (void);
 void CL_PingServers_f (void);
 void CL_Snd_Restart_f (void);
 void CL_RequestNextDownload (void);
+void CL_WriteConfig_f (void);	// Knightmare- added writeconfig command
 
 //
 // cl_input

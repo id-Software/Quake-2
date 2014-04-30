@@ -50,6 +50,8 @@ cvar_t	*sv_showclamp;
 cvar_t	*hostname;
 cvar_t	*public_server;			// should heartbeats be sent
 
+cvar_t	*sv_iplimit;			// r1ch: max connections from a single IP (prevent DoS)
+
 cvar_t	*sv_reconnect_limit;	// minimum seconds between connect messages
 
 void Master_Shutdown (void);
@@ -85,11 +87,62 @@ void SV_DropClient (client_t *drop)
 		drop->download = NULL;
 	}
 
+	// r1ch: fix for mods that don't clean score
+	if (drop->edict && drop->edict->client)
+		drop->edict->client->ps.stats[STAT_FRAGS] = 0;
+
 	drop->state = cs_zombie;		// become free in a few seconds
 	drop->name[0] = 0;
 }
 
 
+//Knightmare added
+/*
+=====================
+GetClientFromAdr
+
+Given an netadr_t, returns the matching client.
+=====================
+*/
+client_t *GetClientFromAdr (netadr_t address)
+{
+	client_t	*cl;
+	int			i;
+	qboolean	found = false;
+
+	for (i = 0; i < maxclients->value; i++)
+	{
+		cl = &svs.clients[i];
+		if (NET_CompareBaseAdr(cl->netchan.remote_address, address)) {
+			found = true; break; }
+	}
+	if (found)
+		return cl;
+	else // don't return non-matching client
+		return NULL;
+}
+
+
+/*
+=====================
+SV_DropClientFromAdr
+
+Calls SV_DropClient, takes netadr_t instead of client pointer.
+=====================
+*/
+void SV_DropClientFromAdr (netadr_t address)
+{	// adapted Pat Aftermoon's simplified version of this
+	client_t *drop = GetClientFromAdr(address);
+
+	if (!drop)	return; // make sure we have a client to drop
+
+	SV_BroadcastPrintf (PRINT_HIGH, "dropping client %s\n", drop->name);
+
+	SV_DropClient (drop);
+
+	drop->state = cs_free;   // don't bother with zombie state 
+}
+// end Knightmare
 
 /*
 ==============================================================================
@@ -185,7 +238,10 @@ void SVC_Info (void)
 	version = atoi (Cmd_Argv(1));
 
 	if (version != PROTOCOL_VERSION)
-		Com_sprintf (string, sizeof(string), "%s: wrong version\n", hostname->string, sizeof(string));
+	{	// According to r1ch, this can be used to make servers endlessly ping each other
+	//	Com_sprintf (string, sizeof(string), "%s: wrong version\n", hostname->string, sizeof(string));
+		return;
+	}
 	else
 	{
 		count = 0;
@@ -276,6 +332,7 @@ void SVC_DirectConnect (void)
 	int			version;
 	int			qport;
 	int			challenge;
+	int			previousclients;	// rich: connection limit per IP
 
 	adr = net_from;
 
@@ -292,6 +349,29 @@ void SVC_DirectConnect (void)
 	qport = atoi(Cmd_Argv(2));
 
 	challenge = atoi(Cmd_Argv(3));
+
+	// r1ch: limit connections from a single IP
+	previousclients = 0;
+	for (i=0,cl=svs.clients; i<(int)maxclients->value; i++,cl++)
+	{
+		if (cl->state == cs_free)
+			continue;
+		if (NET_CompareBaseAdr (adr, cl->netchan.remote_address))
+		{
+			// r1ch: zombies are less dangerous
+			if (cl->state == cs_zombie)
+				previousclients++;
+			else
+				previousclients += 2;
+		}
+	}
+	if (previousclients >= (int)sv_iplimit->value * 2)
+	{
+		Netchan_OutOfBandPrint (NS_SERVER, adr, "print\nToo many connections from your host.\n");
+		Com_DPrintf ("    too many connections\n");
+		return;
+	}
+	// end r1ch fix
 
 	strncpy (userinfo, Cmd_Argv(4), sizeof(userinfo)-1);
 	userinfo[sizeof(userinfo) - 1] = 0;
@@ -347,6 +427,17 @@ void SVC_DirectConnect (void)
 				Com_DPrintf ("%s:reconnect rejected : too soon\n", NET_AdrToString (adr));
 				return;
 			}
+			// r1ch: !! fix nasty bug where non-disconnected clients (from dropped disconnect
+			// packets) could be overwritten!
+			if (cl->state != cs_zombie)
+			{
+				Com_DPrintf ("    client already found\n");
+				// If we legitly get here, spoofed udp isn't possible (passed challenge) and client addr/port combo
+				// is exactly the same, so we can assume its really a dropped/crashed client. i hope...
+				Com_Printf ("Dropping %s, ghost reconnect\n", cl->name);
+				SV_DropClient (cl);
+			}
+			// end r1ch fix
 			Com_Printf ("%s:reconnect\n", NET_AdrToString (adr));
 			newcl = cl;
 			goto gotnewcl;
@@ -829,11 +920,12 @@ void Master_Heartbeat (void)
 	char		*string;
 	int			i;
 
-	
-	if (!dedicated->value)
+	// pgm post3.19 change, cvar pointer not validated before dereferencing
+	if (!dedicated || !dedicated->value)
 		return;		// only dedicated servers send heartbeats
 
-	if (!public_server->value)
+	// pgm post3.19 change, cvar pointer not validated before dereferencing
+	if (!public_server || !public_server->value)
 		return;		// a private dedicated game
 
 	// check for time wraparound
@@ -868,10 +960,12 @@ void Master_Shutdown (void)
 {
 	int			i;
 
-	if (!dedicated->value)
+	// pgm post3.19 change, cvar pointer not validated before dereferencing
+	if (!dedicated || !dedicated->value)
 		return;		// only dedicated servers send heartbeats
 
-	if (!public_server->value)
+	// pgm post3.19 change, cvar pointer not validated before dereferencing
+	if (!public_server || !public_server->value)
 		return;		// a private dedicated game
 
 	// send to group master
@@ -963,7 +1057,7 @@ void SV_Init (void)
 	sv_paused = Cvar_Get ("paused", "0", 0);
 	sv_timedemo = Cvar_Get ("timedemo", "0", 0);
 	sv_enforcetime = Cvar_Get ("sv_enforcetime", "0", 0);
-	allow_download = Cvar_Get ("allow_download", "0", CVAR_ARCHIVE);
+	allow_download = Cvar_Get ("allow_download", "1", CVAR_ARCHIVE);
 	allow_download_players  = Cvar_Get ("allow_download_players", "0", CVAR_ARCHIVE);
 	allow_download_models = Cvar_Get ("allow_download_models", "1", CVAR_ARCHIVE);
 	allow_download_sounds = Cvar_Get ("allow_download_sounds", "1", CVAR_ARCHIVE);
@@ -974,6 +1068,8 @@ void SV_Init (void)
 	sv_airaccelerate = Cvar_Get("sv_airaccelerate", "0", CVAR_LATCH);
 
 	public_server = Cvar_Get ("public", "0", 0);
+
+	sv_iplimit = Cvar_Get ("sv_iplimit", "3", 0);	// r1ch: limit connections per ip address (stop zombie dos/flood)
 
 	sv_reconnect_limit = Cvar_Get ("sv_reconnect_limit", "3", CVAR_ARCHIVE);
 

@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../client/ref.h"
 
-#define REF_VERSION     "SOFT 0.01"
+#define REF_VERSION     "SOFT 0.02"	// Knightmare- changed version
 
 // up / down
 #define PITCH   0

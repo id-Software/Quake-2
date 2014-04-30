@@ -51,6 +51,7 @@ DWORD	dwAxisMap[JOY_MAX_AXES];
 DWORD	dwControlMap[JOY_MAX_AXES];
 PDWORD	pdwRawValue[JOY_MAX_AXES];
 
+cvar_t	*m_noaccel; //sul
 cvar_t	*in_mouse;
 cvar_t	*in_joystick;
 
@@ -155,6 +156,11 @@ void IN_ActivateMouse (void)
 		return;
 
 	mouseactive = true;
+
+	if (m_noaccel->value) 
+		newmouseparms[2]=0; //sul XP fix?
+	else 
+		newmouseparms[2]=1;
 
 	if (mouseparmsvalid)
 		restore_spi = SystemParametersInfo (SPI_SETMOUSE, 0, newmouseparms, 0);
@@ -346,6 +352,7 @@ IN_Init
 void IN_Init (void)
 {
 	// mouse variables
+	m_noaccel				= Cvar_Get ("m_noaccel",				"0",		CVAR_ARCHIVE); //sul  enables mouse acceleration XP fix?
 	m_filter				= Cvar_Get ("m_filter",					"0",		0);
     in_mouse				= Cvar_Get ("in_mouse",					"1",		CVAR_ARCHIVE);
 

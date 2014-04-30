@@ -392,6 +392,71 @@ pushed_t	pushed[MAX_EDICTS], *pushed_p;
 
 edict_t	*obstacle;
 
+// Knightmare added
+/*
+===============
+SV_RealBoundingBox
+
+Borrowed from Lazarus g_phys.c
+===============
+*/
+void SV_RealBoundingBox (edict_t *ent, vec3_t mins, vec3_t maxs)
+{
+	vec3_t	forward, left, up, f1, l1, u1;
+	vec3_t	p[8];
+	int		i, j, k, j2, k4;
+
+	for (k=0; k<2; k++)
+	{
+		k4 = k*4;
+		if (k)
+			p[k4][2] = ent->maxs[2];
+		else
+			p[k4][2] = ent->mins[2];
+		p[k4+1][2] = p[k4][2];
+		p[k4+2][2] = p[k4][2];
+		p[k4+3][2] = p[k4][2];
+		for (j=0; j<2; j++)
+		{
+			j2 = j*2;
+			if (j)
+				p[j2+k4][1] = ent->maxs[1];
+			else
+				p[j2+k4][1] = ent->mins[1];
+			p[j2+k4+1][1] = p[j2+k4][1];
+			for (i=0; i<2; i++)
+			{
+				if (i)
+					p[i+j2+k4][0] = ent->maxs[0];
+				else
+					p[i+j2+k4][0] = ent->mins[0];
+			}
+		}
+	}
+	AngleVectors(ent->s.angles,forward,left,up);
+	for (i=0; i<8; i++)
+	{
+		VectorScale(forward,p[i][0],f1);
+		VectorScale(left,-p[i][1],l1);
+		VectorScale(up,p[i][2],u1);
+		VectorAdd(ent->s.origin,f1,p[i]);
+		VectorAdd(p[i],l1,p[i]);
+		VectorAdd(p[i],u1,p[i]);
+	}
+	VectorCopy(p[0],mins);
+	VectorCopy(p[0],maxs);
+	for (i=1; i<8; i++)
+	{
+		mins[0] = min(mins[0],p[i][0]);
+		mins[1] = min(mins[1],p[i][1]);
+		mins[2] = min(mins[2],p[i][2]);
+		maxs[0] = max(maxs[0],p[i][0]);
+		maxs[1] = max(maxs[1],p[i][1]);
+		maxs[2] = max(maxs[2],p[i][2]);
+	}
+}
+// end Knightmare
+
 /*
 ============
 SV_Push
@@ -407,6 +472,7 @@ qboolean SV_Push (edict_t *pusher, vec3_t move, vec3_t amove)
 	vec3_t		mins, maxs;
 	pushed_t	*p;
 	vec3_t		org, org2, move2, forward, right, up;
+	vec3_t		realmins, realmaxs;	// Knightmare added
 
 	// clamp the move to 1/8 units, so the position will
 	// be accurate for client side prediction
@@ -445,6 +511,9 @@ qboolean SV_Push (edict_t *pusher, vec3_t move, vec3_t amove)
 	VectorAdd (pusher->s.angles, amove, pusher->s.angles);
 	gi.linkentity (pusher);
 
+	// Knightmare- use correct bbox from rotation by angles
+	SV_RealBoundingBox (pusher, realmins, realmaxs);
+
 // see if any solid entities are inside the final position
 	check = g_edicts+1;
 	for (e = 1; e < globals.num_edicts; e++, check++)
@@ -463,14 +532,23 @@ qboolean SV_Push (edict_t *pusher, vec3_t move, vec3_t amove)
 	// if the entity is standing on the pusher, it will definitely be moved
 		if (check->groundentity != pusher)
 		{
+			// Knightmare- use correct rotated bbox
 			// see if the ent needs to be tested
-			if ( check->absmin[0] >= maxs[0]
+		/*	if ( check->absmin[0] >= maxs[0]
 			|| check->absmin[1] >= maxs[1]
 			|| check->absmin[2] >= maxs[2]
 			|| check->absmax[0] <= mins[0]
 			|| check->absmax[1] <= mins[1]
 			|| check->absmax[2] <= mins[2] )
+				continue;*/
+			if ( check->absmin[0] >= realmaxs[0]
+			|| check->absmin[1] >= realmaxs[1]
+			|| check->absmin[2] >= realmaxs[2]
+			|| check->absmax[0] <= realmins[0]
+			|| check->absmax[1] <= realmins[1]
+			|| check->absmax[2] <= realmins[2] )
 				continue;
+			// end Knightmare
 
 			// see if the ent's bbox is inside the pusher's final position
 			if (!SV_TestEntityPosition (check))

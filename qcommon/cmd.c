@@ -66,9 +66,9 @@ void Cmd_Wait_f (void)
 */
 
 sizebuf_t	cmd_text;
-byte		cmd_text_buf[8192];
+byte		cmd_text_buf[32768]; // Knightmare increased, was 8192
 
-byte		defer_text_buf[8192];
+byte		defer_text_buf[32768]; // Knightmare increased, was 8192
 
 /*
 ============
@@ -217,8 +217,16 @@ void Cbuf_Execute (void)
 		}
 			
 				
-		memcpy (line, text, i);
-		line[i] = 0;
+		// R1ch's fix for overflow vulnerability
+		if (i >= sizeof(line) - 1) {
+			Com_Printf ("Cbuf_Execute: overflow of %d truncated\n", i);
+			memcpy (line, text, sizeof(line)-1);
+			line[sizeof(line)-1] = 0;
+		}
+		else {
+			memcpy (line, text, i);
+			line[i] = 0;
+		}
 		
 // delete the text from the command buffer and move remaining commands down
 // this is necessary because commands (exec, alias) can insert data at the
@@ -769,7 +777,7 @@ qboolean	Cmd_Exists (char *cmd_name)
 Cmd_CompleteCommand
 ============
 */
-char *Cmd_CompleteCommand (char *partial)
+/*char *Cmd_CompleteCommand (char *partial)
 {
 	cmd_function_t	*cmd;
 	int				len;
@@ -797,8 +805,108 @@ char *Cmd_CompleteCommand (char *partial)
 			return a->name;
 
 	return NULL;
+}*/
+
+// Knightmare - added command auto-complete
+char			retval[256];
+char *Cmd_CompleteCommand (char *partial)
+{
+	cmd_function_t	*cmd;
+	int				len,i,o,p;
+	cmdalias_t		*a;
+	cvar_t			*cvar;
+	char			*pmatch[1024];
+	qboolean		diff = false;
+	
+	len = strlen(partial);
+	
+	if (!len)
+		return NULL;
+		
+// check for exact match
+	for (cmd=cmd_functions ; cmd ; cmd=cmd->next)
+		if (!_stricmp (partial,cmd->name))
+			return cmd->name;
+	for (a=cmd_alias ; a ; a=a->next)
+		if (!_stricmp (partial, a->name))
+			return a->name;
+	for (cvar=cvar_vars ; cvar ; cvar=cvar->next)
+		if (!_stricmp (partial,cvar->name))
+			return cvar->name;
+
+	for (i=0; i<1024; i++)
+		pmatch[i]=NULL;
+	i=0;
+
+// check for partial match
+	for (cmd=cmd_functions ; cmd ; cmd=cmd->next)
+		if (!_strnicmp (partial,cmd->name, len)) {
+			pmatch[i]=cmd->name;
+			i++;
+		}
+	for (a=cmd_alias ; a ; a=a->next)
+		if (!_strnicmp (partial, a->name, len)) {
+			pmatch[i]=a->name;
+			i++;
+		}
+	for (cvar=cvar_vars ; cvar ; cvar=cvar->next)
+		if (!_strnicmp (partial,cvar->name, len)) {
+			pmatch[i]=cvar->name;
+			i++;
+		}
+
+	if (i) {
+		if (i == 1)
+			return pmatch[0];
+
+		Com_Printf("\nListing matches for '%s'...\n",partial);
+		for (o=0; o<i; o++)
+			Com_Printf("  %s\n",pmatch[o]);
+
+		strcpy(retval,""); p=0;
+		while (!diff && p < 256) {
+			retval[p]=pmatch[0][p];
+			for (o=0; o<i; o++) {
+				if (p > strlen(pmatch[o]))
+					continue;
+				if (retval[p] != pmatch[o][p]) {
+					retval[p] = 0;
+					diff=false;
+				}
+			}
+			p++;
+		}
+		Com_Printf("Found %i matches\n",i);
+		return retval;
+	}
+
+	return NULL;
 }
 
+/*
+============
+Cmd_IsComplete
+============
+*/
+qboolean Cmd_IsComplete (char *command)
+{
+	cmd_function_t	*cmd;
+	cmdalias_t		*a;
+	cvar_t			*cvar;
+			
+	// check for exact match
+	for (cmd=cmd_functions ; cmd ; cmd=cmd->next)
+		if (!_stricmp (command,cmd->name))
+			return true;
+	for (a=cmd_alias ; a ; a=a->next)
+		if (!_stricmp (command, a->name))
+			return true;
+	for (cvar=cvar_vars ; cvar ; cvar=cvar->next)
+		if (!_stricmp (command,cvar->name))
+			return true;
+
+	return false;
+}
 
 /*
 ============

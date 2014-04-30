@@ -94,10 +94,10 @@ typedef struct _TargaHeader {
 
 /* 
 ================== 
-GL_ScreenShot_f
+GL_ScreenShot_TGA
 ================== 
 */  
-void GL_ScreenShot_f (void) 
+void GL_ScreenShot_TGA (qboolean silent) 
 {
 	byte		*buffer;
 	char		picname[80]; 
@@ -112,21 +112,30 @@ void GL_ScreenShot_f (void)
 // 
 // find a file name to save it to 
 // 
-	strcpy(picname,"quake00.tga");
 
-	for (i=0 ; i<=99 ; i++) 
+	// Knightmare- changed screenshot filenames, up to 100 screenies
+//	strcpy(picname,"quake00.tga");
+
+	for (i=0; i<=999; i++) 
 	{ 
-		picname[5] = i/10 + '0'; 
-		picname[6] = i%10 + '0'; 
+	//	picname[5] = i/10 + '0'; 
+	//	picname[6] = i%10 + '0'; 
+		int ones, tens, hundreds;
+
+		hundreds = i*0.01;
+		tens = (i - hundreds*100)*0.1;
+		ones = i - hundreds*100 - tens*10;
+		Com_sprintf (picname, sizeof(picname), "quake2_%i%i%i.tga", hundreds, tens, ones);
+		// end Knightmare
 		Com_sprintf (checkname, sizeof(checkname), "%s/scrnshot/%s", ri.FS_Gamedir(), picname);
 		f = fopen (checkname, "rb");
 		if (!f)
 			break;	// file doesn't exist
 		fclose (f);
 	} 
-	if (i==100) 
+	if (i==1000) 
 	{
-		ri.Con_Printf (PRINT_ALL, "SCR_ScreenShot_f: Couldn't create a file\n"); 
+		ri.Con_Printf (PRINT_ALL, "GL_ScreenShot_f: Couldn't create a file\n"); 
 		return;
  	}
 
@@ -156,24 +165,69 @@ void GL_ScreenShot_f (void)
 	fclose (f);
 
 	free (buffer);
-	ri.Con_Printf (PRINT_ALL, "Wrote %s\n", picname);
+	if (!silent)
+		ri.Con_Printf (PRINT_ALL, "Wrote %s\n", picname);
 } 
+
+
+/* 
+================== 
+GL_ScreenShot_f
+================== 
+*/  
+void GL_ScreenShot_f (void) 
+{
+	GL_ScreenShot_TGA (false);
+}
+
+
+/* 
+================== 
+GL_ScreenShot_Silent_f
+================== 
+*/  
+void GL_ScreenShot_Silent_f (void) 
+{
+	GL_ScreenShot_TGA (true);
+}
+
 
 /*
 ** GL_Strings_f
 */
 void GL_Strings_f( void )
 {
+	char		*extString, *extTok;
+	unsigned	line = 0;
+
 	ri.Con_Printf (PRINT_ALL, "GL_VENDOR: %s\n", gl_config.vendor_string );
 	ri.Con_Printf (PRINT_ALL, "GL_RENDERER: %s\n", gl_config.renderer_string );
 	ri.Con_Printf (PRINT_ALL, "GL_VERSION: %s\n", gl_config.version_string );
-	ri.Con_Printf (PRINT_ALL, "GL_EXTENSIONS: %s\n", gl_config.extensions_string );
+	ri.Con_Printf (PRINT_ALL, "GL_MAX_TEXTURE_SIZE: %i\n", gl_config.max_texsize );
+//	ri.Con_Printf (PRINT_ALL, "GL_EXTENSIONS: %s\n", gl_config.extensions_string );
+	// Knightmare- print extensions 2 to a line
+	ri.Con_Printf (PRINT_ALL, "GL_EXTENSIONS: " );
+	extString = (char *)gl_config.extensions_string;
+	while (1)
+	{
+		extTok = COM_Parse(&extString);
+		if (!extTok[0])
+			break;
+		line++;
+		if ((line % 2) == 0)
+			ri.Con_Printf (PRINT_ALL, "%s\n", extTok );
+		else
+			ri.Con_Printf (PRINT_ALL, "%s ", extTok );
+	}
+	if ((line % 2) != 0)
+		ri.Con_Printf (PRINT_ALL, "\n" );
+	// end Knightmare
 }
 
 /*
 ** GL_SetDefaultState
 */
-void GL_SetDefaultState( void )
+void GL_SetDefaultState (void)
 {
 	qglClearColor (1,0, 0.5 , 0.5);
 	qglCullFace(GL_FRONT);
@@ -191,9 +245,9 @@ void GL_SetDefaultState( void )
 	qglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	qglShadeModel (GL_FLAT);
 
-	GL_TextureMode( gl_texturemode->string );
-	GL_TextureAlphaMode( gl_texturealphamode->string );
-	GL_TextureSolidMode( gl_texturesolidmode->string );
+	GL_TextureMode (gl_texturemode->string);
+//	GL_TextureAlphaMode (gl_texturealphamode->string);
+//	GL_TextureSolidMode (gl_texturesolidmode->string);
 
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
@@ -231,16 +285,68 @@ void GL_SetDefaultState( void )
 
 void GL_UpdateSwapInterval( void )
 {
+	static qboolean registering;	// Knightmare added
+
+	// Knightmare- don't swap interval if loading a map
+	if (registering != registration_active)
+		gl_swapinterval->modified = true;
+
 	if ( gl_swapinterval->modified )
 	{
-		gl_swapinterval->modified = false;
+		gl_swapinterval->modified = false;	// Knightmare added
+
+		registering = registration_active;
 
 		if ( !gl_state.stereo_enabled ) 
 		{
 #ifdef _WIN32
 			if ( qwglSwapIntervalEXT )
-				qwglSwapIntervalEXT( gl_swapinterval->value );
+				qwglSwapIntervalEXT( (registration_active) ? 0 : gl_swapinterval->value );	// Knightmare changed
+			//	qwglSwapIntervalEXT( gl_swapinterval->value );
 #endif
 		}
 	}
 }
+
+// Knightmare added
+/*
+=================
+GL_PrintError
+=================
+*/
+void GL_PrintError (int errorCode, char *funcName)
+{
+	switch (errorCode)
+	{
+	case GL_INVALID_ENUM:
+		ri.Con_Printf (PRINT_DEVELOPER, "%s: GL_INVALID_ENUM\n", funcName);
+		break;
+	case GL_INVALID_VALUE:
+		ri.Con_Printf (PRINT_DEVELOPER, "%s: GL_INVALID_VALUE\n", funcName);
+		break;
+	case GL_INVALID_OPERATION:
+		ri.Con_Printf (PRINT_DEVELOPER, "%s: GL_INVALID_OPERATION\n", funcName);
+		break;
+	case GL_STACK_OVERFLOW:
+		ri.Con_Printf (PRINT_DEVELOPER, "%s: GL_STACK_OVERFLOW\n", funcName);
+		break;
+	case GL_STACK_UNDERFLOW:
+		ri.Con_Printf (PRINT_DEVELOPER, "%s: GL_STACK_UNDERFLOW\n", funcName);
+		break;
+	case GL_OUT_OF_MEMORY:
+		ri.Con_Printf (PRINT_DEVELOPER, "%s: GL_OUT_OF_MEMORY\n", funcName);
+		break;
+	case GL_TABLE_TOO_LARGE:
+		ri.Con_Printf (PRINT_DEVELOPER, "%s: GL_TABLE_TOO_LARGE\n", funcName);
+		break;
+#ifdef GL_INVALID_FRAMEBUFFER_OPERATION_EXT
+	case GL_INVALID_FRAMEBUFFER_OPERATION_EXT:
+		VID_Printf (PRINT_DEVELOPER, "GL_INVALID_FRAMEBUFFER_OPERATION_EXT\n", funcName);
+		break;
+#endif
+	default:
+		ri.Con_Printf (PRINT_DEVELOPER, "%s: GL ERROR UNKNOWN (%i)\n", funcName, errorCode);
+		break;
+	}
+}
+// end Knightmare

@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int	r_dlightframecount;
 
-#define	DLIGHT_CUTOFF	64
+//#define	DLIGHT_CUTOFF	64
 
 /*
 =============================================================================
@@ -121,6 +121,7 @@ void R_MarkLights (dlight_t *light, int bit, mnode_t *node)
 	float		dist;
 	msurface_t	*surf;
 	int			i;
+//	int			sidebit; // Knightmare added
 	
 	if (node->contents != -1)
 		return;
@@ -128,24 +129,24 @@ void R_MarkLights (dlight_t *light, int bit, mnode_t *node)
 	splitplane = node->plane;
 	dist = DotProduct (light->origin, splitplane->normal) - splitplane->dist;
 	
-	if (dist > light->intensity-DLIGHT_CUTOFF)
+	if (dist > light->intensity - r_lightcutoff->value)	//** DMP var dynalight cutoff
 	{
 		R_MarkLights (light, bit, node->children[0]);
 		return;
 	}
-	if (dist < -light->intensity+DLIGHT_CUTOFF)
+	if (dist < -light->intensity + r_lightcutoff->value)	//** DMP var dynalight cutoff
 	{
 		R_MarkLights (light, bit, node->children[1]);
 		return;
 	}
 		
-// mark the polygons
+	// mark the polygons
 	surf = r_worldmodel->surfaces + node->firstsurface;
 	for (i=0 ; i<node->numsurfaces ; i++, surf++)
 	{
 		if (surf->dlightframe != r_dlightframecount)
 		{
-			surf->dlightbits = 0;
+			surf->dlightbits = bit;	// was 0, fixes hyperblaster tearing
 			surf->dlightframe = r_dlightframecount;
 		}
 		surf->dlightbits |= bit;
@@ -350,7 +351,7 @@ void R_LightPoint (vec3_t p, vec3_t color)
 
 //===================================================================
 
-static float s_blocklights[34*34*3];
+static float s_blocklights[128*128*4]; // Knightmare-  was [34*34*3], supports max chop size of 2048?
 /*
 ===============
 R_AddDynamicLights
@@ -369,10 +370,37 @@ void R_AddDynamicLights (msurface_t *surf)
 	dlight_t	*dl;
 	float		*pfBL;
 	float		fsacc, ftacc;
+	// Knightmare added
+	qboolean	rotated = false;
+	vec3_t		dlorigin, temp, entOrigin, entAngles, forward, right, up;
 
 	smax = (surf->extents[0]>>4)+1;
 	tmax = (surf->extents[1]>>4)+1;
 	tex = surf->texinfo;
+
+	// Knightmare- factor in entity movement
+	// currententity is not valid for trans surfaces
+	if (tex->flags & (SURF_TRANS33|SURF_TRANS66)) {
+		if (surf->entity) {
+			VectorCopy (surf->entity->origin, entOrigin);
+			VectorCopy (surf->entity->angles, entAngles);
+		}
+		else {
+			VectorCopy (vec3_origin, entOrigin);
+			VectorCopy (vec3_origin, entAngles);
+		}
+	}
+	else {
+		VectorCopy (currententity->origin, entOrigin);
+		VectorCopy (currententity->angles, entAngles);
+	}
+
+	if (entAngles[0] || entAngles[1] || entAngles[2])
+	{
+		rotated = true;
+		AngleVectors (entAngles, forward, right, up);
+	}
+	// end Knightmare
 
 	for (lnum=0 ; lnum<r_newrefdef.num_dlights ; lnum++)
 	{
@@ -380,21 +408,35 @@ void R_AddDynamicLights (msurface_t *surf)
 			continue;		// not lit by this light
 
 		dl = &r_newrefdef.dlights[lnum];
+
 		frad = dl->intensity;
-		fdist = DotProduct (dl->origin, surf->plane->normal) -
-				surf->plane->dist;
+
+		// Knightmare- factor in entity movement
+		VectorCopy (dl->origin, dlorigin);
+		VectorSubtract (dlorigin, entOrigin, dlorigin);
+		if (rotated)
+		{
+			VectorCopy (dlorigin, temp);
+			dlorigin[0] = DotProduct (temp, forward);
+			dlorigin[1] = -DotProduct (temp, right);
+			dlorigin[2] = DotProduct (temp, up);
+		}
+	//	fdist = DotProduct (dl->origin, surf->plane->normal) -	surf->plane->dist;
+		fdist = DotProduct (dlorigin, surf->plane->normal) - surf->plane->dist;
+		// end Knightmare
+
 		frad -= fabs(fdist);
 		// rad is now the highest intensity on the plane
 
-		fminlight = DLIGHT_CUTOFF;	// FIXME: make configurable?
+		fminlight = r_lightcutoff->value; 	//** DMP var dynalight cutoff
 		if (frad < fminlight)
 			continue;
 		fminlight = frad - fminlight;
 
 		for (i=0 ; i<3 ; i++)
-		{
-			impact[i] = dl->origin[i] -
-					surf->plane->normal[i]*fdist;
+		{	// Knightmare- use adjusted light origin
+		//	impact[i] = dl->origin[i] - surf->plane->normal[i]*fdist;
+			impact[i] = dlorigin[i] - surf->plane->normal[i]*fdist;
 		}
 
 		local[0] = DotProduct (impact, tex->vecs[0]) + tex->vecs[0][3] - surf->texturemins[0];
@@ -443,6 +485,11 @@ void R_SetCacheState( msurface_t *surf )
 	{
 		surf->cached_light[maps] = r_newrefdef.lightstyles[surf->styles[maps]].white;
 	}
+// Knightmare- added for lightmap update batching
+#ifdef BATCH_LM_UPDATES
+	// mark if dynamicly lit
+	surf->cached_dlight = (surf->dlightframe == r_framecount);
+#endif
 }
 
 /*
@@ -569,11 +616,11 @@ void R_BuildLightMap (msurface_t *surf, byte *dest, int stride)
 		}
 	}
 
-// add all the dynamic lights
+	// add all the dynamic lights
 	if (surf->dlightframe == r_framecount)
 		R_AddDynamicLights (surf);
 
-// put into texture format
+	// put into texture format
 store:
 	stride -= (smax<<2);
 	bl = s_blocklights;
@@ -629,11 +676,23 @@ store:
 					b = b*t;
 					a = a*t;
 				}
+				a = 255; // Knightmare- fix for alpha test
 
-				dest[0] = r;
-				dest[1] = g;
-				dest[2] = b;
-				dest[3] = a;
+				// Knightmare- changed to BGRA
+				if (gl_lms.external_format == GL_BGRA)
+				{
+					dest[0] = b;
+					dest[1] = g;
+					dest[2] = r;
+					dest[3] = a;
+				}
+				else
+				{
+					dest[0] = r;
+					dest[1] = g;
+					dest[2] = b;
+					dest[3] = a;
+				}
 
 				bl += 3;
 				dest += 4;
@@ -700,6 +759,7 @@ store:
 				case 'I':
 					r = a;
 					g = b = 0;
+					a = 255; // Knightmare- fix for alpha test
 					break;
 				case 'C':
 					// try faking colored lighting
@@ -707,18 +767,33 @@ store:
 					r *= a/255.0;
 					g *= a/255.0;
 					b *= a/255.0;
+					a = 255; // Knightmare- fix for alpha test
 					break;
 				case 'A':
-				default:
-					r = g = b = 0;
+				//	r = g = b = 0;
 					a = 255 - a;
+					r = g = b = a;
+					break;
+				default:
+					r = g = b = a;
+					a = 255; // Knightmare- fix for alpha test
 					break;
 				}
-
-				dest[0] = r;
-				dest[1] = g;
-				dest[2] = b;
-				dest[3] = a;
+				// Knightmare- changed to BGRA
+				if (gl_lms.external_format == GL_BGRA)
+				{
+					dest[0] = b;
+					dest[1] = g;
+					dest[2] = r;
+					dest[3] = a;
+				}
+				else
+				{
+					dest[0] = r;
+					dest[1] = g;
+					dest[2] = b;
+					dest[3] = a;
+				}
 
 				bl += 3;
 				dest += 4;

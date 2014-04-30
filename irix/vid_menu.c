@@ -1,3 +1,22 @@
+/*
+Copyright (C) 1997-2001 Id Software, Inc.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+*/
 #include "../client/client.h"
 #include "../client/qmenu.h"
 
@@ -96,7 +115,8 @@ static void ResetDefaults( void *unused )
 
 static void ApplyChanges( void *unused )
 {
-	float gamma;
+	float	gamma;
+	int		temp;
 
 	/*
 	** make values consistent
@@ -115,9 +135,13 @@ static void ApplyChanges( void *unused )
 	Cvar_SetValue( "gl_picmip", 3 - s_tq_slider.curvalue );
 	Cvar_SetValue( "vid_fullscreen", s_fs_box[s_current_menu_index].curvalue );
 	Cvar_SetValue( "gl_ext_palettedtexture", s_paletted_texture_box.curvalue );
-	Cvar_SetValue( "sw_mode", s_mode_list[SOFTWARE_MENU].curvalue );
-	Cvar_SetValue( "gl_mode", s_mode_list[OPENGL_MENU].curvalue );
-	Cvar_SetValue( "_windowed_mouse", s_windowed_mouse.curvalue);
+
+	temp = s_mode_list[SOFTWARE_MENU].curvalue;
+	Cvar_SetValue( "sw_mode", (temp == 0) ? -1 : temp + 2);	// Knightmare- use offset of 2 because of hidden modes
+	temp = s_mode_list[OPENGL_MENU].curvalue;
+	Cvar_SetValue( "gl_mode", (temp == 0) ? -1 : temp + 2);	// Knightmare- use offset of 2 because of hidden modes
+
+	Cvar_SetValue( "_windowed_mouse", s_windowed_mouse.curvalue );
 
 	switch ( s_ref_list[s_current_menu_index].curvalue )
 	{
@@ -167,17 +191,7 @@ void VID_MenuInit( void )
 {
 	static const char *resolutions[] = 
 	{
-		"[320 240  ]",
-		"[400 300  ]",
-		"[512 384  ]",
-		"[640 480  ]",
-		"[800 600  ]",
-		"[960 720  ]",
-		"[1024 768 ]",
-		"[1152 864 ]",
-		"[1280 1024]",
-		"[1600 1200]",
-		0
+#include "../qcommon/vid_resolutions.h"
 	};
 	static const char *refs[] =
 	{
@@ -191,7 +205,8 @@ void VID_MenuInit( void )
 		"yes",
 		0
 	};
-	int i;
+	int		i;
+	float	temp;
 
 	if ( !gl_driver )
 		gl_driver = Cvar_Get( "gl_driver", "opengl32", 0 );
@@ -210,8 +225,10 @@ void VID_MenuInit( void )
 	if ( !_windowed_mouse)
         _windowed_mouse = Cvar_Get( "_windowed_mouse", "0", CVAR_ARCHIVE );
 
-	s_mode_list[SOFTWARE_MENU].curvalue = sw_mode->value;
-	s_mode_list[OPENGL_MENU].curvalue = gl_mode->value;
+	temp = Cvar_VariableValue("sw_mode");
+	s_mode_list[SOFTWARE_MENU].curvalue = (temp == -1) ? 0 : max(temp - 2, 1);	// Knightmare- use offset of 2 because of hidden modes
+	temp = Cvar_VariableValue("gl_mode");
+	s_mode_list[OPENGL_MENU].curvalue = (temp == -1) ? 0 : max(temp - 2, 1);	// Knightmare- use offset of 2 because of hidden modes
 
 	if ( !scr_viewsize )
 		scr_viewsize = Cvar_Get ("viewsize", "100", CVAR_ARCHIVE);

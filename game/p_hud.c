@@ -419,7 +419,11 @@ void G_SetStats (edict_t *ent)
 	index = ArmorIndex (ent);
 	if (power_armor_type && (!index || (level.framenum & 8) ) )
 	{	// flash between power armor and other armor icon
-		ent->client->ps.stats[STAT_ARMOR_ICON] = gi.imageindex ("i_powershield");
+		// Knightmare- use correct icon for power screen
+		if (power_armor_type == POWER_ARMOR_SHIELD)
+			ent->client->ps.stats[STAT_ARMOR_ICON] = gi.imageindex ("i_powershield");
+		else	// POWER_ARMOR_SCREEN
+			ent->client->ps.stats[STAT_ARMOR_ICON] = gi.imageindex ("i_powerscreen");
 		ent->client->ps.stats[STAT_ARMOR] = cells;
 	}
 	else if (index)
