@@ -38,7 +38,8 @@ int		mod_numknown;
 // the inline * models from the current map are kept seperate
 model_t	mod_inline[MAX_MOD_KNOWN];
 
-int		registration_sequence;
+int			registration_sequence;
+qboolean	registration_active;	// Knightmare- map registration flag
 
 /*
 ===============
@@ -163,6 +164,8 @@ Mod_Init
 void Mod_Init (void)
 {
 	memset (mod_novis, 0xff, sizeof(mod_novis));
+
+	registration_active = false;	// Knightmare- map registration flag
 }
 
 
@@ -382,6 +385,7 @@ void Mod_LoadSubmodels (lump_t *l)
 	dmodel_t	*in;
 	mmodel_t	*out;
 	int			i, j, count;
+	int			lastface;	// Knightmare added
 
 	in = (void *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -404,6 +408,11 @@ void Mod_LoadSubmodels (lump_t *l)
 		out->headnode = LittleLong (in->headnode);
 		out->firstface = LittleLong (in->firstface);
 		out->numfaces = LittleLong (in->numfaces);
+		// Knightmare added
+		lastface = out->firstface + out->numfaces;
+		if (lastface < out->firstface)	// || lastface > loadmodel->nummodelsurfaces)
+			ri.Sys_Error (ERR_DROP, "Mod_LoadSubmodels: bad facenum");
+		// end Knightmare
 	}
 }
 
@@ -431,6 +440,9 @@ void Mod_LoadEdges (lump_t *l)
 	{
 		out->v[0] = (unsigned short)LittleShort(in->v[0]);
 		out->v[1] = (unsigned short)LittleShort(in->v[1]);
+		// Knightmare added
+		if ( out->v[0] >= loadmodel->numvertexes || out->v[1] >= loadmodel->numvertexes )
+			ri.Sys_Error (ERR_DROP, "Mod_LoadEdges: bad vertexnum");
 	}
 }
 
@@ -463,8 +475,11 @@ void Mod_LoadTexinfo (lump_t *l)
 
 		out->flags = LittleLong (in->flags);
 		next = LittleLong (in->nexttexinfo);
-		if (next > 0)
+		if (next > 0) {
+			if (next >= count)	// Knightmare added
+				ri.Sys_Error (ERR_DROP, "Mod_LoadTexinfo: bad anim chain");
 			out->next = loadmodel->texinfo + next;
+		}
 		else
 		    out->next = NULL;
 		Com_sprintf (name, sizeof(name), "textures/%s.wal", in->texture);
@@ -559,6 +574,7 @@ void Mod_LoadFaces (lump_t *l)
 	int			i, count, surfnum;
 	int			planenum, side;
 	int			ti;
+	int			lastedge;	// Knightmare added
 
 	in = (void *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -576,11 +592,18 @@ void Mod_LoadFaces (lump_t *l)
 	for ( surfnum=0 ; surfnum<count ; surfnum++, in++, out++)
 	{
 		out->firstedge = LittleLong(in->firstedge);
-		out->numedges = LittleShort(in->numedges);		
+		out->numedges = LittleShort(in->numedges);
 		out->flags = 0;
 		out->polys = NULL;
+		// Knightmare added
+		lastedge = out->firstedge + out->numedges;
+		if (out->numedges < 3 || lastedge < out->firstedge)	// || lastedge > loadmodel->numedges)
+			ri.Sys_Error (ERR_DROP, "Mod_LoadFaces: bad edgenums");
+		// end Knightmare
 
 		planenum = LittleShort(in->planenum);
+		if (planenum > loadmodel->numplanes)	// Knightmare added
+			ri.Sys_Error (ERR_DROP, "Mod_LoadFaces: bad planenum");
 		side = LittleShort(in->side);
 		if (side)
 			out->flags |= SURF_PLANEBACK;			
@@ -678,6 +701,8 @@ void Mod_LoadNodes (lump_t *l)
 		out->firstsurface = LittleShort (in->firstface);
 		out->numsurfaces = LittleShort (in->numfaces);
 		out->contents = -1;	// differentiate from leafs
+		if (out->firstsurface + out->numsurfaces > loadmodel->numsurfaces)	// Knightmare added
+			ri.Sys_Error (ERR_DROP, "Mod_LoadNodes: bad faces in node");
 
 		for (j=0 ; j<2 ; j++)
 		{
@@ -703,6 +728,7 @@ void Mod_LoadLeafs (lump_t *l)
 	mleaf_t 	*out;
 	int			i, j, count, p;
 //	glpoly_t	*poly;
+	int			lastmarksurface;	// Knightmare added
 
 	in = (void *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -726,11 +752,22 @@ void Mod_LoadLeafs (lump_t *l)
 
 		out->cluster = LittleShort(in->cluster);
 		out->area = LittleShort(in->area);
+		// Knightmare added
+		if (loadmodel->vis != NULL) {
+			if (out->cluster < -1 || out->cluster >= loadmodel->vis->numclusters)	// crashes here
+				ri.Sys_Error (ERR_DROP, "Mod_LoadLeafs: bad cluster");
+		}
+		// end Knightmare
 
 		out->firstmarksurface = loadmodel->marksurfaces +
 			LittleShort(in->firstleafface);
 		out->nummarksurfaces = LittleShort(in->numleaffaces);
-		
+		// Knightmare added
+		lastmarksurface = LittleShort(in->firstleafface) + out->nummarksurfaces;
+		if (lastmarksurface > loadmodel->nummarksurfaces)
+			ri.Sys_Error (ERR_DROP, "Mod_LoadLeafs: bad leaf face index");
+		// end Knightmare
+	
 		// gl underwater warp
 #if 0
 		if (out->contents & (CONTENTS_WATER|CONTENTS_SLIME|CONTENTS_LAVA|CONTENTS_THINWATER) )
@@ -798,8 +835,11 @@ void Mod_LoadSurfedges (lump_t *l)
 	loadmodel->surfedges = out;
 	loadmodel->numsurfedges = count;
 
-	for ( i=0 ; i<count ; i++)
+	for ( i=0 ; i<count ; i++) {
 		out[i] = LittleLong (in[i]);
+		if (out[i] >= loadmodel->numedges)	// Knightmare added
+			ri.Sys_Error (ERR_DROP, "Mod_LoadSurfedges: bad edge index");
+	}
 }
 
 
@@ -883,6 +923,7 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 	Mod_LoadNodes (&header->lumps[LUMP_NODES]);
 	Mod_LoadSubmodels (&header->lumps[LUMP_MODELS]);
 	mod->numframes = 2;		// regular and alternate animation
+
 	
 //
 // set up the submodels
@@ -1120,6 +1161,8 @@ void R_BeginRegistration (char *model)
 	r_worldmodel = Mod_ForName(fullname, true);
 
 	r_viewcluster = -1;
+
+	registration_active = true;	// Knightmare- map registration flag
 }
 
 
@@ -1189,6 +1232,8 @@ void R_EndRegistration (void)
 	}
 
 	GL_FreeUnusedImages ();
+
+	registration_active = false;	// Knightmare- map registration flag
 }
 
 

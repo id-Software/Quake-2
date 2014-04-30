@@ -327,6 +327,7 @@ void NET_SendLoopPacket (netsrc_t sock, int length, void *data, netadr_t to)
 }
 
 //=============================================================================
+void SV_DropClientFromAdr (netadr_t address); // Knightmare added
 
 qboolean	NET_GetPacket (netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message)
 {
@@ -353,20 +354,38 @@ qboolean	NET_GetPacket (netsrc_t sock, netadr_t *net_from, sizebuf_t *net_messag
 		fromlen = sizeof(from);
 		ret = recvfrom (net_socket, net_message->data, net_message->maxsize
 			, 0, (struct sockaddr *)&from, &fromlen);
+
+		SockadrToNetadr (&from, net_from);
+
 		if (ret == -1)
 		{
 			err = WSAGetLastError();
 
 			if (err == WSAEWOULDBLOCK)
 				continue;
-			if (dedicated->value)	// let dedicated servers continue after errors
-				Com_Printf ("NET_GetPacket: %s", NET_ErrorString());
-			else
-				Com_Error (ERR_DROP, "NET_GetPacket: %s", NET_ErrorString());
+			if (err == WSAEMSGSIZE) {
+				Com_Printf ("Warning:  Oversize packet from %s\n",
+						NET_AdrToString(*net_from));
+				continue;
+			}
+			// Knightmare- added Jitspoe's fix for WSAECONNRESET bomb-out
+			if (err == WSAECONNRESET)
+			{
+				Com_Printf ("NET_GetPacket: %s from %s\n", NET_ErrorString(),
+					NET_AdrToString(*net_from));
+				// drop this client to not flood the console with above message
+				SV_DropClientFromAdr (*net_from);
+				continue;
+			}
+			// let ALL servers continue after errors
+		//	if (dedicated->value)	// let dedicated servers continue after errors
+				Com_Printf ("NET_GetPacket: %s from %s\n", NET_ErrorString(),
+						NET_AdrToString(*net_from));
+		/*	else
+				Com_Error (ERR_DROP, "NET_GetPacket: %s from %s", 
+						NET_ErrorString(), NET_AdrToString(*net_from));*/
 			continue;
 		}
-
-		SockadrToNetadr (&from, net_from);
 
 		if (ret == net_message->maxsize)
 		{
@@ -434,22 +453,28 @@ void NET_SendPacket (netsrc_t sock, int length, void *data, netadr_t to)
 			return;
 
 		// some PPP links dont allow broadcasts
-		if ((err == WSAEADDRNOTAVAIL) && ((to.type == NA_BROADCAST) || (to.type == NA_BROADCAST_IPX)))
+		// Knightmare- added unplugged network fix
+		// Pat- WSAEHOSTUNREACH, this can occur if there is no network, or unplug ?
+		if ( ((err == WSAEADDRNOTAVAIL) || (err == WSAEHOSTUNREACH))
+			&& ((to.type == NA_BROADCAST) || (to.type == NA_BROADCAST_IPX)) )
 			return;
 
 		if (dedicated->value)	// let dedicated servers continue after errors
 		{
-			Com_Printf ("NET_SendPacket ERROR: %s\n", NET_ErrorString());
+			Com_Printf ("NET_SendPacket ERROR: %s to %s\n", NET_ErrorString(),
+				NET_AdrToString (to));
 		}
 		else
 		{
 			if (err == WSAEADDRNOTAVAIL)
 			{
-				Com_DPrintf ("NET_SendPacket Warning: %s : %s\n", NET_ErrorString(), NET_AdrToString (to));
+				Com_DPrintf ("NET_SendPacket Warning: %s : %s\n", 
+						NET_ErrorString(), NET_AdrToString (to));
 			}
 			else
 			{
-				Com_Error (ERR_DROP, "NET_SendPacket ERROR: %s\n", NET_ErrorString());
+				Com_Error (ERR_DROP, "NET_SendPacket ERROR: %s to %s\n", 
+						NET_ErrorString(), NET_AdrToString (to));
 			}
 		}
 	}

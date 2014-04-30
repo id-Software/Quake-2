@@ -345,7 +345,7 @@ BoxOnPlaneSide
 Returns 1, 2, or 1 + 2
 ==================
 */
-#if !id386
+#if !id386 || defined __linux__
 int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *p)
 {
 	float	dist1, dist2;
@@ -1037,7 +1037,6 @@ void Swap_Init (void)
 }
 
 
-
 /*
 ============
 va
@@ -1053,7 +1052,8 @@ char	*va(char *format, ...)
 	static char		string[1024];
 	
 	va_start (argptr, format);
-	vsprintf (string, format,argptr);
+//	vsprintf (string, format, argptr);
+	Q_vsnprintf (string, sizeof(string), format, argptr);	// Knightmare- buffer overflow fix
 	va_end (argptr);
 
 	return string;	
@@ -1227,12 +1227,16 @@ void Com_sprintf (char *dest, int size, char *fmt, ...)
 	va_list		argptr;
 	char	bigbuffer[0x10000];
 
-	va_start (argptr,fmt);
-	len = vsprintf (bigbuffer,fmt,argptr);
+	va_start (argptr, fmt);
+//	len = vsprintf (bigbuffer, fmt, argptr);
+	len = Q_vsnprintf (bigbuffer, sizeof(bigbuffer), fmt, argptr);	// Knightmare- buffer overflow fix
 	va_end (argptr);
-	if (len >= size)
+	if (len < 0)
+		Com_Printf ("Com_sprintf: overflow in temp buffer of size %i\n", sizeof(bigbuffer));
+	else if (len >= size)
 		Com_Printf ("Com_sprintf: overflow of %i in %i\n", len, size);
 	strncpy (dest, bigbuffer, size-1);
+	dest[size-1] = 0;	// Knightmare- null terminate
 }
 
 /*

@@ -219,7 +219,8 @@ void SV_LinkEdict (edict_t *ent)
 	// set the abs box
 	if (ent->solid == SOLID_BSP && 
 	(ent->s.angles[0] || ent->s.angles[1] || ent->s.angles[2]) )
-	{	// expand for rotation
+	{	
+		// expand for rotation
 		float		max, v;
 		int			i;
 

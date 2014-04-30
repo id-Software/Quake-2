@@ -258,7 +258,7 @@ void R_Register (void)
 	sw_stipplealpha = ri.Cvar_Get( "sw_stipplealpha", "0", CVAR_ARCHIVE );
 	sw_surfcacheoverride = ri.Cvar_Get ("sw_surfcacheoverride", "0", 0);
 	sw_waterwarp = ri.Cvar_Get ("sw_waterwarp", "1", 0);
-	sw_mode = ri.Cvar_Get( "sw_mode", "0", CVAR_ARCHIVE );
+	sw_mode = ri.Cvar_Get( "sw_mode", "3", CVAR_ARCHIVE );	// Knightmare- changed default to 3, 640x480
 
 	r_lefthand = ri.Cvar_Get( "hand", "0", CVAR_USERINFO | CVAR_ARCHIVE );
 	r_speeds = ri.Cvar_Get ("r_speeds", "0", 0);
@@ -1401,7 +1401,8 @@ void Sys_Error (char *error, ...)
 	char		text[1024];
 
 	va_start (argptr, error);
-	vsprintf (text, error, argptr);
+//	vsprintf (text, error, argptr);
+	Q_vsnprintf (text, sizeof(text), error, argptr);
 	va_end (argptr);
 
 	ri.Sys_Error (ERR_FATAL, "%s", text);
@@ -1413,7 +1414,8 @@ void Com_Printf (char *fmt, ...)
 	char		text[1024];
 
 	va_start (argptr, fmt);
-	vsprintf (text, fmt, argptr);
+//	vsprintf (text, fmt, argptr);
+	Q_vsnprintf (text, sizeof(text), fmt, argptr);
 	va_end (argptr);
 
 	ri.Con_Printf (PRINT_ALL, "%s", text);

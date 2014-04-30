@@ -61,6 +61,9 @@ field_t fields[] = {
 	{"noise", STOFS(noise), F_LSTRING, FFL_SPAWNTEMP},
 	{"pausetime", STOFS(pausetime), F_FLOAT, FFL_SPAWNTEMP},
 	{"item", STOFS(item), F_LSTRING, FFL_SPAWNTEMP},
+
+	{"musictrack", FOFS(musictrack), F_LSTRING},	// Knightmare- for specifying OGG or CD track
+
 	{"gravity", STOFS(gravity), F_LSTRING, FFL_SPAWNTEMP},
 	{"sky", STOFS(sky), F_LSTRING, FFL_SPAWNTEMP},
 	{"skyrotate", STOFS(skyrotate), F_FLOAT, FFL_SPAWNTEMP},
@@ -193,6 +196,7 @@ void InitGame (void)
 	instantweap = gi.cvar ("instantweap", "0", CVAR_SERVERINFO);
 //ZOID
  	password = gi.cvar ("password", "", CVAR_USERINFO);
+	filterban = gi.cvar ("filterban", "1", 0);
 
 	g_select_empty = gi.cvar ("g_select_empty", "0", CVAR_ARCHIVE);
 
@@ -686,11 +690,14 @@ void ReadLevel (char *filename)
 
 	// check function pointer base address
 	fread (&base, sizeof(base), 1, f);
+
+/*	The __DATE__ check is sufficent for a version check.  This can fail sometimes.
 	if (base != (void *)InitGame)
 	{
 		fclose (f);
 		gi.error ("ReadLevel: function pointers have moved");
 	}
+*/
 
 	// load the level locals
 	ReadLevelLocals (f);

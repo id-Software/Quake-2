@@ -117,11 +117,14 @@ typedef struct msurface_s
 // lighting info
 	int			dlightframe;
 	int			dlightbits;
+	qboolean	cached_dlight;	// Knightmare added
 
 	int			lightmaptexturenum;
 	byte		styles[MAXLIGHTMAPS];
 	float		cached_light[MAXLIGHTMAPS];	// values currently used in lightmap
 	byte		*samples;		// [numstyles*surfsize]
+
+	entity_t	*entity;		// Knightmare- added entity pointer
 } msurface_t;
 
 typedef struct mnode_s
@@ -259,3 +262,5 @@ void	Hunk_Free (void *base);
 
 void	Mod_FreeAll (void);
 void	Mod_Free (model_t *mod);
+
+extern qboolean	registration_active;	// Knightmare- map registration flag

@@ -522,9 +522,14 @@ void MakeSkyVec (float s, float t, int axis)
 	vec3_t		v, b;
 	int			j, k;
 
-	b[0] = s*2300;
+/*	b[0] = s*2300;
 	b[1] = t*2300;
-	b[2] = 2300;
+	b[2] = 2300;*/
+	// Knightmare- variable back clipping plane distance
+	b[0] = s * r_skydistance->value;
+	b[1] = t * r_skydistance->value;
+	b[2] = r_skydistance->value;
+	// end Knightmare
 
 	for (j=0 ; j<3 ; j++)
 	{

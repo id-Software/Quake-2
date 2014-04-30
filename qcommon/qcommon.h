@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../game/q_shared.h"
 
 
-#define	VERSION		3.19
+#define	VERSION		3.24
 
 #define	BASEDIRNAME	"baseq2"
 
@@ -152,6 +152,14 @@ void COM_Init (void);
 void COM_InitArgv (int argc, char **argv);
 
 char *CopyString (char *in);
+
+void StripHighBits (char *string, int highbits);
+void ExpandNewLines (char *string);
+
+qboolean IsValidChar (int c);
+void ExpandNewLines (char *string);
+char *StripQuotes (char *string);
+const char *MakePrintable (const void *subject, size_t numchars);
 
 //============================================================================
 
@@ -417,6 +425,7 @@ qboolean Cmd_Exists (char *cmd_name);
 char 	*Cmd_CompleteCommand (char *partial);
 // attempts to match a partial command for automatic command line completion
 // returns NULL if nothing fits
+qboolean Cmd_IsComplete (char *cmd);
 
 int		Cmd_Argc (void);
 char	*Cmd_Argv (int arg);
@@ -691,6 +700,12 @@ FILESYSTEM
 
 ==============================================================
 */
+// Knightmare added
+typedef enum {
+	FS_SEEK_CUR,
+	FS_SEEK_SET,
+	FS_SEEK_END
+} fsOrigin_t;
 
 void	FS_InitFilesystem (void);
 void	FS_SetGamedir (char *dir);
@@ -709,10 +724,21 @@ int		FS_LoadFile (char *path, void **buffer);
 void	FS_Read (void *buffer, int len, FILE *f);
 // properly handles partial reads
 
+
 void	FS_FreeFile (void *buffer);
 
 void	FS_CreatePath (char *path);
 
+// Knightmare added
+int			FS_FRead (void *buffer, int size, int count, FILE *f);
+void		FS_Seek (FILE *f, int offset, fsOrigin_t origin);
+int			FS_Tell (FILE *f);
+char		**FS_ListPak (char *find, int *num);
+char		**FS_ListFiles (char *findname, int *numfiles, unsigned musthave, unsigned canthave);
+void		FS_FreeFileList (char **list, int n);
+qboolean	FS_ItemInList (char *check, int num, char **list);
+void		FS_InsertInList (char **list, char *insert, int len, int start);
+// end Knightmare
 
 /*
 ==============================================================

@@ -335,18 +335,18 @@ void SV_WriteServerFile (qboolean autosave)
 {
 	FILE	*f;
 	cvar_t	*var;
-	char	name[MAX_OSPATH], string[128];
+	char	fileName[MAX_OSPATH], varName[128], string[128];
 	char	comment[32];
 	time_t	aclock;
 	struct tm	*newtime;
 
 	Com_DPrintf("SV_WriteServerFile(%s)\n", autosave ? "true" : "false");
 
-	Com_sprintf (name, sizeof(name), "%s/save/current/server.ssv", FS_Gamedir());
-	f = fopen (name, "wb");
+	Com_sprintf (fileName, sizeof(fileName), "%s/save/current/server.ssv", FS_Gamedir());
+	f = fopen (fileName, "wb");
 	if (!f)
 	{
-		Com_Printf ("Couldn't write %s\n", name);
+		Com_Printf ("Couldn't write %s\n", fileName);
 		return;
 	}
 	// write the comment field
@@ -377,25 +377,25 @@ void SV_WriteServerFile (qboolean autosave)
 	{
 		if (!(var->flags & CVAR_LATCH))
 			continue;
-		if (strlen(var->name) >= sizeof(name)-1
+		if (strlen(var->name) >= sizeof(varName)-1
 			|| strlen(var->string) >= sizeof(string)-1)
 		{
 			Com_Printf ("Cvar too long: %s = %s\n", var->name, var->string);
 			continue;
 		}
-		memset (name, 0, sizeof(name));
+		memset (varName, 0, sizeof(varName));
 		memset (string, 0, sizeof(string));
-		strcpy (name, var->name);
+		strcpy (varName, var->name);
 		strcpy (string, var->string);
-		fwrite (name, 1, sizeof(name), f);
+		fwrite (varName, 1, sizeof(varName), f);
 		fwrite (string, 1, sizeof(string), f);
 	}
 
 	fclose (f);
 
 	// write game state
-	Com_sprintf (name, sizeof(name), "%s/save/current/game.ssv", FS_Gamedir());
-	ge->WriteGame (name, autosave);
+	Com_sprintf (fileName, sizeof(fileName), "%s/save/current/game.ssv", FS_Gamedir());
+	ge->WriteGame (fileName, autosave);
 }
 
 /*
@@ -407,17 +407,17 @@ SV_ReadServerFile
 void SV_ReadServerFile (void)
 {
 	FILE	*f;
-	char	name[MAX_OSPATH], string[128];
+	char	fileName[MAX_OSPATH], varName[128], string[128];
 	char	comment[32];
 	char	mapcmd[MAX_TOKEN_CHARS];
 
 	Com_DPrintf("SV_ReadServerFile()\n");
 
-	Com_sprintf (name, sizeof(name), "%s/save/current/server.ssv", FS_Gamedir());
-	f = fopen (name, "rb");
+	Com_sprintf (fileName, sizeof(fileName), "%s/save/current/server.ssv", FS_Gamedir());
+	f = fopen (fileName, "rb");
 	if (!f)
 	{
-		Com_Printf ("Couldn't read %s\n", name);
+		Com_Printf ("Couldn't read %s\n", fileName);
 		return;
 	}
 	// read the comment field
@@ -430,11 +430,11 @@ void SV_ReadServerFile (void)
 	// these will be things like coop, skill, deathmatch, etc
 	while (1)
 	{
-		if (!fread (name, 1, sizeof(name), f))
+		if (!fread (varName, 1, sizeof(varName), f))
 			break;
 		FS_Read (string, sizeof(string), f);
-		Com_DPrintf ("Set %s = %s\n", name, string);
-		Cvar_ForceSet (name, string);
+		Com_DPrintf ("Set %s = %s\n", varName, string);
+		Cvar_ForceSet (varName, string);
 	}
 
 	fclose (f);
@@ -445,8 +445,8 @@ void SV_ReadServerFile (void)
 	strcpy (svs.mapcmd, mapcmd);
 
 	// read game state
-	Com_sprintf (name, sizeof(name), "%s/save/current/game.ssv", FS_Gamedir());
-	ge->ReadGame (name);
+	Com_sprintf (fileName, sizeof(fileName), "%s/save/current/game.ssv", FS_Gamedir());
+	ge->ReadGame (fileName);
 }
 
 
@@ -488,7 +488,7 @@ goes to map jail.bsp.
 void SV_GameMap_f (void)
 {
 	char		*map;
-	int			i;
+	int			i, l;
 	client_t	*cl;
 	qboolean	*savedInuse;
 
@@ -539,7 +539,10 @@ void SV_GameMap_f (void)
 	strncpy (svs.mapcmd, Cmd_Argv(1), sizeof(svs.mapcmd)-1);
 
 	// copy off the level to the autosave slot
-	if (!dedicated->value)
+	// Knightmare- don't do this in deathmatch or for cinematics
+	l = strlen(map);
+	if ( !dedicated->value && !Cvar_VariableValue("deathmatch")
+		&& Q_strcasecmp (map+l-4, ".cin") && Q_strcasecmp (map+l-4, ".pcx") )
 	{
 		SV_WriteServerFile (true);
 		SV_CopySaveGame ("current", "save0");

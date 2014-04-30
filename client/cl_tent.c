@@ -75,7 +75,6 @@ cl_sustain_t	cl_sustains[MAX_SUSTAINS];
 extern void CL_TeleportParticles (vec3_t org);
 //PGM
 
-void CL_BlasterParticles (vec3_t org, vec3_t dir);
 void CL_ExplosionParticles (vec3_t org);
 void CL_BFGExplosionParticles (vec3_t org);
 // RAFAEL
@@ -158,9 +157,9 @@ void CL_RegisterTEntSounds (void)
 	cl_sfx_lightning = S_RegisterSound ("weapons/tesla.wav");
 	cl_sfx_disrexp = S_RegisterSound ("weapons/disrupthit.wav");
 	// version stuff
-	sprintf (name, "weapons/sound%d.wav", ROGUE_VERSION_ID);
-	if (name[0] == 'w')
-		name[0] = 'W';
+//	sprintf (name, "weapons/sound%d.wav", ROGUE_VERSION_ID);
+//	if (name[0] == 'w')
+//		name[0] = 'W';
 //PGM
 }	
 
@@ -787,18 +786,18 @@ void CL_ParseTEnt (void)
 		color = MSG_ReadByte (&net_message);
 		CL_ParticleEffect2 (pos, dir, color, cnt);
 		break;
-
+#if 0 // Knightmare- removed for redundancy
 	// RAFAEL
-	case TE_BLUEHYPERBLASTER:
+/*	case TE_BLUEHYPERBLASTER:
 		MSG_ReadPos (&net_message, pos);
 		MSG_ReadPos (&net_message, dir);
-		CL_BlasterParticles (pos, dir);
+		CL_BlasterParticles (pos, dir, 0x6f);
 		break;
-
+*/	
 	case TE_BLASTER:			// blaster hitting wall
 		MSG_ReadPos (&net_message, pos);
 		MSG_ReadDir (&net_message, dir);
-		CL_BlasterParticles (pos, dir);
+		CL_BlasterParticles (pos, dir, 0xe0);
 
 		ex = CL_AllocExplosion ();
 		VectorCopy (pos, ex->ent.origin);
@@ -823,7 +822,7 @@ void CL_ParseTEnt (void)
 		ex->frames = 4;
 		S_StartSound (pos,  0, 0, cl_sfx_lashit, 1, ATTN_NORM, 0);
 		break;
-		
+#endif	// end Knightmare	
 	case TE_RAILTRAIL:			// railgun effect
 		MSG_ReadPos (&net_message, pos);
 		MSG_ReadPos (&net_message, pos2);
@@ -996,17 +995,27 @@ void CL_ParseTEnt (void)
 
 //=============
 //PGM
-		// PMM -following code integrated for flechette (different color)
+	// PMM -following code integrated for flechette (different color)
+	// Knightmare- changed to handle all blaster colors here
+	case TE_BLASTER:			// blaster hitting wall
 	case TE_BLASTER2:			// green blaster hitting wall
+//	case TE_REDBLASTER:			// red blaster hitting wall
+	case TE_BLUEHYPERBLASTER:	// blue blaster hitting wall
 	case TE_FLECHETTE:			// flechette
 		MSG_ReadPos (&net_message, pos);
 		MSG_ReadDir (&net_message, dir);
 		
 		// PMM
 		if (type == TE_BLASTER2)
-			CL_BlasterParticles2 (pos, dir, 0xd0);
-		else
-			CL_BlasterParticles2 (pos, dir, 0x6f); // 75
+			CL_BlasterParticles (pos, dir, 0xd0);
+	//	else if (type == TE_REDBLASTER)
+	//		CL_BlasterParticles (pos, dir, 0xe4);
+		else if (type == TE_BLUEHYPERBLASTER)
+			CL_BlasterParticles (pos, dir, 0x74);
+		else if (type == TE_FLECHETTE)
+			CL_BlasterParticles (pos, dir, 0x6f); // 75
+		else // TE_BLASTER
+			CL_BlasterParticles (pos, dir, 0xe0);
 
 		ex = CL_AllocExplosion ();
 		VectorCopy (pos, ex->ent.origin);
@@ -1027,25 +1036,46 @@ void CL_ParseTEnt (void)
 		// PMM
 		if (type == TE_BLASTER2)
 			ex->ent.skinnum = 1;
-		else // flechette
+	//	else if (type == TE_REDBLASTER)
+	//		ex->ent.skinnum = 3;
+		else if (type == TE_FLECHETTE || type == TE_BLUEHYPERBLASTER)
 			ex->ent.skinnum = 2;
+		else // TE_BLASTER
+			ex->ent.skinnum = 0;
 
 		ex->start = cl.frame.servertime - 100;
 		ex->light = 150;
 		// PMM
-		if (type == TE_BLASTER2)
+		if (type == TE_BLASTER2) {
+			ex->lightcolor[0] = 0.15;
 			ex->lightcolor[1] = 1;
-		else // flechette
-		{
+			ex->lightcolor[2] = 0.15;
+		}
+	/*	else if (type == TE_REDBLASTER) {
+			ex->lightcolor[0] = 0.75;
+			ex->lightcolor[1] = 0.41;
+			ex->lightcolor[2] = 0.19;
+		}*/
+		else if (type == TE_BLUEHYPERBLASTER) {
 			ex->lightcolor[0] = 0.19;
 			ex->lightcolor[1] = 0.41;
 			ex->lightcolor[2] = 0.75;
+		}	
+		else  if (type == TE_FLECHETTE) {
+			ex->lightcolor[0] = 0.39;
+			ex->lightcolor[1] = 0.61;
+			ex->lightcolor[2] = 0.75;
 		}
+		else { // TE_BLASTER	
+			ex->lightcolor[0] = 1;
+			ex->lightcolor[1] = 1;
+			ex->lightcolor[2] = 0;
+		}
+
 		ex->ent.model = cl_mod_explode;
 		ex->frames = 4;
 		S_StartSound (pos,  0, 0, cl_sfx_lashit, 1, ATTN_NORM, 0);
 		break;
-
 
 	case TE_LIGHTNING:
 		ent = CL_ParseLightning (cl_mod_lightning);

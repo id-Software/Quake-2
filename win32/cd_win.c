@@ -508,3 +508,15 @@ void CDAudio_Activate (qboolean active)
 	else
 		CDAudio_Pause ();
 }
+
+// Knightmare added
+/*
+===========
+CDAudio_Active
+
+===========
+*/
+qboolean CDAudio_Active (void)
+{
+	return playing;
+}

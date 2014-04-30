@@ -48,6 +48,12 @@ extern	vrect_t		scr_vrect;		// position of render window
 extern	char		crosshair_pic[MAX_QPATH];
 extern	int			crosshair_width, crosshair_height;
 
+// Knightmare- aspect ratio stuff
+#define SCREEN_WIDTH	640.0f
+#define SCREEN_HEIGHT	480.0f
+#define STANDARD_ASPECT_RATIO ((float)SCREEN_WIDTH/(float)SCREEN_HEIGHT)
+
+
 void SCR_AddDirtyPoint (int x, int y);
 void SCR_DirtyScreen (void);
 

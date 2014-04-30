@@ -56,7 +56,8 @@ void ResampleSfx (sfx_t *sfx, int inrate, int inwidth, byte *data)
 		sc->width = 1;
 	else
 		sc->width = inwidth;
-	sc->stereo = 0;
+	// Knightmare- removed this
+//	sc->stereo = 0;
 
 // resample / decimate to the current source rate
 
@@ -137,9 +138,15 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 	}
 
 	info = GetWavinfo (s->name, data, size);
-	if (info.channels != 1)
+/*	if (info.channels != 1)
 	{
 		Com_Printf ("%s is a stereo sample\n",s->name);
+		FS_FreeFile (data);
+		return NULL;
+	}*/
+	if (info.channels < 1 || info.channels > 2)	//CDawg changed
+	{
+		Com_Printf ("%s has an invalid number of channels\n", s->name);
 		FS_FreeFile (data);
 		return NULL;
 	}
@@ -158,9 +165,17 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 	
 	sc->length = info.samples;
 	sc->loopstart = info.loopstart;
-	sc->speed = info.rate;
+//	sc->speed = info.rate;
+	sc->speed = info.rate * info.channels;	//CDawg changed
 	sc->width = info.width;
 	sc->stereo = info.channels;
+	// Knightmare added
+	sc->music = !strncmp (namebuffer, "music/", 6);
+
+	// force loopstart if it's a music file
+	if ( sc->music && (sc->loopstart == -1) )
+		sc->loopstart = 0;
+	// end Knightmare
 
 	ResampleSfx (s, sc->speed, sc->width, data + info.dataofs);
 

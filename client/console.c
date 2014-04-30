@@ -575,6 +575,7 @@ void Con_DrawConsole (float frac)
 	int				lines;
 	char			version[64];
 	char			dlbar[1024];
+	int				verlen;
 
 	lines = viddef.height * frac;
 	if (lines <= 0)
@@ -589,8 +590,11 @@ void Con_DrawConsole (float frac)
 	SCR_AddDirtyPoint (viddef.width-1,lines-1);
 
 	Com_sprintf (version, sizeof(version), "v%4.2f", VERSION);
-	for (x=0 ; x<5 ; x++)
-		re.DrawChar (viddef.width-44+x*8, lines-12, 128 + version[x] );
+	verlen = strlen(version);
+//	for (x=0 ; x<5 ; x++)
+//		re.DrawChar (viddef.width-44+x*8, lines-12, 128 + version[x] );
+	for (x=0 ; x<verlen ; x++)
+		re.DrawChar (viddef.width-(verlen*8+4)+x*8, lines-12, 128 + version[x] );
 
 // draw the text
 	con.vislines = lines;

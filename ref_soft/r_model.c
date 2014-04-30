@@ -407,6 +407,7 @@ void Mod_LoadSubmodels (lump_t *l)
 	dmodel_t	*in;
 	dmodel_t	*out;
 	int			i, j, count;
+	int			lastface;	// Knightmare added
 
 	in = (void *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -428,6 +429,11 @@ void Mod_LoadSubmodels (lump_t *l)
 		out->headnode = LittleLong (in->headnode);
 		out->firstface = LittleLong (in->firstface);
 		out->numfaces = LittleLong (in->numfaces);
+		// Knightmare added
+		lastface = out->firstface + out->numfaces;
+		if (lastface < out->firstface) // || lastface > loadmodel->nummodelsurfaces)
+			ri.Sys_Error (ERR_DROP, "Mod_LoadSubmodels: bad facenum");
+		// end Knightmare
 	}
 }
 
@@ -455,6 +461,9 @@ void Mod_LoadEdges (lump_t *l)
 	{
 		out->v[0] = (unsigned short)LittleShort(in->v[0]);
 		out->v[1] = (unsigned short)LittleShort(in->v[1]);
+		// Knightmare added
+		if ( out->v[0] >= loadmodel->numvertexes || out->v[1] >= loadmodel->numvertexes )
+			ri.Sys_Error (ERR_DROP, "Mod_LoadEdges: bad vertexnum");
 	}
 }
 
@@ -506,9 +515,11 @@ void Mod_LoadTexinfo (lump_t *l)
 		out->flags = LittleLong (in->flags);
 
 		next = LittleLong (in->nexttexinfo);
-		if (next > 0)
+		if (next > 0) {
+			if (next >= count)	// Knightmare added
+				ri.Sys_Error (ERR_DROP, "Mod_LoadTexinfo: bad anim chain");
 			out->next = loadmodel->texinfo + next;
-
+		}
 		Com_sprintf (name, sizeof(name), "textures/%s.wal", in->texture);
 		out->image = R_FindImage (name, it_wall);
 		if (!out->image)
@@ -595,6 +606,7 @@ void Mod_LoadFaces (lump_t *l)
 	msurface_t 	*out;
 	int			i, count, surfnum;
 	int			planenum, side;
+	int			ti, lastedge;	// Knightmare added
 
 	in = (void *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -612,16 +624,30 @@ void Mod_LoadFaces (lump_t *l)
 		if (out->numedges < 3)
 			ri.Sys_Error (ERR_DROP,"Surface with %s edges", out->numedges);
 		out->flags = 0;
+		// Knightmare added
+		lastedge = out->firstedge + out->numedges;
+		if (out->numedges < 3 || lastedge < out->firstedge)	// || lastedge > loadmodel->numedges)
+			ri.Sys_Error (ERR_DROP, "Mod_LoadFaces: bad surfedges");
+		// end Knightmare
 
 		planenum = LittleShort(in->planenum);
+		if (planenum > loadmodel->numplanes)	// Knightmare added
+			ri.Sys_Error (ERR_DROP, "Mod_LoadFaces: bad planenum");
 		side = LittleShort(in->side);
 		if (side)
 			out->flags |= SURF_PLANEBACK;			
 
 		out->plane = loadmodel->planes + planenum;
 
-		out->texinfo = loadmodel->texinfo + LittleShort (in->texinfo);
+	//	out->texinfo = loadmodel->texinfo + LittleShort (in->texinfo);
+		// Knightmare added
+		ti = LittleShort (in->texinfo);
+		if (ti < 0 || ti >= loadmodel->numtexinfo)
+			ri.Sys_Error (ERR_DROP, "Mod_LoadFaces: bad texinfo number");
+		out->texinfo = loadmodel->texinfo + ti;
+		// end Knightmare
 
+		// Knightmare- TODO: chop surface up if extents > 256
 		CalcSurfaceExtents (out);
 				
 	// lighting info is converted from 24 bit on disk to 8 bit
@@ -722,6 +748,8 @@ void Mod_LoadNodes (lump_t *l)
 		out->firstsurface = LittleShort (in->firstface);
 		out->numsurfaces = LittleShort (in->numfaces);
 		out->contents = CONTENTS_NODE;	// differentiate from leafs
+		if (out->firstsurface + out->numsurfaces > loadmodel->numsurfaces)	// Knightmare added
+			ri.Sys_Error (ERR_DROP, "Mod_LoadNodes: bad faces in node");
 		
 		for (j=0 ; j<2 ; j++)
 		{
@@ -746,6 +774,7 @@ void Mod_LoadLeafs (lump_t *l)
 	dleaf_t 	*in;
 	mleaf_t 	*out;
 	int			i, j, count;
+	int			lastmarksurface;	// Knightmare added
 
 	in = (void *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -767,10 +796,21 @@ void Mod_LoadLeafs (lump_t *l)
 		out->contents = LittleLong(in->contents);
 		out->cluster = LittleShort(in->cluster);
 		out->area = LittleShort(in->area);
+		// Knightmare added
+		if (loadmodel->vis != NULL) {
+			if (out->cluster < -1 || out->cluster >= loadmodel->vis->numclusters)
+				ri.Sys_Error (ERR_DROP, "Mod_LoadLeafs: bad cluster");
+		}
+		// end Knightmare
 
 		out->firstmarksurface = loadmodel->marksurfaces +
 			LittleShort(in->firstleafface);
 		out->nummarksurfaces = LittleShort(in->numleaffaces);
+		// Knightmare added
+		lastmarksurface = LittleShort(in->firstleafface) + out->nummarksurfaces;
+		if (lastmarksurface > loadmodel->nummarksurfaces)
+			ri.Sys_Error (ERR_DROP, "Mod_LoadLeafs: bad leaf face index");
+		// end Knightmare
 	}	
 }
 
@@ -823,8 +863,11 @@ void Mod_LoadSurfedges (lump_t *l)
 	loadmodel->surfedges = out;
 	loadmodel->numsurfedges = count;
 
-	for ( i=0 ; i<count ; i++)
+	for ( i=0 ; i<count ; i++) {
 		out[i] = LittleLong (in[i]);
+		if (out[i] >= loadmodel->numedges)	// Knightmare added
+			ri.Sys_Error (ERR_DROP, "Mod_LoadSurfedges: bad edge index");
+	}
 }
 
 /*

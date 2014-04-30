@@ -58,6 +58,10 @@ Draw_InitLocal
 void Draw_InitLocal (void)
 {
 	draw_chars = Draw_FindPic ("conchars");
+	// Knightmare- error out instead of crashing if we can't load this
+	if (!draw_chars)
+		ri.Sys_Error (ERR_FATAL, "Couldn't load pics/conchars.pcx");
+	// end Knightmare
 }
 
 

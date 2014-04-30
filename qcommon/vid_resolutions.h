@@ -18,10 +18,38 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-int		CDAudio_Init(void);
-void	CDAudio_Shutdown(void);
-void	CDAudio_Play(int track, qboolean looping);
-void	CDAudio_Stop(void);
-void	CDAudio_Update(void);
-void	CDAudio_Activate (qboolean active);
-qboolean CDAudio_Active (void); // Knightmare added
+// List of video modes included in platform-specific video menus
+
+//"[320x240  ]",
+//"[400x300  ]",
+//"[512x384  ]",
+"[custom   ]",
+"[640x480  ]",
+"[800x600  ]",
+"[960x720  ]",
+"[1024x768 ]",
+"[1152x864 ]",
+"[1280x960 ]",
+"[1280x1024]",
+"[1400x1050]",
+"[1600x1200]",
+"[1920x1440]",
+"[2048x1536]",
+"[800x480  ]",
+"[856x480  ]",
+"[1024x600 ]",
+"[1280x720 ]",
+"[1280x768 ]",
+"[1280x800 ]",
+"[1360x768 ]",
+"[1366x768 ]",
+"[1440x900 ]",
+"[1600x900 ]",
+"[1600x1024]",
+"[1680x1050]",
+"[1920x1080]",
+"[1920x1200]",
+"[2560x1080]",
+"[2560x1440]",
+"[2560x1600]",
+0

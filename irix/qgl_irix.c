@@ -1,4 +1,23 @@
 /*
+Copyright (C) 1997-2001 Id Software, Inc.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+*/
+/*
 ** QGL_WIN.C
 **
 ** This file implements the operating system binding of GL to QGL function
@@ -350,11 +369,17 @@ void ( APIENTRY * qglVertex4sv )(const GLshort *v);
 void ( APIENTRY * qglVertexPointer )(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 void ( APIENTRY * qglViewport )(GLint x, GLint y, GLsizei width, GLsizei height);
 
+void ( APIENTRY * qglLockArraysEXT)( int, int);
+void ( APIENTRY * qglUnlockArraysEXT) ( void );
+
 void ( APIENTRY * qglPointParameterfEXT)( GLenum param, GLfloat value );
 void ( APIENTRY * qglPointParameterfvEXT)( GLenum param, const GLfloat *value );
 void ( APIENTRY * qglColorTableEXT)( int, int, int, int, int, const void * );
 void ( APIENTRY * qglSelectTextureSGIS)( GLenum );
-void ( APIENTRY * qglMTexCoord2fSGIS)( GLenum, GLfloat, GLfloat );
+//void ( APIENTRY * qglMTexCoord2fSGIS)( GLenum, GLfloat, GLfloat );
+void ( APIENTRY * qglActiveTextureARB) ( GLenum );
+void ( APIENTRY * qglClientActiveTextureARB) ( GLenum );
+void ( APIENTRY * qglMultiTexCoord2f)( GLenum, GLfloat, GLfloat );
 
 static void ( APIENTRY * dllAccum )(GLenum op, GLfloat value);
 static void ( APIENTRY * dllAlphaFunc )(GLenum func, GLclampf ref);
@@ -3279,12 +3304,17 @@ qboolean QGL_Init( const char *dllname )
 	qglVertexPointer             = 	dllVertexPointer             = glVertexPointer;
 	qglViewport                  = 	dllViewport                  = glViewport;
 
+	qglLockArraysEXT = 0;
+	qglUnlockArraysEXT = 0;
 	qglPointParameterfEXT = 0;
 	qglPointParameterfvEXT = 0;
 	qglColorTableEXT = glColorTableSGI;
 	qglColorTableEXT = 0;
 	qglSelectTextureSGIS = 0;
-	qglMTexCoord2fSGIS = 0;
+//	qglMTexCoord2fSGIS = 0;
+	qglActiveTextureARB = 0;
+	qglClientActiveTextureARB = 0;
+	qglMultiTexCoord2f = 0;
 
 	return true;
 }
