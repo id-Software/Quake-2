@@ -56,7 +56,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib /nologo /subsystem:windows /dll /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib /nologo /subsystem:windows /dll /machine:I386 /out:"\\tsclient\C\Program Files (x86)\Steam\steamapps\common\quake 2\ref_gl.dll"
 # SUBTRACT LINK32 /incremental:yes /debug
 
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Debug"
@@ -174,13 +174,13 @@ SOURCE=.\gl_draw.c
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Debug Alpha"
 
 DEP_CPP_GL_DR=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_DR=\
 	".\L\gl.h"\
@@ -190,13 +190,13 @@ NODEP_CPP_GL_DR=\
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Release Alpha"
 
 DEP_CPP_GL_DR=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_DR=\
 	".\L\gl.h"\
@@ -217,13 +217,13 @@ SOURCE=.\gl_image.c
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Debug Alpha"
 
 DEP_CPP_GL_IM=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_IM=\
 	".\L\gl.h"\
@@ -233,13 +233,13 @@ NODEP_CPP_GL_IM=\
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Release Alpha"
 
 DEP_CPP_GL_IM=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_IM=\
 	".\L\gl.h"\
@@ -260,13 +260,13 @@ SOURCE=.\gl_light.c
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Debug Alpha"
 
 DEP_CPP_GL_LI=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_LI=\
 	".\L\gl.h"\
@@ -276,13 +276,13 @@ NODEP_CPP_GL_LI=\
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Release Alpha"
 
 DEP_CPP_GL_LI=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_LI=\
 	".\L\gl.h"\
@@ -303,15 +303,15 @@ SOURCE=.\gl_mesh.c
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Debug Alpha"
 
 DEP_CPP_GL_ME=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\anorms.h"\
 	".\anormtab.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_ME=\
 	".\L\gl.h"\
@@ -321,15 +321,15 @@ NODEP_CPP_GL_ME=\
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Release Alpha"
 
 DEP_CPP_GL_ME=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\anorms.h"\
 	".\anormtab.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_ME=\
 	".\L\gl.h"\
@@ -350,13 +350,13 @@ SOURCE=.\gl_model.c
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Debug Alpha"
 
 DEP_CPP_GL_MO=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_MO=\
 	".\L\gl.h"\
@@ -366,13 +366,13 @@ NODEP_CPP_GL_MO=\
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Release Alpha"
 
 DEP_CPP_GL_MO=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_MO=\
 	".\L\gl.h"\
@@ -393,13 +393,13 @@ SOURCE=.\gl_rmain.c
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Debug Alpha"
 
 DEP_CPP_GL_RM=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_RM=\
 	".\L\gl.h"\
@@ -409,13 +409,13 @@ NODEP_CPP_GL_RM=\
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Release Alpha"
 
 DEP_CPP_GL_RM=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_RM=\
 	".\L\gl.h"\
@@ -436,13 +436,13 @@ SOURCE=.\gl_rmisc.c
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Debug Alpha"
 
 DEP_CPP_GL_RMI=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_RMI=\
 	".\L\gl.h"\
@@ -452,13 +452,13 @@ NODEP_CPP_GL_RMI=\
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Release Alpha"
 
 DEP_CPP_GL_RMI=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_RMI=\
 	".\L\gl.h"\
@@ -479,13 +479,13 @@ SOURCE=.\gl_rsurf.c
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Debug Alpha"
 
 DEP_CPP_GL_RS=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_RS=\
 	".\L\gl.h"\
@@ -495,13 +495,13 @@ NODEP_CPP_GL_RS=\
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Release Alpha"
 
 DEP_CPP_GL_RS=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_RS=\
 	".\L\gl.h"\
@@ -522,14 +522,14 @@ SOURCE=.\gl_warp.c
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Debug Alpha"
 
 DEP_CPP_GL_WA=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
 	".\warpsin.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_WA=\
 	".\L\gl.h"\
@@ -539,14 +539,14 @@ NODEP_CPP_GL_WA=\
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Release Alpha"
 
 DEP_CPP_GL_WA=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
 	".\warpsin.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 NODEP_CPP_GL_WA=\
 	".\L\gl.h"\
@@ -567,15 +567,15 @@ SOURCE=..\win32\glw_imp.c
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Debug Alpha"
 
 DEP_CPP_GLW_I=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\glw_win.h"\
-	"..\win32\winquake.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\glw_win.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\winquake.h"\
 	
 NODEP_CPP_GLW_I=\
 	".\L\gl.h"\
@@ -585,15 +585,15 @@ NODEP_CPP_GLW_I=\
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Release Alpha"
 
 DEP_CPP_GLW_I=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\glw_win.h"\
-	"..\win32\winquake.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\glw_win.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\winquake.h"\
 	
 NODEP_CPP_GLW_I=\
 	".\L\gl.h"\
@@ -614,13 +614,13 @@ SOURCE=..\game\q_shared.c
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Debug Alpha"
 
 DEP_CPP_Q_SHA=\
-	"..\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Release Alpha"
 
 DEP_CPP_Q_SHA=\
-	"..\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
 	
 
 !ENDIF 
@@ -637,19 +637,19 @@ SOURCE=..\win32\q_shwin.c
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Debug Alpha"
 
 DEP_CPP_Q_SHW=\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\winquake.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\winquake.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Release Alpha"
 
 DEP_CPP_Q_SHW=\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\winquake.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\winquake.h"\
 	
 
 !ENDIF 
@@ -666,14 +666,14 @@ SOURCE=..\win32\qgl_win.c
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Debug Alpha"
 
 DEP_CPP_QGL_W=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\glw_win.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\glw_win.h"\
 	
 NODEP_CPP_QGL_W=\
 	".\L\gl.h"\
@@ -683,14 +683,14 @@ NODEP_CPP_QGL_W=\
 !ELSEIF  "$(CFG)" == "ref_gl - Win32 Release Alpha"
 
 DEP_CPP_QGL_W=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\glw_win.h"\
 	".\gl_local.h"\
 	".\gl_model.h"\
 	".\qgl.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\glw_win.h"\
 	
 NODEP_CPP_QGL_W=\
 	".\L\gl.h"\

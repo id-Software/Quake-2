@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../game/q_shared.h"
 
 
-#define	VERSION		3.19
+#define	VERSION		3.21
 
 #define	BASEDIRNAME	"baseq2"
 
@@ -226,7 +226,10 @@ enum svc_ops_e
 	svc_playerinfo,				// variable
 	svc_packetentities,			// [...]
 	svc_deltapacketentities,	// [...]
-	svc_frame
+	svc_frame,
+	// NNS6
+	svc_speed
+	// END
 };
 
 //==============================================

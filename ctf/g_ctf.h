@@ -18,10 +18,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#define CTF_VERSION			1.09b
+#define CTF_VERSION			1.52
 #define CTF_VSTRING2(x) #x
 #define CTF_VSTRING(x) CTF_VSTRING2(x)
 #define CTF_STRING_VERSION  CTF_VSTRING(CTF_VERSION)
+// NNS6
+// Declaring my own defince to show version number in 
+// class menu
+#define WZ_VERSION			0.9
+#define WZ_VSTRING2(x) #x
+#define WZ_VSTRING(x) WZ_VSTRING2(x)
+#define WZ_STRING_VERSION  WZ_VSTRING(WZ_VERSION)
+// END
 
 #define STAT_CTF_TEAM1_PIC			17
 #define STAT_CTF_TEAM1_CAPS			18
@@ -35,14 +43,33 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define STAT_CTF_TECH				26
 #define STAT_CTF_ID_VIEW			27
 #define STAT_CTF_MATCH				28
+#define STAT_CTF_ID_VIEW_COLOR		29
+#define STAT_CTF_TEAMINFO			30
+// NNS6
+// Define for current xp
+// This xp varaible stays per life
+// This is use to display xp on the hud
+#define STAT_CURR_XP				31
+// END
 
-#define CONFIG_CTF_MATCH (CS_MAXCLIENTS-1)
+#define CONFIG_CTF_MATCH (CS_AIRACCEL-1)
+#define CONFIG_CTF_TEAMINFO	(CS_AIRACCEL-2)
 
 typedef enum {
 	CTF_NOTEAM,
 	CTF_TEAM1,
 	CTF_TEAM2
 } ctfteam_t;
+
+// NNS6
+// New enum for classes
+typedef enum {
+	WZ_NOCLASS,
+	WZ_CLASS1,	// Assault
+	WZ_CLASS2,	// Scout
+	WZ_CLASS3	// Support
+} wz_pClass_t;
+// END
 
 typedef enum {
 	CTF_GRAPPLE_STATE_FLY,
@@ -105,6 +132,7 @@ extern cvar_t *ctf;
 
 void CTFInit(void);
 void CTFSpawn(void);
+void CTFPrecache(void);
 
 void SP_info_player_team1(edict_t *self);
 void SP_info_player_team2(edict_t *self);
@@ -136,6 +164,7 @@ void CTFGrapplePull(edict_t *self);
 void CTFResetGrapple(edict_t *self);
 
 //TECH
+
 gitem_t *CTFWhat_Tech(edict_t *ent);
 qboolean CTFPickup_Tech (edict_t *ent, edict_t *other);
 void CTFDrop_Tech(edict_t *ent, gitem_t *item);
@@ -150,6 +179,7 @@ void CTFApplyRegeneration(edict_t *ent);
 qboolean CTFHasRegeneration(edict_t *ent);
 void CTFRespawnTech(edict_t *ent);
 void CTFResetTech(void);
+
 
 void CTFOpenJoinMenu(edict_t *ent);
 qboolean CTFStartClient(edict_t *ent);
@@ -183,3 +213,16 @@ void CTFObserver(edict_t *ent);
 
 void SP_trigger_teleport (edict_t *ent);
 void SP_info_teleport_destination (edict_t *ent);
+
+void CTFSetPowerUpEffect(edict_t *ent, int def);
+
+// NNS6
+// My own prototyped function
+
+void WZ_OpenJoinMenu(edict_t *ent);		// To open join menu
+char *WZ_ClassName(int pClass);			// Sets class name
+void WZ_Class_f (edict_t *ent);			// tells what class
+int WZ_UpdateJoinMenu(edict_t *ent);	// Updates join menu based on number of players
+
+// END
+

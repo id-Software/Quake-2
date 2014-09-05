@@ -142,6 +142,59 @@ static void fire_lead (edict_t *self, vec3_t start, vec3_t aimdir, int damage, i
 	vec3_t		water_start;
 	qboolean	water = false;
 	int			content_mask = MASK_SHOT | MASK_WATER;
+	vec3_t		offset;
+
+	// NNS6
+	// SOUNDS for weapons
+	if ((self->client->pers.weapon == FindItem ("blaster")))
+	{
+		if (random() > 0.5)
+		gi.sound (self, CHAN_VOICE, gi.soundindex ("weapons/mac10-1.wav"), 1, ATTN_NORM, 0);
+		else
+		gi.sound (self, CHAN_VOICE, gi.soundindex ("weapons/mac10-2.wav"), 1, ATTN_NORM, 0);
+	}
+	else if ((self->client->pers.weapon == FindItem ("machinegun")))
+	{
+		if (random() > 0.5)
+		gi.sound (self, CHAN_VOICE, gi.soundindex ("weapons/p90-1.wav"), 1, ATTN_NORM, 0);
+		else
+		gi.sound (self, CHAN_VOICE, gi.soundindex ("weapons/p90-2.wav"), 1, ATTN_NORM, 0);
+	}
+	else if ((self->client->pers.weapon == FindItem ("chaingun")))
+	{
+		if (random() > 0.5)
+		gi.sound (self, CHAN_VOICE, gi.soundindex ("weapons/m4-1.wav"), 1, ATTN_NORM, 0);
+		else
+		gi.sound (self, CHAN_VOICE, gi.soundindex ("weapons/m4-2.wav"), 1, ATTN_NORM, 0);
+	}
+	else
+	{
+		gi.sound (self, CHAN_VOICE, gi.soundindex ("weapons/awp1.wav"), 1, ATTN_NORM, 0);
+		self->client->pers.reload_enable = 1;
+		
+	}
+	// END
+	
+	// NNS6
+	// new muzzle effects for eapons
+	if (!(self->client->pers.weapon == FindItem ("railgun")))
+	{
+		gi.WriteByte (svc_temp_entity);
+	//	gi.WriteByte (TE_BULLET_SPARKS); // another effect that can be used
+		gi.WriteByte (TE_FLECHETTE);
+		gi.WritePosition (start);
+		gi.WriteDir (aimdir);
+		gi.multicast (start, MULTICAST_PVS);
+	}
+	else 
+	{
+		gi.WriteByte (svc_temp_entity);
+		gi.WriteByte (TE_BLASTER2);
+		gi.WritePosition (start);
+		gi.WriteDir (aimdir);
+		gi.multicast (start, MULTICAST_PVS);
+	}
+	// END
 
 	tr = gi.trace (self->s.origin, NULL, NULL, start, self, MASK_SHOT);
 	if (!(tr.fraction < 1.0))
@@ -265,6 +318,87 @@ static void fire_lead (edict_t *self, vec3_t start, vec3_t aimdir, int damage, i
 	}
 }
 
+// NNS6
+// Originally created to make shotgun or bullet based weapons fire railshots
+// It was dropped later but i wanted the code to be here
+/*
+static void fire_lead2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int te_impact, int hspread, int vspread, int mod)
+{
+	edict_t		*ignore;
+	vec3_t		from;
+	trace_t		tr;
+	vec3_t		dir;
+	vec3_t		forward, right, up;
+	vec3_t		end;
+	float		r;
+	float		u;
+	vec3_t		water_start;
+	qboolean	water = false;
+	int			mask = MASK_SHOT|CONTENTS_SLIME|CONTENTS_LAVA;
+
+	VectorMA (start, 8192, aimdir, end);
+	VectorCopy (start, from);
+	ignore = self;
+
+	while (ignore)
+	{
+		
+		vectoangles (aimdir, dir);
+		AngleVectors (dir, forward, right, up);
+
+		r = (crandom()*hspread);
+		u = (crandom()*vspread);
+		VectorMA (start, 8192, forward, end);
+		VectorMA (end, r, right, end);
+		VectorMA (end, u, up, end);
+		
+		tr = gi.trace (from, NULL, NULL, end, ignore, mask);
+
+		if (tr.contents & (CONTENTS_SLIME|CONTENTS_LAVA))
+		{
+			mask &= ~(CONTENTS_SLIME|CONTENTS_LAVA);
+			water = true;
+		}
+		else
+		{
+			//ZOID--added so rail goes through SOLID_BBOX entities (gibs, etc)
+			if ((tr.ent->svflags & SVF_MONSTER) || (tr.ent->client) ||
+				(tr.ent->solid == SOLID_BBOX))
+				ignore = tr.ent;
+			else
+				ignore = NULL;
+
+			if ((tr.ent != self) && (tr.ent->takedamage))
+				T_Damage (tr.ent, self, self, aimdir, tr.endpos, tr.plane.normal, damage, kick, 0, MOD_RAILGUN);
+		}
+
+		VectorCopy (tr.endpos, from);
+	}
+
+	// send gun puff / flash
+	gi.WriteByte (svc_temp_entity);
+	gi.WriteByte (TE_RAILTRAIL);
+	gi.WritePosition (start);
+	gi.WritePosition (tr.endpos);
+	gi.multicast (self->s.origin, MULTICAST_PHS);
+//	gi.multicast (start, MULTICAST_PHS);
+	if (water)
+	{
+		gi.WriteByte (svc_temp_entity);
+		gi.WriteByte (TE_RAILTRAIL);
+		gi.WritePosition (start);
+		gi.WritePosition (tr.endpos);
+		gi.multicast (tr.endpos, MULTICAST_PHS);
+	}
+
+	if (self->client)
+		PlayerNoise(self, tr.endpos, PNOISE_IMPACT);
+
+	
+
+}
+
+// END*/
 
 /*
 =================
@@ -291,10 +425,30 @@ void fire_shotgun (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int k
 {
 	int		i;
 
-	for (i = 0; i < count; i++)
-		fire_lead (self, start, aimdir, damage, kick, TE_SHOTGUN, hspread, vspread, mod);
+	
+	for (i = 0; i < 4; i++)	
+	{
+		fire_blaster (self, start, aimdir, damage, 2000, TE_BLASTER, false);
+		ThrowGib (self, "models/objects/gibs/sm_meat/tris.md2", damage, GIB_ORGANIC);
+	}
+		
+		//fire_lead (self, start, aimdir, damage, kick, TE_SHOTGUN, hspread, vspread, mod);
+		
 }
 
+// NNS6
+// originally created to make shotgun fire railshots
+/*void fire_rail_shotgun (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int hspread, int vspread, int count, int mod)
+{
+	int		i;
+
+	for (i = 0; i < count; i++)
+		fire_lead2 (self, start, aimdir, damage, kick, TE_SHOTGUN, hspread, vspread, mod);
+		
+		
+		//	fire_lead (self, start, aimdir, damage, kick, TE_SHOTGUN, hspread, vspread, mod);
+}*/
+// END
 
 /*
 =================
@@ -390,6 +544,118 @@ void fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int spee
 fire_grenade
 =================
 */
+// NNS6
+// used for grapple grenade
+// this is the think func and deals with grappling the players
+void grapple_grenade_think (edict_t *self)
+{
+	edict_t	*ent;
+	edict_t	*ignore;
+	vec3_t	point;
+	vec3_t	dir;
+	vec3_t	start;
+	vec3_t	end;
+	int		dmg;
+	trace_t	tr;
+	vec3_t	offset;
+	
+
+	if (deathmatch->value)
+		dmg = 5;
+	else
+		dmg = 10;
+
+	ent = NULL;
+	while ((ent = findradius(ent, self->s.origin, 256)) != NULL)
+	{
+		if (ent == self)
+			continue;
+
+		if (ent == self->owner)
+			continue;
+
+		if (!ent->takedamage)
+			continue;
+
+		if (!(ent->svflags & SVF_MONSTER) && (!ent->client) && (strcmp(ent->classname, "misc_explobox") != 0))
+			continue;
+
+//ZOID
+		//don't target players in CTF
+		if (ctf->value && ent->client &&
+			self->owner->client &&
+			ent->client->resp.ctf_team == self->owner->client->resp.ctf_team)
+			continue;
+//ZOID
+
+		VectorMA (ent->absmin, 0.5, ent->size, point);
+
+		VectorSubtract (point, self->s.origin, dir);
+		VectorNormalize (dir);
+
+		ignore = self;
+		VectorCopy (self->s.origin, start);
+		VectorMA (start, 2048, dir, end);
+		while(1)
+		{
+			tr = gi.trace (start, NULL, NULL, end, ignore, CONTENTS_SOLID|CONTENTS_MONSTER|CONTENTS_DEADMONSTER);
+
+			if (!tr.ent)
+				break;
+
+			// hurt it if we can
+			if ((tr.ent->takedamage) && !(tr.ent->flags & FL_IMMUNE_LASER) && (tr.ent != self->owner))
+			{
+				T_Damage (tr.ent, self, self->owner, dir, tr.endpos, vec3_origin, dmg, 1, DAMAGE_ENERGY, MOD_BFG_LASER);
+			}
+
+			// if we hit something that's not a monster or player we're done
+			if (!(tr.ent->svflags & SVF_MONSTER) && (!tr.ent->client))
+			{
+				gi.WriteByte (svc_temp_entity);
+				gi.WriteByte (TE_LASER_SPARKS);
+				gi.WriteByte (4);
+				gi.WritePosition (tr.endpos);
+				gi.WriteDir (tr.plane.normal);
+				gi.WriteByte (self->s.skinnum);
+				gi.multicast (tr.endpos, MULTICAST_PVS);
+				break;
+			}
+
+			ignore = tr.ent;
+			VectorCopy (tr.endpos, start);
+		}
+
+/*		gi.WriteByte (svc_temp_entity);
+		gi.WriteByte (TE_BFG_LASER);
+		gi.WritePosition (self->s.origin);
+		gi.WritePosition (tr.endpos);
+		gi.multicast (self->s.origin, MULTICAST_PHS);
+*/
+
+		// effect that show the grapple
+		gi.WriteByte (svc_temp_entity);
+		gi.WriteByte (TE_MEDIC_CABLE_ATTACK);
+		gi.WriteShort (self - g_edicts);
+		gi.WritePosition (self->s.origin);
+		gi.WritePosition (ent->s.origin);
+
+		// deals with actually catching players and dragging them to the grenade
+		VectorCopy(ent->s.origin, start);
+        VectorCopy(self->s.origin, end);
+        VectorSubtract(end, start, dir);
+        VectorNormalize(dir);
+        VectorScale(dir,1000, ent->velocity);
+        VectorCopy(dir, ent->movedir);
+		
+
+	}
+
+	self->nextthink = level.time + FRAMETIME;
+
+}
+// END
+
 static void Grenade_Explode (edict_t *ent)
 {
 	vec3_t		origin;
@@ -443,6 +709,14 @@ static void Grenade_Explode (edict_t *ent)
 	}
 	gi.WritePosition (origin);
 	gi.multicast (ent->s.origin, MULTICAST_PHS);
+
+	// NNS6
+	// a little modified effect for grenade explosion
+	gi.WriteByte (svc_temp_entity);
+	gi.WriteByte (TE_NUKEBLAST);
+	gi.WritePosition (origin);
+	gi.multicast (ent->s.origin, MULTICAST_PHS);
+	// END
 
 	G_FreeEdict (ent);
 }
@@ -536,7 +810,11 @@ void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int 
 	grenade->owner = self;
 	grenade->touch = Grenade_Touch;
 	grenade->nextthink = level.time + timer;
-	grenade->think = Grenade_Explode;
+	// NNS6
+	// changed for a new think
+//	grenade->think = Grenade_Explode;
+	grenade->think = grapple_grenade_think;
+	// END
 	grenade->dmg = damage;
 	grenade->dmg_radius = damage_radius;
 	grenade->classname = "hgrenade";
@@ -621,7 +899,11 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 	VectorCopy (dir, rocket->movedir);
 	vectoangles (dir, rocket->s.angles);
 	VectorScale (dir, speed, rocket->velocity);
-	rocket->movetype = MOVETYPE_FLYMISSILE;
+// NNS6
+	// changed for projectile effect
+//	rocket->movetype = MOVETYPE_FLYMISSILE;
+	rocket->movetype = MOVETYPE_TOSS;
+// END
 	rocket->clipmask = MASK_SHOT;
 	rocket->solid = SOLID_BBOX;
 	rocket->s.effects |= EF_ROCKET;
@@ -637,6 +919,15 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 	rocket->dmg_radius = damage_radius;
 	rocket->s.sound = gi.soundindex ("weapons/rockfly.wav");
 	rocket->classname = "rocket";
+
+	// NNS6
+	// new muzzle effect for rocket
+	gi.WriteByte (svc_temp_entity);
+	gi.WriteByte (TE_BLASTER);
+	gi.WritePosition (start);
+	gi.WriteDir (dir);
+	gi.multicast (start, MULTICAST_PVS);
+	// END
 
 	if (self->client)
 		check_dodge (self, rocket->s.origin, dir, speed);
@@ -675,7 +966,9 @@ void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick
 		}
 		else
 		{
-			if ((tr.ent->svflags & SVF_MONSTER) || (tr.ent->client))
+			//ZOID--added so rail goes through SOLID_BBOX entities (gibs, etc)
+			if ((tr.ent->svflags & SVF_MONSTER) || (tr.ent->client) ||
+				(tr.ent->solid == SOLID_BBOX))
 				ignore = tr.ent;
 			else
 				ignore = NULL;
@@ -706,7 +999,6 @@ void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick
 	if (self->client)
 		PlayerNoise(self, tr.endpos, PNOISE_IMPACT);
 }
-
 
 /*
 =================
@@ -917,3 +1209,4 @@ void fire_bfg (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, f
 
 	gi.linkentity (bfg);
 }
+

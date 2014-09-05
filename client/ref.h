@@ -17,6 +17,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+#ifndef __REF_H
+#define __REF_H
 
 #include "../qcommon/qcommon.h"
 
@@ -222,3 +224,5 @@ typedef struct
 
 // this is the only function actually exported at the linker level
 typedef	refexport_t	(*GetRefAPI_t) (refimport_t);
+
+#endif // __REF_H

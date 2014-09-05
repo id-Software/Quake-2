@@ -1,0 +1,2 @@
+#!/bin/sh
+LD_PRELOAD="./lib3dfxgl.so /usr/lib/libglide2x.so" ./quake2 +set vid_ref gl $*

@@ -159,7 +159,10 @@ void ThrowGib (edict_t *self, char *gibname, int damage, int type)
 	{
 		gib->movetype = MOVETYPE_TOSS;
 		gib->touch = gib_touch;
-		vscale = 0.5;
+		// NNS6
+		// for gibs to fly higher
+		vscale = 10;
+		// END
 	}
 	else
 	{

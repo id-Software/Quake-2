@@ -1,17 +1,388 @@
---------------------Configuration: ctf - Win32 Debug Alpha--------------------
-Begining build with project "G:\quake2\code\ctf\ctf.dsp", at root.
-Active configuration is Win32 (ALPHA) Dynamic-Link Library (based on Win32 (ALPHA) Dynamic-Link Library)
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: ctf - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\XPMUser\LOCALS~1\Temp\RSP33E.tmp" with contents
+[
+/nologo /MT /W4 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /FR".\release/" /Fp".\release/ctf.pch" /YX /Fo".\release/" /Fd".\release/" /FD /c 
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ai.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_chase.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_cmds.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_combat.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_items.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_main.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_monster.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_phys.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_save.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_spawn.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_svcmds.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_utils.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_weapon.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\m_move.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_hud.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_menu.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_trail.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_view.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_weapon.c"
+"\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\q_shared.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\XPMUser\LOCALS~1\Temp\RSP33E.tmp" 
+Creating temporary file "C:\DOCUME~1\XPMUser\LOCALS~1\Temp\RSP33F.tmp" with contents
+[
+kernel32.lib user32.lib winmm.lib /nologo /subsystem:windows /dll /incremental:no /pdb:".\release/gamex86.pdb" /machine:I386 /def:".\ctf.def" /out:"\\tsclient\C\Program Files (x86)\Steam\steamapps\common\quake 2\ctf\gamex86.dll" /implib:".\release/gamex86.lib" 
+.\release\g_ai.obj
+.\release\g_chase.obj
+.\release\g_cmds.obj
+.\release\g_combat.obj
+.\release\g_ctf.obj
+.\release\g_func.obj
+.\release\g_items.obj
+.\release\g_main.obj
+.\release\g_misc.obj
+.\release\g_monster.obj
+.\release\g_phys.obj
+.\release\g_save.obj
+.\release\g_spawn.obj
+.\release\g_svcmds.obj
+.\release\g_target.obj
+.\release\g_trigger.obj
+.\release\g_utils.obj
+.\release\g_weapon.obj
+.\release\m_move.obj
+.\release\p_client.obj
+.\release\p_hud.obj
+.\release\p_menu.obj
+.\release\p_trail.obj
+.\release\p_view.obj
+.\release\p_weapon.obj
+.\release\q_shared.obj
+]
+Creating command line "link.exe @C:\DOCUME~1\XPMUser\LOCALS~1\Temp\RSP33F.tmp"
+<h3>Output Window</h3>
+Compiling...
+g_ai.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ai.c(61) : warning C4127: conditional expression is constant
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ai.c(771) : warning C4100: 'dist' : unreferenced formal parameter
+g_chase.c
+g_cmds.c
+g_combat.c
+g_ctf.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_combat.c(249) : warning C4701: local variable 'index' may be used without having been initialized
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_combat.c(209) : warning C4701: local variable 'power' may be used without having been initialized
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_combat.c(239) : warning C4702: unreachable code
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(604) : warning C4100: 'inflictor' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(960) : warning C4100: 'item' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(1268) : warning C4100: 'self' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(1275) : warning C4100: 'self' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(1771) : warning C4100: 'killer' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(1771) : warning C4100: 'ent' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(2063) : warning C4100: 'ent' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(2065) : warning C4101: 'tech' : unreferenced local variable
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(2066) : warning C4101: 'dropped' : unreferenced local variable
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(2091) : warning C4100: 'spot' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(2091) : warning C4100: 'item' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(2133) : warning C4100: 'ent' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(2860) : warning C4189: 'ghost' : local variable is initialized but not referenced
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3324) : warning C4101: 's' : unreferenced local variable
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3422) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3432) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3442) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3449) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3459) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3466) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3473) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3480) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3487) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3494) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3501) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3511) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3518) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3525) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3532) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3539) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3547) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3553) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3561) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3567) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3573) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3580) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3623) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3629) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3642) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3748) : warning C4100: 'ent' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3907) : warning C4029: declared formal parameter list different from definition
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3906) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3913) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(3921) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(4127) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(4127) : warning C4100: 'plane' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(4337) : warning C4189: 'settings' : local variable is initialized but not referenced
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(4473) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(4495) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(4513) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(4525) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(4536) : warning C4100: 'p' : unreferenced formal parameter
+g_func.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_ctf.c(729) : warning C4701: local variable 'carrier' may be used without having been initialized
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(428) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(428) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(436) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(436) : warning C4100: 'plane' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(600) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(600) : warning C4100: 'plane' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(606) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(606) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(737) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(743) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(743) : warning C4100: 'plane' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(755) : warning C4100: 'point' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(755) : warning C4100: 'damage' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(755) : warning C4100: 'inflictor' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(949) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(980) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(980) : warning C4100: 'plane' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(1113) : warning C4100: 'point' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(1113) : warning C4100: 'damage' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(1113) : warning C4100: 'inflictor' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(1125) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(1125) : warning C4100: 'plane' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(1632) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(1698) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(1776) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(1824) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(1824) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(1885) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(1885) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(1959) : warning C4100: 'point' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(1959) : warning C4100: 'damage' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(1959) : warning C4100: 'inflictor' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(2036) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(2036) : warning C4100: 'other' : unreferenced formal parameter
+g_items.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_func.c(859) : warning C4706: assignment within conditional expression
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_items.c(43) : warning C4211: nonstandard extension used : redefined extern to static
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_items.c(44) : warning C4211: nonstandard extension used : redefined extern to static
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_items.c(45) : warning C4211: nonstandard extension used : redefined extern to static
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_items.c(723) : warning C4100: 'item' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_items.c(779) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_items.c(779) : warning C4100: 'plane' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_items.c(919) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_items.c(919) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_items.c(2661) : warning C4100: 'ent' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_items.c(2849) : warning C4100: 'ent' : unreferenced formal parameter
+g_main.c
+g_misc.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(31) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(31) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(104) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(104) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(130) : warning C4100: 'point' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(130) : warning C4100: 'damage' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(130) : warning C4100: 'attacker' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(130) : warning C4100: 'inflictor' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(279) : warning C4100: 'point' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(279) : warning C4100: 'damage' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(279) : warning C4100: 'attacker' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(279) : warning C4100: 'inflictor' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(361) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(361) : warning C4100: 'plane' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(440) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(440) : warning C4100: 'plane' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(577) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(577) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(625) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(625) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(697) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(715) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(715) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(777) : warning C4100: 'point' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(777) : warning C4100: 'damage' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(841) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(846) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(846) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(905) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(905) : warning C4100: 'plane' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(998) : warning C4100: 'point' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(998) : warning C4100: 'damage' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(998) : warning C4100: 'inflictor' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1053) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1053) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1189) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1189) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1249) : warning C4100: 'point' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1249) : warning C4100: 'attacker' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1249) : warning C4100: 'inflictor' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1362) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1362) : warning C4100: 'plane' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1362) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1390) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1484) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1484) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1609) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1609) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1772) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1815) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_misc.c(1815) : warning C4100: 'plane' : unreferenced formal parameter
+g_monster.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_monster.c(91) : warning C4100: 'kick' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_monster.c(440) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_monster.c(483) : warning C4100: 'other' : unreferenced formal parameter
+g_phys.c
+g_save.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_save.c(239) : warning C4100: 'f' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_save.c(622) : warning C4054: 'type cast' : from function pointer 'void (__cdecl *)(void )' to data pointer 'void *'
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_save.c(690) : warning C4054: 'type cast' : from function pointer 'void (__cdecl *)(void )' to data pointer 'void *'
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_save.c(700) : warning C4127: conditional expression is constant
+g_spawn.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_spawn.c(444) : warning C4127: conditional expression is constant
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_spawn.c(574) : warning C4127: conditional expression is constant
+g_svcmds.c
+g_target.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(26) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(26) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(58) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(58) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(118) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(118) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(154) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(189) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(244) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(338) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(380) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(380) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(416) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(416) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(451) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(451) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(523) : warning C4127: conditional expression is constant
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(576) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(687) : warning C4127: conditional expression is constant
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(679) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(679) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(785) : warning C4100: 'other' : unreferenced formal parameter
+g_trigger.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_target.c(555) : warning C4701: local variable 'tr' may be used without having been initialized
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(66) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(72) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(72) : warning C4100: 'plane' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(111) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(111) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(189) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(212) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(326) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(394) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(394) : warning C4100: 'plane' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(455) : warning C4100: 'activator' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(455) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(468) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(468) : warning C4100: 'plane' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(532) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(532) : warning C4100: 'plane' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(566) : warning C4100: 'surf' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_trigger.c(566) : warning C4100: 'plane' : unreferenced formal parameter
+g_utils.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_utils.c(130) : warning C4127: conditional expression is constant
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_utils.c(555) : warning C4127: conditional expression is constant
+g_weapon.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_utils.c(215) : warning C4706: assignment within conditional expression
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_utils.c(234) : warning C4706: assignment within conditional expression
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_weapon.c(145) : warning C4101: 'offset' : unreferenced local variable
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_weapon.c(424) : warning C4100: 'mod' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_weapon.c(424) : warning C4100: 'count' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_weapon.c(424) : warning C4100: 'vspread' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_weapon.c(424) : warning C4100: 'hspread' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_weapon.c(424) : warning C4100: 'kick' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_weapon.c(599) : warning C4127: conditional expression is constant
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_weapon.c(560) : warning C4101: 'offset' : unreferenced local variable
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_weapon.c(724) : warning C4100: 'plane' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\g_weapon.c(1138) : warning C4127: conditional expression is constant
+m_move.c
+p_client.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c(44) : warning C4127: conditional expression is constant
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c(68) : warning C4100: 'self' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c(177) : warning C4100: 'damage' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c(177) : warning C4100: 'kick' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c(177) : warning C4100: 'other' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c(177) : warning C4100: 'self' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c(197) : warning C4100: 'inflictor' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c(496) : warning C4100: 'point' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c(903) : warning C4127: conditional expression is constant
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c(993) : warning C4100: 'point' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c(993) : warning C4100: 'attacker' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c(993) : warning C4100: 'inflictor' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c(1655) : warning C4101: 'add' : unreferenced local variable
+p_hud.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c(921) : warning C4702: unreachable code
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c(1437) : warning C4700: local variable 'lentot' used without having been initialized
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_client.c(1706) : warning C4700: local variable 'pm' used without having been initialized
+p_menu.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_hud.c(441) : warning C4701: local variable 'cells' may be used without having been initialized
+p_trail.c
+p_view.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_view.c(42) : warning C4100: 'angles' : unreferenced formal parameter
+p_weapon.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_weapon.c(26) : warning C4211: nonstandard extension used : redefined extern to static
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_weapon.c(872) : warning C4100: 'effect' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_weapon.c(872) : warning C4100: 'hyper' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\p_weapon.c(1032) : warning C4101: 'angles' : unreferenced local variable
+q_shared.c
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\q_shared.c(266) : warning C4100: 'f' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\q_shared.c(418) : warning C4100: 'p' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\q_shared.c(418) : warning C4100: 'emaxs' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\q_shared.c(418) : warning C4100: 'emins' : unreferenced formal parameter
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\q_shared.c(1113) : warning C4127: conditional expression is constant
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\q_shared.c(1265) : warning C4127: conditional expression is constant
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\q_shared.c(1309) : warning C4127: conditional expression is constant
+\\tsclient\C\Users\HavoK\Desktop\WarZone\ctf\q_shared.c(1282) : warning C4702: unreachable code
+Linking...
+   Creating library .\release/gamex86.lib and object .\release/gamex86.exp
+Creating temporary file "C:\DOCUME~1\XPMUser\LOCALS~1\Temp\RSP343.tmp" with contents
+[
+/nologo /o".\release/ctf.bsc" 
+.\release\g_ai.sbr
+.\release\g_chase.sbr
+.\release\g_cmds.sbr
+.\release\g_combat.sbr
+.\release\g_ctf.sbr
+.\release\g_func.sbr
+.\release\g_items.sbr
+.\release\g_main.sbr
+.\release\g_misc.sbr
+.\release\g_monster.sbr
+.\release\g_phys.sbr
+.\release\g_save.sbr
+.\release\g_spawn.sbr
+.\release\g_svcmds.sbr
+.\release\g_target.sbr
+.\release\g_trigger.sbr
+.\release\g_utils.sbr
+.\release\g_weapon.sbr
+.\release\m_move.sbr
+.\release\p_client.sbr
+.\release\p_hud.sbr
+.\release\p_menu.sbr
+.\release\p_trail.sbr
+.\release\p_view.sbr
+.\release\p_weapon.sbr
+.\release\q_shared.sbr]
+Creating command line "bscmake.exe @C:\DOCUME~1\XPMUser\LOCALS~1\Temp\RSP343.tmp"
+Creating browse info file...
+<h3>Output Window</h3>
 
-Project's tools are:
-			"OLE Type Library Maker" with flags "/nologo /D "_DEBUG" /mktyplib203 /o NUL /win32 "
-			"C/C++ Compiler for Alpha" with flags "/nologo /MTd /Gt0 /W3 /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /FR".\DebugAXP/" /Fp".\DebugAXP/ctf.pch" /YX /Fo".\DebugAXP/" /Fd".\DebugAXP/" /FD /c "
-			"Win32 Resource Compiler" with flags "/l 0x409 /d "_DEBUG" "
-			"Browser Database Maker" with flags "/nologo /o"..\DebugAXP/ctf.bsc" "
-			"COFF Linker for Alpha" with flags "winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /subsystem:windows /dll /incremental:no /pdb:"..\DebugAXP/gameaxp.pdb" /map:".\DebugAXP/gameaxp.map" /debug /machine:ALPHA /def:".\ctf.def" /out:".\debugAXP\gameaxp.dll" /implib:"..\DebugAXP/gameaxp.lib" /pdbtype:sept "
-			"Custom Build" with flags ""
-			"<Component 0xa>" with flags ""
 
 
-
-
-gameaxp.dll - 0 error(s), 0 warning(s)
+<h3>Results</h3>
+gamex86.dll - 0 error(s), 248 warning(s)
+</pre>
+</body>
+</html>

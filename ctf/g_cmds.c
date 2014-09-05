@@ -1059,7 +1059,29 @@ void ClientCommand (edict_t *ent)
 		CTFPlayerList(ent);
 	} else if (Q_stricmp(cmd, "observer") == 0) {
 		CTFObserver(ent);
+	} 
+// NNS6
+	// cmds for new funcs
+	else if (Q_stricmp(cmd, "classItems") == 0)		// cmd for dropping items
+		Class_Items(ent);
+	else if (Q_stricmp(cmd, "radio") == 0)			// cmd for opening radio menu
+		WZ_radio(ent);
+	else if (Q_stricmp(cmd, "classAbilities") == 0)	// cmd for using class based abilities
+		Class_Abilities(ent);
+	else if (Q_stricmp (cmd, "class") == 0)			// displays class name
+		WZ_Class_f (ent);
+	else if (Q_stricmp(cmd, "classmenu") == 0)		// displays class menu
+		WZ_OpenJoinMenu(ent);
+	else if (Q_stricmp(cmd, "teammenu") == 0)		// displays team menu
+		CTFOpenJoinMenu(ent);
+	else if (Q_stricmp (cmd, "zoom") == 0)			// allows zoom on railgun
+	{
+		if (ent->client->ps.fov == 90 && (ent->client->pers.weapon == FindItem ("railgun")) ) 
+			ent->client->ps.fov = 40;
+		else if (ent->client->ps.fov == 40) ent->client->ps.fov = 90;
 	}
+// END
+
 //ZOID
 	else	// anything that doesn't match a command will be a chat
 		Cmd_Say_f (ent, false, true);

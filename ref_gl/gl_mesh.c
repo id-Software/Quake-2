@@ -542,9 +542,30 @@ void R_DrawAliasModel (entity_t *e)
 	// get lighting information
 	//
 	// PMM - rewrote, reordered to handle new shells & mixing
+	// PMM - 3.20 code .. replaced with original way of doing it to keep mod authors happy
 	//
 	if ( currententity->flags & ( RF_SHELL_HALF_DAM | RF_SHELL_GREEN | RF_SHELL_RED | RF_SHELL_BLUE | RF_SHELL_DOUBLE ) )
 	{
+		VectorClear (shadelight);
+		if (currententity->flags & RF_SHELL_HALF_DAM)
+		{
+				shadelight[0] = 0.56;
+				shadelight[1] = 0.59;
+				shadelight[2] = 0.45;
+		}
+		if ( currententity->flags & RF_SHELL_DOUBLE )
+		{
+			shadelight[0] = 0.9;
+			shadelight[1] = 0.7;
+		}
+		if ( currententity->flags & RF_SHELL_RED )
+			shadelight[0] = 1.0;
+		if ( currententity->flags & RF_SHELL_GREEN )
+			shadelight[1] = 1.0;
+		if ( currententity->flags & RF_SHELL_BLUE )
+			shadelight[2] = 1.0;
+	}
+/*
 		// PMM -special case for godmode
 		if ( (currententity->flags & RF_SHELL_RED) &&
 			(currententity->flags & RF_SHELL_BLUE) &&
@@ -607,6 +628,7 @@ void R_DrawAliasModel (entity_t *e)
 	//			}
 	//		}
 	// pmm
+*/
 	else if ( currententity->flags & RF_FULLBRIGHT )
 	{
 		for (i=0 ; i<3 ; i++)

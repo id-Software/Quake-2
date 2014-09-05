@@ -56,7 +56,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib /nologo /subsystem:windows /dll /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib /nologo /subsystem:windows /dll /machine:I386 /out:"\\tsclient\C\Program Files (x86)\Steam\steamapps\common\quake 2\ref_soft.dll"
 # SUBTRACT LINK32 /debug
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -171,7 +171,7 @@ SOURCE=..\game\q_shared.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_Q_SHA=\
-	"..\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -179,13 +179,13 @@ DEP_CPP_Q_SHA=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_Q_SHA=\
-	"..\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_Q_SHA=\
-	"..\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
 	
 
 !ENDIF 
@@ -198,10 +198,10 @@ SOURCE=..\win32\q_shwin.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_Q_SHW=\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\winquake.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\winquake.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -209,19 +209,19 @@ DEP_CPP_Q_SHW=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_Q_SHW=\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\winquake.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\winquake.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_Q_SHW=\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\winquake.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\winquake.h"\
 	
 
 !ENDIF 
@@ -234,12 +234,12 @@ SOURCE=.\r_aclip.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_ACL=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -247,23 +247,23 @@ DEP_CPP_R_ACL=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_ACL=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_ACL=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -315,13 +315,13 @@ SOURCE=.\r_alias.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_ALI=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\anorms.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -329,25 +329,25 @@ DEP_CPP_R_ALI=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_ALI=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\anorms.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_ALI=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\anorms.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -360,12 +360,12 @@ SOURCE=.\r_bsp.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_BSP=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -373,23 +373,23 @@ DEP_CPP_R_BSP=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_BSP=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_BSP=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -402,12 +402,12 @@ SOURCE=.\r_draw.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_DRA=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -415,23 +415,23 @@ DEP_CPP_R_DRA=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_DRA=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_DRA=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -522,12 +522,12 @@ SOURCE=.\r_edge.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_EDG=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -535,23 +535,23 @@ DEP_CPP_R_EDG=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_EDG=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_EDG=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -603,12 +603,12 @@ SOURCE=.\r_image.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_IMA=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -616,23 +616,23 @@ DEP_CPP_R_IMA=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_IMA=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_IMA=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -645,12 +645,12 @@ SOURCE=.\r_light.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_LIG=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -658,23 +658,23 @@ DEP_CPP_R_LIG=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_LIG=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_LIG=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -687,12 +687,12 @@ SOURCE=.\r_main.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_MAI=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -700,23 +700,23 @@ DEP_CPP_R_MAI=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_MAI=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_MAI=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -729,12 +729,12 @@ SOURCE=.\r_misc.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_MIS=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -742,23 +742,23 @@ DEP_CPP_R_MIS=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_MIS=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_MIS=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -771,12 +771,12 @@ SOURCE=.\r_model.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_MOD=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -784,23 +784,23 @@ DEP_CPP_R_MOD=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_MOD=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_MOD=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -813,12 +813,12 @@ SOURCE=.\r_part.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_PAR=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -826,23 +826,23 @@ DEP_CPP_R_PAR=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_PAR=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_PAR=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -855,12 +855,12 @@ SOURCE=.\r_poly.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_POL=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -868,23 +868,23 @@ DEP_CPP_R_POL=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_POL=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_POL=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -932,14 +932,14 @@ SOURCE=.\r_polyse.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_POLY=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\adivtab.h"\
 	".\r_local.h"\
 	".\r_model.h"\
 	".\rand1k.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -947,27 +947,27 @@ DEP_CPP_R_POLY=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_POLY=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\adivtab.h"\
 	".\r_local.h"\
 	".\r_model.h"\
 	".\rand1k.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_POLY=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\adivtab.h"\
 	".\r_local.h"\
 	".\r_model.h"\
 	".\rand1k.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -980,12 +980,12 @@ SOURCE=.\r_rast.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_RAS=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -993,23 +993,23 @@ DEP_CPP_R_RAS=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_RAS=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_RAS=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -1022,12 +1022,12 @@ SOURCE=.\r_scan.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_SCA=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -1035,23 +1035,23 @@ DEP_CPP_R_SCA=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_SCA=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_SCA=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -1142,12 +1142,12 @@ SOURCE=.\r_sprite.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_SPR=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -1155,23 +1155,23 @@ DEP_CPP_R_SPR=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_SPR=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_SPR=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -1184,12 +1184,12 @@ SOURCE=.\r_surf.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_R_SUR=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -1197,23 +1197,23 @@ DEP_CPP_R_SUR=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_R_SUR=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_R_SUR=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
 	
 
 !ENDIF 
@@ -1304,13 +1304,13 @@ SOURCE=..\win32\rw_ddraw.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_RW_DD=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\rw_win.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\rw_win.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -1318,25 +1318,25 @@ DEP_CPP_RW_DD=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_RW_DD=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\rw_win.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\rw_win.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_RW_DD=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\rw_win.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\rw_win.h"\
 	
 
 !ENDIF 
@@ -1349,13 +1349,13 @@ SOURCE=..\win32\rw_dib.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_RW_DI=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\rw_win.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\rw_win.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -1363,25 +1363,25 @@ DEP_CPP_RW_DI=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_RW_DI=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\rw_win.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\rw_win.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_RW_DI=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\rw_win.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\rw_win.h"\
 	
 
 !ENDIF 
@@ -1394,14 +1394,14 @@ SOURCE=..\win32\rw_imp.c
 !IF  "$(CFG)" == "ref_soft - Win32 Release"
 
 DEP_CPP_RW_IM=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\rw_win.h"\
-	"..\win32\winquake.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\rw_win.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\winquake.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug"
@@ -1409,27 +1409,27 @@ DEP_CPP_RW_IM=\
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Debug Alpha"
 
 DEP_CPP_RW_IM=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\rw_win.h"\
-	"..\win32\winquake.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\rw_win.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\winquake.h"\
 	
 
 !ELSEIF  "$(CFG)" == "ref_soft - Win32 Release Alpha"
 
 DEP_CPP_RW_IM=\
-	"..\client\ref.h"\
-	"..\game\q_shared.h"\
-	"..\qcommon\qcommon.h"\
-	"..\qcommon\qfiles.h"\
-	"..\win32\rw_win.h"\
-	"..\win32\winquake.h"\
 	".\r_local.h"\
 	".\r_model.h"\
+	"\Users\HavoK\Desktop\WarZone\client\ref.h"\
+	"\Users\HavoK\Desktop\WarZone\game\q_shared.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qcommon.h"\
+	"\Users\HavoK\Desktop\WarZone\qcommon\qfiles.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\rw_win.h"\
+	"\Users\HavoK\Desktop\WarZone\win32\winquake.h"\
 	
 
 !ENDIF 
