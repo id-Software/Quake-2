@@ -1,8 +1,25 @@
+/*
+Copyright (C) 1997-2001 Id Software, Inc.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+*/
 // Main windowed and fullscreen graphics interface module. This module
 // is used for both the software and OpenGL rendering versions of the
 // Quake refresh engine.
-
-#define SO_FILE "/etc/quake2.conf"
 
 #include <assert.h>
 #include <dlfcn.h> // ELF dl loader
@@ -30,6 +47,8 @@ void		*reflib_library;		// Handle to refresh DLL
 qboolean	reflib_active = 0;
 
 #define VID_NUM_MODES ( sizeof( vid_modes ) / sizeof( vid_modes[0] ) )
+
+const char so_file[] = "/etc/quake2.conf";
 
 /** KEYBOARD **************************************************************/
 
@@ -127,7 +146,8 @@ vidmode_t vid_modes[] =
 	{ "Mode 6: 1024x768",  1024, 768,  6 },
 	{ "Mode 7: 1152x864",  1152, 864,  7 },
 	{ "Mode 8: 1280x1024",  1280, 1024, 8 },
-	{ "Mode 9: 1600x1200", 1600, 1200, 9 }
+	{ "Mode 9: 1600x1200", 1600, 1200, 9 },
+	{ "Mode 10: 2048x1536", 2048, 1536, 10 }
 };
 
 qboolean VID_GetModeInfo( int *width, int *height, int mode )
@@ -206,13 +226,13 @@ qboolean VID_LoadRefresh( char *name )
 	//regain root
 	seteuid(saved_euid);
 
-	if ((fp = fopen(SO_FILE, "r")) == NULL) {
-		Com_Printf( "LoadLibrary(\"%s\") failed: can't open " SO_FILE " (required for location of ref libraries)\n", name);
+	if ((fp = fopen(so_file, "r")) == NULL) {
+		Com_Printf( "LoadLibrary(\"%s\") failed: can't open %s (required for location of ref libraries)\n", name, so_file);
 		return false;
 	}
 	fgets(fn, sizeof(fn), fp);
 	fclose(fp);
-	if (*fn && fn[strlen(fn) - 1] == '\n')
+	while (*fn && isspace(fn[strlen(fn) - 1]))
 		fn[strlen(fn) - 1] = 0;
 
 	strcat(fn, "/");
@@ -224,11 +244,11 @@ qboolean VID_LoadRefresh( char *name )
 			Com_Printf( "LoadLibrary(\"%s\") failed: %s\n", name, strerror(errno));
 			return false;
 		}
+#if 0
 		if (st.st_uid != 0) {
 			Com_Printf( "LoadLibrary(\"%s\") failed: ref is not owned by root\n", name);
 			return false;
 		}
-#if 0
 		if ((st.st_mode & 0777) & ~0700) {
 			Com_Printf( "LoadLibrary(\"%s\") failed: invalid permissions, must be 700 for security considerations\n", name);
 			return false;
@@ -240,11 +260,13 @@ qboolean VID_LoadRefresh( char *name )
 		setegid(getgid());
 	}
 
-	if ( ( reflib_library = dlopen( fn, RTLD_NOW ) ) == 0 )
+	if ( ( reflib_library = dlopen( fn, RTLD_LAZY | RTLD_GLOBAL ) ) == 0 )
 	{
 		Com_Printf( "LoadLibrary(\"%s\") failed: %s\n", name , dlerror());
 		return false;
 	}
+
+  Com_Printf( "LoadLibrary(\"%s\")\n", fn );
 
 	ri.Cmd_AddCommand = Cmd_AddCommand;
 	ri.Cmd_RemoveCommand = Cmd_RemoveCommand;
@@ -440,7 +462,7 @@ void VID_Shutdown (void)
 
 cvar_t	*in_joystick;
 
-// This if fake, it's acutally done by the Refresh load
+// This is fake, it's acutally done by the Refresh load
 void IN_Init (void)
 {
 	in_joystick	= Cvar_Get ("in_joystick", "0", CVAR_ARCHIVE);
@@ -472,14 +494,20 @@ void IN_Move (usercmd_t *cmd)
 
 void IN_Frame (void)
 {
+	if (RW_IN_Activate_fp) 
+	{
+		if ( !cl.refresh_prepped || cls.key_dest == key_console || cls.key_dest == key_menu)
+			RW_IN_Activate_fp(false);
+		else
+			RW_IN_Activate_fp(true);
+	}
+
 	if (RW_IN_Frame_fp)
 		RW_IN_Frame_fp();
 }
 
 void IN_Activate (qboolean active)
 {
-	if (RW_IN_Activate_fp)
-		RW_IN_Activate_fp(active);
 }
 
 void Do_Key_Event(int key, qboolean down)

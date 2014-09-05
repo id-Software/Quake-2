@@ -20,8 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "g_local.h"
 #include "m_player.h"
 
-void ClientUserinfoChanged (edict_t *ent, char *userinfo);
-
 void SP_misc_teleporter_dest (edict_t *ent);
 
 //
@@ -293,6 +291,8 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 			return;
 		}
 
+	// NNS6
+		// change some MOD's based on weapons
 		self->enemy = attacker;
 		if (attacker && attacker->client)
 		{
@@ -302,11 +302,11 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 				message = "was blasted by";
 				break;
 			case MOD_SHOTGUN:
-				message = "was gunned down by";
+				message = "was gibberated by";
 				break;
 			case MOD_SSHOTGUN:
-				message = "was blown away by";
-				message2 = "'s super shotgun";
+				message = "was gibberated by";
+				message2 = "'s gibberator";
 				break;
 			case MOD_MACHINEGUN:
 				message = "was machinegunned by";
@@ -316,7 +316,7 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 				message2 = "'s chaingun";
 				break;
 			case MOD_GRENADE:
-				message = "was popped by";
+				message = "was sucked into oblivion by";
 				message2 = "'s grenade";
 				break;
 			case MOD_G_SPLASH:
@@ -336,7 +336,7 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 				message2 = "'s hyperblaster";
 				break;
 			case MOD_RAILGUN:
-				message = "was railed by";
+				message = "was sniped by";
 				break;
 			case MOD_BFG_LASER:
 				message = "saw the pretty lights from";
@@ -351,8 +351,8 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 				message2 = "'s BFG";
 				break;
 			case MOD_HANDGRENADE:
-				message = "caught";
-				message2 = "'s handgrenade";
+				message = "was sucked into oblivion by";
+				message2 = "'s grapple grenade";
 				break;
 			case MOD_HG_SPLASH:
 				message = "didn't see";
@@ -371,6 +371,7 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 				message = "was caught by";
 				message2 = "'s grapple";
 				break;
+			// END
 //ZOID
 
 			}
@@ -382,7 +383,13 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 					if (ff)
 						attacker->client->resp.score--;
 					else
+					{
 						attacker->client->resp.score++;
+						// NNS6
+						// increment xp per kill by 10
+						attacker->client->pers.curr_xp +=10;
+						// END
+					}
 				}
 				return;
 			}
@@ -516,6 +523,10 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 		self->client->respawn_time = level.time + 1.0;
 		LookAtKiller (self, inflictor, attacker);
 		self->client->ps.pmove.pm_type = PM_DEAD;
+		// NNS6
+		// sets it to dead wen player is dead
+		self->client->resp.WZ_alive = 0;
+		// END
 		ClientObituary (self, inflictor, attacker);
 //ZOID
 		// if at start and same team, clear
@@ -528,7 +539,9 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 
 		CTFFragBonuses(self, inflictor, attacker);
 //ZOID
-		TossClientWeapon (self);
+	// NNS6 // prevents player from dropping weapons after death
+		//		TossClientWeapon (self);
+	// END
 //ZOID
 		CTFPlayerResetGrapple(self);
 		CTFDeadDropFlag(self);
@@ -543,6 +556,7 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 	self->client->invincible_framenum = 0;
 	self->client->breather_framenum = 0;
 	self->client->enviro_framenum = 0;
+	self->flags &= ~FL_POWER_ARMOR;
 
 	// clear inventory
 	memset(self->client->pers.inventory, 0, sizeof(self->client->pers.inventory));
@@ -618,6 +632,9 @@ void InitClientPersistant (gclient_t *client)
 	client->pers.inventory[client->pers.selected_item] = 1;
 
 	client->pers.weapon = item;
+/*// NNS6
+// prevents grappling hook from being added
+// prevents last weapon to be the chosen one 
 //ZOID
 	client->pers.lastweapon = item;
 //ZOID
@@ -626,9 +643,10 @@ void InitClientPersistant (gclient_t *client)
 	item = FindItem("Grapple");
 	client->pers.inventory[ITEM_INDEX(item)] = 1;
 //ZOID
+// END*/
 
 	client->pers.health			= 100;
-	client->pers.max_health		= 100;
+	client->pers.max_health		= 200;
 
 	client->pers.max_bullets	= 200;
 	client->pers.max_shells		= 100;
@@ -637,6 +655,18 @@ void InitClientPersistant (gclient_t *client)
 	client->pers.max_cells		= 200;
 	client->pers.max_slugs		= 50;
 
+	// NNS6 
+	// change values here to affect the entire game requirement
+	// max_cItems for number of items a player can have each life
+	// req_exp for the xp required to activate abilities
+	// conn checks whether player connected or just spawned an plays spawn sound
+	client->pers.max_cItems		= 5;
+	client->pers.req_xp			= 30;
+	client->pers.conn = 1;
+	// end
+
+	
+	
 	client->pers.connected = true;
 }
 
@@ -686,7 +716,7 @@ void SaveClientData (void)
 			continue;
 		game.clients[i].pers.health = ent->health;
 		game.clients[i].pers.max_health = ent->max_health;
-		game.clients[i].pers.powerArmorActive = (ent->flags & FL_POWER_ARMOR);
+		game.clients[i].pers.savedFlags = (ent->flags & (FL_GODMODE|FL_NOTARGET|FL_POWER_ARMOR));
 		if (coop->value)
 			game.clients[i].pers.score = ent->client->resp.score;
 	}
@@ -696,8 +726,7 @@ void FetchClientEntData (edict_t *ent)
 {
 	ent->health = ent->client->pers.health;
 	ent->max_health = ent->client->pers.max_health;
-	if (ent->client->pers.powerArmorActive)
-		ent->flags |= FL_POWER_ARMOR;
+	ent->flags |= ent->client->pers.savedFlags;
 	if (coop->value)
 		ent->client->resp.score = ent->client->pers.score;
 }
@@ -1057,6 +1086,10 @@ void PutClientInServer (edict_t *ent)
 	int		i;
 	client_persistant_t	saved;
 	client_respawn_t	resp;
+	// NNS6
+	// new varialbe to allow addition of items
+	gitem_t	*item;
+	// END
 
 	// find a spawn point
 	// do it before setting health back up, so farthest
@@ -1065,6 +1098,11 @@ void PutClientInServer (edict_t *ent)
 
 	index = ent-g_edicts-1;
 	client = ent->client;
+
+	// NNS6
+	// declares player is alive
+	ent->client->resp.WZ_alive = 1;
+	// END
 
 	// deathmatch wipes most client data every spawn
 	if (deathmatch->value)
@@ -1195,10 +1233,72 @@ void PutClientInServer (edict_t *ent)
 
 	gi.linkentity (ent);
 
+	// NNS6
+	// adds items according to class
+	if(ent->client->resp.WZ_class == 1)
+	{
+		item = FindItem("Super Shotgun");
+		client->pers.selected_item = ITEM_INDEX(item);
+		client->pers.inventory[client->pers.selected_item] = 3;
+
+		item = FindItem("Shells");
+		index = ITEM_INDEX(item);
+		client->pers.inventory[index] += item->quantity*2;
+
+		item = FindItem("Rocket Launcher");
+		client->pers.selected_item = ITEM_INDEX(item);
+		client->pers.inventory[client->pers.selected_item] = 8;
+
+		item = FindItem("Rockets");
+		index = ITEM_INDEX(item);
+		client->pers.inventory[index] += item->quantity*2;
+	}
+	
+	if(ent->client->resp.WZ_class == 2)
+	{
+		item = FindItem("Shotgun");
+		client->pers.selected_item = ITEM_INDEX(item);
+		client->pers.inventory[client->pers.selected_item] = 2;
+
+		item = FindItem("Shells");
+		index = ITEM_INDEX(item);
+		client->pers.inventory[index] += item->quantity*2;
+
+		item = FindItem("Machinegun");
+		client->pers.selected_item = ITEM_INDEX(item);
+		client->pers.inventory[client->pers.selected_item] = 4;
+
+		item = FindItem("Bullets");
+		index = ITEM_INDEX(item);
+		client->pers.inventory[index] += item->quantity*3;
+	}
+
+	if(ent->client->resp.WZ_class == 3)
+	{
+		item = FindItem("Chaingun");
+		client->pers.selected_item = ITEM_INDEX(item);
+		client->pers.inventory[client->pers.selected_item] = 5;
+
+		item = FindItem("Bullets");
+		index = ITEM_INDEX(item);
+		client->pers.inventory[index] += item->quantity*2;
+	
+		item = FindItem("Railgun");
+		client->pers.selected_item = ITEM_INDEX(item);
+		client->pers.inventory[client->pers.selected_item] = 10;
+
+		item = FindItem("Slugs");
+		index = ITEM_INDEX(item);
+		client->pers.inventory[index] += item->quantity;
+	}
+
+	// END
+
 	// force the current weapon up
 	client->newweapon = client->pers.weapon;
 	ChangeWeapon (ent);
 }
+
 
 /*
 =====================
@@ -1217,11 +1317,18 @@ void ClientBeginDeathmatch (edict_t *ent)
 	// locate ent at a spawn point
 	PutClientInServer (ent);
 
-	// send effect
-	gi.WriteByte (svc_muzzleflash);
-	gi.WriteShort (ent-g_edicts);
-	gi.WriteByte (MZ_LOGIN);
-	gi.multicast (ent->s.origin, MULTICAST_PVS);
+	if (level.intermissiontime)
+	{
+		MoveClientToIntermission (ent);
+	}
+	else
+	{
+		// send effect
+		gi.WriteByte (svc_muzzleflash);
+		gi.WriteShort (ent-g_edicts);
+		gi.WriteByte (MZ_LOGIN);
+		gi.multicast (ent->s.origin, MULTICAST_PVS);
+	}
 
 	gi.bprintf (PRINT_HIGH, "%s entered the game\n", ent->client->pers.netname);
 
@@ -1308,6 +1415,9 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo)
 {
 	char	*s;
 	int		playernum;
+	char	*name;
+	char	*lentot;
+
 
 	// check for malformed or illegal info strings
 	if (!Info_Validate(userinfo))
@@ -1318,6 +1428,34 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo)
 	// set name
 	s = Info_ValueForKey (userinfo, "name");
 	strncpy (ent->client->pers.netname, s, sizeof(ent->client->pers.netname)-1);
+	
+	
+	// NNS6
+	// this is done to first fill in the name related data to the userinfo string
+	// because there was a possibility of it being lost
+	name = strncpy (ent->client->pers.netname, s, sizeof(ent->client->pers.netname)-1);
+	strcpy (lentot, "\\name\\");
+	strcat (lentot, name);
+	// END
+
+	// NNS6	
+	// after name the skin and model strings are handeled
+	if (ent->client->resp.WZ_class == 1)
+	{
+		strcat (lentot, "\\skin\\terran/ice_warrior");
+		strcpy (userinfo, lentot);		
+	}
+	else if (ent->client->resp.WZ_class == 2)
+	{
+		strcat (lentot, "\\skin\\female/athena");
+		strcpy (userinfo, lentot);
+	}
+	else if (ent->client->resp.WZ_class == 3)
+	{
+			strcat (lentot, "\\skin\\male/grunt");
+			strcpy (userinfo, lentot);
+	}
+	// END
 
 	// set skin
 	s = Info_ValueForKey (userinfo, "skin");
@@ -1331,6 +1469,11 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo)
 	else
 //ZOID
 		gi.configstring (CS_PLAYERSKINS+playernum, va("%s\\%s", ent->client->pers.netname, s) );
+
+//ZOID
+	// set player name field (used in id_state view)
+	gi.configstring (CS_GENERAL+playernum, ent->client->pers.netname);
+//ZOID
 
 	// fov
 	if (deathmatch->value && ((int)dmflags->value & DF_FIXED_FOV))
@@ -1352,6 +1495,8 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo)
 	{
 		ent->client->pers.hand = atoi(s);
 	}
+
+
 
 	// save off the userinfo in case we want to check something later
 	strncpy (ent->client->pers.userinfo, userinfo, sizeof(ent->client->pers.userinfo)-1);
@@ -1376,6 +1521,11 @@ qboolean ClientConnect (edict_t *ent, char *userinfo)
 
 	// check to see if they are on the banned IP list
 	value = Info_ValueForKey (userinfo, "ip");
+	if (SV_FilterPacket(value)) {
+		Info_SetValueForKey(userinfo, "rejmsg", "Banned.");
+		return false;
+	}
+
 
 	// check for a password
 	value = Info_ValueForKey (userinfo, "password");
@@ -1395,7 +1545,7 @@ qboolean ClientConnect (edict_t *ent, char *userinfo)
 		// clear the respawning variables
 //ZOID -- force team join
 		ent->client->resp.ctf_team = -1;
-		ent->client->resp.id_state = false; 
+		ent->client->resp.id_state = true; 
 //ZOID
 		InitClientResp (ent->client);
 		if (!game.autosaved || !ent->client->pers.weapon)
@@ -1497,8 +1647,78 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 	int		i, j;
 	pmove_t	pm;
 
+	// NNS6 
+	float		ClassSpeedModifier, t;
+	// custom vect and given ones to  help in
+	// implementing speed mode
+	vec3_t		velo;		
+	vec3_t		end, forward, right, up,add;
+	// end
+
+
 	level.current_entity = ent;
 	client = ent->client;
+
+	// NNS6
+	// spawn sound effect
+	if(ent->client->pers.conn == 1)
+	{
+		gi.sound(ent, CHAN_WEAPON, gi.soundindex("weapons/spawn.wav"), 1, ATTN_NORM, 0);
+		ent->client->pers.conn = 0;
+	}
+
+	// zoom check
+	if (!(ent->client->pers.weapon == FindItem ("railgun")))
+	{
+		ent->client->ps.fov = 90; 
+	}
+	
+	// reload sound
+	if (ent->client->pers.reload_enable == 1)
+	{
+		ent->client->pers.rem_time++;
+		if (ent->client->pers.rem_time == 50)
+		{
+			gi.sound (ent, CHAN_VOICE, gi.soundindex ("weapons/awp-reload.wav"), 1, ATTN_NORM, 0);
+			ent->client->pers.reload_enable = 0;
+			ent->client->pers.rem_time = 0;
+		}
+	}
+	// END
+
+	// NNS6
+	// Abilities
+	// Cloak
+	// Cloak works by using the same commands used by 
+	// spectator mode
+	if (ent->client->pers.ability_engaged == true && ent->client->resp.WZ_class == 3)
+	{
+		ent->svflags |= SVF_NOCLIENT;
+		ent->client->pers.rem_time--;
+		if (ent->client->pers.rem_time == 0)
+		{
+			ent->svflags &= ~SVF_NOCLIENT;
+			ent->client->pers.ability_engaged = false;
+		}
+	}
+	// this is needed so that player will actually reappear each time
+	// he tries to move
+	VectorCopy (pm.viewangles, client->v_angle);
+	VectorCopy (pm.viewangles, client->ps.viewangles);
+	if (ucmd->forwardmove != 0 ||  ucmd->sidemove  != 0 && ent->svflags &SVF_NOCLIENT)
+	{
+		ent->svflags &= ~SVF_NOCLIENT;
+		if (ent->client->pers.ability_engaged == true && ent->client->resp.WZ_class == 3)
+		{
+			// effect to show the player appearing and dissapearing
+			gi.WriteByte (svc_temp_entity);
+			gi.WriteByte (TE_BFG_EXPLOSION);
+			gi.WritePosition (ent->s.origin);
+			gi.multicast (ent->s.origin, MULTICAST_PHS);
+		}	
+	}
+	
+//  END
 
 	if (level.intermissiontime)
 	{
@@ -1524,14 +1744,29 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 	// set up for pmove
 	memset (&pm, 0, sizeof(pm));
 
+	// NNS6
+	// changes the WZ_alive var according to the situation
 	if (ent->movetype == MOVETYPE_NOCLIP)
+	{
+		ent->client->resp.WZ_alive = 0;
 		client->ps.pmove.pm_type = PM_SPECTATOR;
+	}
 	else if (ent->s.modelindex != 255)
+	{
+		ent->client->resp.WZ_alive = 0;
 		client->ps.pmove.pm_type = PM_GIB;
+	}
 	else if (ent->deadflag)
+	{
+		ent->client->resp.WZ_alive = 0;
 		client->ps.pmove.pm_type = PM_DEAD;
+	}
 	else
+	{
+		ent->client->resp.WZ_alive = 1;
 		client->ps.pmove.pm_type = PM_NORMAL;
+	}
+// END
 
 	client->ps.pmove.gravity = sv_gravity->value;
 	pm.s = client->ps.pmove;
@@ -1575,7 +1810,11 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 
 	if (ent->groundentity && !pm.groundentity && (pm.cmd.upmove >= 10) && (pm.waterlevel == 0))
 	{
-		gi.sound(ent, CHAN_VOICE, gi.soundindex("*jump1.wav"), 1, ATTN_NORM, 0);
+//		gi.sound(ent, CHAN_VOICE, gi.soundindex("*jump1.wav"), 1, ATTN_NORM, 0);
+		// NNS6
+		// new jump sound
+		gi.sound(ent, CHAN_AUTO, gi.soundindex("weapons/mjump.wav"), 1, ATTN_NORM, 0);
+		// END
 		PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
 	}
 
@@ -1664,6 +1903,83 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 		client->menudirty = false;
 	}
 //ZOID
+
+	// NNS6 
+	// Speed mode
+	
+	if (ent->client->pers.ability_engaged == true && ent->client->resp.WZ_class == 2 && ent->client->pers.rem_time !=0)
+	{
+	
+	ent->client->pers.rem_time--;
+	ent->ClassSpeed = 16;
+
+	// effect
+	gi.WriteByte (svc_temp_entity);
+	gi.WriteByte (TE_PLASMA_EXPLOSION);
+	gi.WritePosition (ent->s.origin);
+	gi.multicast (ent->s.origin, MULTICAST_PHS);
+
+	ClassSpeedModifier = ent->ClassSpeed * 0.2;
+	// Getting speed for forward motion
+	VectorClear (velo);
+	AngleVectors (ent->client->v_angle, forward, right, up);
+    VectorScale(forward, ucmd->forwardmove*ClassSpeedModifier, end);
+	VectorAdd(end,velo,velo);
+	// Getting speed for sideward motion
+	// ucmd->sidemove*ClassSpeedModifier/2.5
+	// to get smoother transition in movement
+	AngleVectors (ent->client->v_angle, forward, right, up);
+    VectorScale(right, ucmd->sidemove*ClassSpeedModifier/2.5, end);
+	VectorAdd(end,velo,velo);
+	// Getting speed for sideward motion
+	// ucmd->upmove*ClassSpeedModifier*4.0
+	// to get higher jumps according to the speed
+	AngleVectors (ent->client->v_angle, forward, right, up);
+    VectorScale(up, ucmd->upmove*ClassSpeedModifier*4.0, end);
+	VectorAdd(end,velo,velo);
+	
+	// no water check
+	// speed stays same even in water
+	// keeps z movement restricted
+	if (ent->waterlevel == 0)
+	{
+		velo[2] = 0;
+	}
+	// water or land same thing
+	// i wanted same speed in both places
+	if (ent->groundentity)
+	{
+		VectorAdd(velo,ent->velocity,ent->velocity);
+	}
+	else if (ent->waterlevel)
+	{
+		VectorAdd(velo,ent->velocity,ent->velocity);
+	}
+	else
+	{
+		// Allow for a little movement but not as much
+		// the first two are low to reduce xy movement when in air as much as possible
+		// but still feel realistic and give slight air control
+		// where as z is high so that player falls 
+		// to the ground fast and not float 
+		velo[0] *= 0.0025;
+		velo[1] *= 0.0025;
+		velo[2] *= 4.0;
+		VectorAdd(velo,ent->velocity,ent->velocity);
+	}
+	// Make sure not going to fast
+	t = VectorLength(ent->velocity);
+	if (t > 300*ClassSpeedModifier || t < -300*ClassSpeedModifier)
+	{
+		VectorScale (ent->velocity, 300 * ClassSpeedModifier / t, ent->velocity);
+	}
+
+	//Set these to 0 so pmove thinks we aren't pressing forward or sideways since we are handling all the player forward and sideways speeds
+	ucmd->forwardmove = 0;
+	ucmd->sidemove = 0;
+	
+	// END
+	}
 }
 
 

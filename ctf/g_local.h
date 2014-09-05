@@ -537,6 +537,8 @@ extern	cvar_t	*password;
 extern	cvar_t	*g_select_empty;
 extern	cvar_t	*dedicated;
 
+extern	cvar_t	*filterban;
+
 extern	cvar_t	*sv_gravity;
 extern	cvar_t	*sv_maxvelocity;
 
@@ -767,6 +769,7 @@ void InitClientPersistant (gclient_t *client);
 void InitClientResp (gclient_t *client);
 void InitBodyQue (void);
 void ClientBeginServerFrame (edict_t *ent);
+void ClientUserinfoChanged (edict_t *ent, char *userinfo);
 
 //
 // g_player.c
@@ -819,6 +822,10 @@ void SaveClientData (void);
 void FetchClientEntData (edict_t *ent);
 void EndDMLevel (void);
 
+//
+// g_svcmds.c
+//
+qboolean SV_FilterPacket (char *from);
 
 //============================================================================
 
@@ -845,7 +852,7 @@ typedef struct
 	// values saved and restored from edicts when changing levels
 	int			health;
 	int			max_health;
-	qboolean	powerArmorActive;
+	int			savedFlags;
 
 	int			selected_item;
 	int			inventory[MAX_ITEMS];
@@ -863,6 +870,16 @@ typedef struct
 
 	int			power_cubes;	// used for tracking the cubes in coop games
 	int			score;			// for calculating total unit score in coop games
+	// NNS6
+	int			max_cItems;		// max items carried by each class can be changed in clientpersistant
+	int			req_xp;			// xp required to use abilities, can also be changed in clientpersistant
+	int			curr_xp;		// var holding the current xp, lasts only for each life
+	int			rem_time;		// time remaining for an acitivative ability to end
+	qboolean	ability_engaged; // checks if ability is on or not
+	int			reload_enable;	// checks if a gun went into reload
+	int			conn;			// checks if player just spawned
+	// END
+
 } client_persistant_t;
 
 // client data that stays across deathmatch respawns
@@ -871,6 +888,7 @@ typedef struct
 	client_persistant_t	coop_respawn;	// what to set client->pers to on a respawn
 	int			enterframe;			// level.framenum the client entered the game
 	int			score;				// frags, etc
+
 //ZOID
 	int			ctf_team;			// CTF team
 	int			ctf_state;
@@ -879,6 +897,7 @@ typedef struct
 	float		ctf_flagsince;
 	float		ctf_lastfraggedcarrier;
 	qboolean	id_state;
+	float		lastidtime;
 	qboolean	voted; // for elections
 	qboolean	ready;
 	qboolean	admin;
@@ -887,6 +906,11 @@ typedef struct
 	vec3_t		cmd_angles;			// angles sent over in the last command
 	int			game_helpchanged;
 	int			helpchanged;
+// NNS6
+	int			WZ_class;	// holds class value in ints
+	int			WZ_state;	// current state of the class
+	int			WZ_alive; // To check whether client is alive
+// END
 } client_respawn_t;
 
 // this structure is cleared on each PutClientInServer(),
@@ -974,6 +998,7 @@ struct gclient_s
 	int			flood_whenhead;		// head pointer for when said
 
 	float		respawn_time;		// can respawn when time > this
+
 
 //ZOID
 	void		*ctf_grapple;		// entity of grapple
@@ -1137,7 +1162,20 @@ struct edict_s
 	// common data blocks
 	moveinfo_t		moveinfo;
 	monsterinfo_t	monsterinfo;
+	// NNS6
+	int ClassSpeed; // variable used to manage speed values in speed mode
+	// END
 };
+
+// NNS6
+// prototyped funcs
+qboolean Pickup_cHealth (edict_t *ent, edict_t *other);	// health picked up or not
+qboolean Pickup_cArmor (edict_t *ent, edict_t *other);	// armor picked up or not
+qboolean Pickup_cAmmo (edict_t *ent, edict_t *other);	// ammo picked up or not
+void Class_Items(edict_t *ent);							// deals with class items
+void Class_Abilities(edict_t *ent);						// deals with class related abilities
+void WZ_radio(edict_t *ent);							// deals with ingame radio
+// END
 
 //ZOID
 #include "g_ctf.h"

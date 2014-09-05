@@ -40,6 +40,7 @@ cvar_t	*fraglimit;
 cvar_t	*timelimit;
 cvar_t	*password;
 cvar_t	*spectator_password;
+cvar_t	*needpass;
 cvar_t	*maxclients;
 cvar_t	*maxspectators;
 cvar_t	*maxentities;
@@ -268,6 +269,33 @@ void EndDMLevel (void)
 	}
 }
 
+
+/*
+=================
+CheckNeedPass
+=================
+*/
+void CheckNeedPass (void)
+{
+	int need;
+
+	// if password or spectator_password has changed, update needpass
+	// as needed
+	if (password->modified || spectator_password->modified) 
+	{
+		password->modified = spectator_password->modified = false;
+
+		need = 0;
+
+		if (*password->string && Q_stricmp(password->string, "none"))
+			need |= 1;
+		if (*spectator_password->string && Q_stricmp(spectator_password->string, "none"))
+			need |= 2;
+
+		gi.cvar_set("needpass", va("%d", need));
+	}
+}
+
 /*
 =================
 CheckDMRules
@@ -404,6 +432,9 @@ void G_RunFrame (void)
 
 	// see if it is time to end a deathmatch
 	CheckDMRules ();
+
+	// see if needpass needs updated
+	CheckNeedPass ();
 
 	// build the playerstate_t structures for all players
 	ClientEndServerFrames ();

@@ -6,13 +6,15 @@
 # ELF only
 #
 
+VERSION=3.20
+
 ifneq (,$(findstring i86pc,$(shell uname -m)))
 ARCH=i386
 else
 ARCH=sparc
 endif
 
-MOUNT_DIR=/chest/Quake2/code
+MOUNT_DIR=/grog/Projects/Quake2/code
 
 BUILD_DEBUG_DIR=debug$(ARCH)
 BUILD_RELEASE_DIR=release$(ARCH)
@@ -23,6 +25,7 @@ SOLARIS_DIR=$(MOUNT_DIR)/solaris
 GAME_DIR=$(MOUNT_DIR)/game
 CTF_DIR=$(MOUNT_DIR)/ctf
 XATRIX_DIR=$(MOUNT_DIR)/xatrix
+ROGUE_DIR=$(MOUNT_DIR)/rogue
 NULL_DIR=$(MOUNT_DIR)/null
 
 CC=gcc
@@ -48,14 +51,16 @@ DO_SHLIB_CC=$(CC) $(CFLAGS) $(SHLIBCFLAGS) -o $@ -c $<
 TARGETS=$(BUILDDIR)/q2ded \
 	$(BUILDDIR)/game$(ARCH).$(SHLIBEXT) \
 	$(BUILDDIR)/ctf/game$(ARCH).$(SHLIBEXT) \
-	$(BUILDDIR)/xatrix/game$(ARCH).$(SHLIBEXT)
+	$(BUILDDIR)/xatrix/game$(ARCH).$(SHLIBEXT) \
+	$(BUILDDIR)/rogue/game$(ARCH).$(SHLIBEXT)
 
 build_debug:
 	@-mkdir $(BUILD_DEBUG_DIR) \
 		$(BUILD_DEBUG_DIR)/client \
 		$(BUILD_DEBUG_DIR)/game \
 		$(BUILD_DEBUG_DIR)/ctf \
-		$(BUILD_DEBUG_DIR)/xatrix
+		$(BUILD_DEBUG_DIR)/xatrix \
+		$(BUILD_DEBUG_DIR)/rogue
 	$(MAKE) targets BUILDDIR=$(BUILD_DEBUG_DIR) CFLAGS="$(DEBUG_CFLAGS)"
 
 build_release:
@@ -63,7 +68,8 @@ build_release:
 		$(BUILD_RELEASE_DIR)/client \
 		$(BUILD_RELEASE_DIR)/game \
 		$(BUILD_RELEASE_DIR)/ctf \
-		$(BUILD_RELEASE_DIR)/xatrix
+		$(BUILD_RELEASE_DIR)/xatrix \
+		$(BUILD_RELEASE_DIR)/rogue
 	$(MAKE) targets BUILDDIR=$(BUILD_RELEASE_DIR) CFLAGS="$(RELEASE_CFLAGS)"
 
 all: build_debug build_release
@@ -189,6 +195,7 @@ GAME_OBJS = \
 	$(BUILDDIR)/game/p_client.o \
 	$(BUILDDIR)/game/g_cmds.o \
 	$(BUILDDIR)/game/g_svcmds.o \
+	$(BUILDDIR)/game/g_chase.o \
 	$(BUILDDIR)/game/g_combat.o \
 	$(BUILDDIR)/game/g_func.o \
 	$(BUILDDIR)/game/g_items.o \
@@ -246,6 +253,9 @@ $(BUILDDIR)/game/g_cmds.o :      $(GAME_DIR)/g_cmds.c
 	$(DO_SHLIB_CC)
 
 $(BUILDDIR)/game/g_svcmds.o :    $(GAME_DIR)/g_svcmds.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/game/g_chase.o :    $(GAME_DIR)/g_chase.c
 	$(DO_SHLIB_CC)
 
 $(BUILDDIR)/game/g_combat.o :    $(GAME_DIR)/g_combat.c
@@ -497,6 +507,7 @@ $(BUILDDIR)/ctf/q_shared.o :   $(CTF_DIR)/q_shared.c
 XATRIX_OBJS = \
 	$(BUILDDIR)/xatrix/g_ai.o \
 	$(BUILDDIR)/xatrix/g_cmds.o \
+	$(BUILDDIR)/xatrix/g_chase.o \
 	$(BUILDDIR)/xatrix/g_combat.o \
 	$(BUILDDIR)/xatrix/g_func.o \
 	$(BUILDDIR)/xatrix/g_items.o \
@@ -554,6 +565,9 @@ $(BUILDDIR)/xatrix/g_ai.o :        $(XATRIX_DIR)/g_ai.c
 	$(DO_SHLIB_CC)
 
 $(BUILDDIR)/xatrix/g_cmds.o :      $(XATRIX_DIR)/g_cmds.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/xatrix/g_chase.o :    $(XATRIX_DIR)/g_chase.c
 	$(DO_SHLIB_CC)
 
 $(BUILDDIR)/xatrix/g_combat.o :    $(XATRIX_DIR)/g_combat.c
@@ -702,6 +716,304 @@ $(BUILDDIR)/xatrix/p_weapon.o :    $(XATRIX_DIR)/p_weapon.c
 
 $(BUILDDIR)/xatrix/q_shared.o :    $(XATRIX_DIR)/q_shared.c
 	$(DO_SHLIB_CC)
+
+#############################################################################
+# ROGUE
+#############################################################################
+
+ROGUE_OBJS = \
+	$(BUILDDIR)/rogue/dm_ball.o \
+	$(BUILDDIR)/rogue/dm_tag.o \
+	$(BUILDDIR)/rogue/g_ai.o \
+	$(BUILDDIR)/rogue/g_chase.o \
+	$(BUILDDIR)/rogue/g_cmds.o \
+	$(BUILDDIR)/rogue/g_combat.o \
+	$(BUILDDIR)/rogue/g_func.o \
+	$(BUILDDIR)/rogue/g_items.o \
+	$(BUILDDIR)/rogue/g_main.o \
+	$(BUILDDIR)/rogue/g_misc.o \
+	$(BUILDDIR)/rogue/g_monster.o \
+	$(BUILDDIR)/rogue/g_newai.o \
+	$(BUILDDIR)/rogue/g_newdm.o \
+	$(BUILDDIR)/rogue/g_newfnc.o \
+	$(BUILDDIR)/rogue/g_newtarg.o \
+	$(BUILDDIR)/rogue/g_newtrig.o \
+	$(BUILDDIR)/rogue/g_newweap.o \
+	$(BUILDDIR)/rogue/g_phys.o \
+	$(BUILDDIR)/rogue/g_save.o \
+	$(BUILDDIR)/rogue/g_spawn.o \
+	$(BUILDDIR)/rogue/g_sphere.o \
+	$(BUILDDIR)/rogue/g_svcmds.o \
+	$(BUILDDIR)/rogue/g_target.o \
+	$(BUILDDIR)/rogue/g_trigger.o \
+	$(BUILDDIR)/rogue/g_turret.o \
+	$(BUILDDIR)/rogue/g_utils.o \
+	$(BUILDDIR)/rogue/g_weapon.o \
+	$(BUILDDIR)/rogue/m_actor.o \
+	$(BUILDDIR)/rogue/m_berserk.o \
+	$(BUILDDIR)/rogue/m_boss2.o \
+	$(BUILDDIR)/rogue/m_boss3.o \
+	$(BUILDDIR)/rogue/m_boss31.o \
+	$(BUILDDIR)/rogue/m_boss32.o \
+	$(BUILDDIR)/rogue/m_brain.o \
+	$(BUILDDIR)/rogue/m_carrier.o \
+	$(BUILDDIR)/rogue/m_chick.o \
+	$(BUILDDIR)/rogue/m_flash.o \
+	$(BUILDDIR)/rogue/m_flipper.o \
+	$(BUILDDIR)/rogue/m_float.o \
+	$(BUILDDIR)/rogue/m_flyer.o \
+	$(BUILDDIR)/rogue/m_gladiator.o \
+	$(BUILDDIR)/rogue/m_gunner.o \
+	$(BUILDDIR)/rogue/m_hover.o \
+	$(BUILDDIR)/rogue/m_infantry.o \
+	$(BUILDDIR)/rogue/m_insane.o \
+	$(BUILDDIR)/rogue/m_medic.o \
+	$(BUILDDIR)/rogue/m_move.o \
+	$(BUILDDIR)/rogue/m_mutant.o \
+	$(BUILDDIR)/rogue/m_parasite.o \
+	$(BUILDDIR)/rogue/m_soldier.o \
+	$(BUILDDIR)/rogue/m_stalker.o \
+	$(BUILDDIR)/rogue/m_supertank.o \
+	$(BUILDDIR)/rogue/m_tank.o \
+	$(BUILDDIR)/rogue/m_turret.o \
+	$(BUILDDIR)/rogue/m_widow.o \
+	$(BUILDDIR)/rogue/m_widow2.o \
+	$(BUILDDIR)/rogue/p_client.o \
+	$(BUILDDIR)/rogue/p_hud.o \
+	$(BUILDDIR)/rogue/p_trail.o \
+	$(BUILDDIR)/rogue/p_view.o \
+	$(BUILDDIR)/rogue/p_weapon.o \
+	$(BUILDDIR)/rogue/q_shared.o
+
+$(BUILDDIR)/rogue/game$(ARCH).$(SHLIBEXT) : $(ROGUE_OBJS)
+	$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(ROGUE_OBJS)
+
+$(BUILDDIR)/rogue/dm_ball.o :      $(ROGUE_DIR)/dm_ball.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/dm_tag.o :       $(ROGUE_DIR)/dm_tag.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_ai.o :         $(ROGUE_DIR)/g_ai.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_chase.o :      $(ROGUE_DIR)/g_chase.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_cmds.o :       $(ROGUE_DIR)/g_cmds.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_combat.o :     $(ROGUE_DIR)/g_combat.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_func.o :       $(ROGUE_DIR)/g_func.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_items.o :      $(ROGUE_DIR)/g_items.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_main.o :       $(ROGUE_DIR)/g_main.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_misc.o :       $(ROGUE_DIR)/g_misc.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_monster.o :    $(ROGUE_DIR)/g_monster.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_newai.o :      $(ROGUE_DIR)/g_newai.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_newdm.o :      $(ROGUE_DIR)/g_newdm.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_newfnc.o :     $(ROGUE_DIR)/g_newfnc.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_newtarg.o :    $(ROGUE_DIR)/g_newtarg.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_newtrig.o :    $(ROGUE_DIR)/g_newtrig.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_newweap.o :    $(ROGUE_DIR)/g_newweap.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_phys.o :       $(ROGUE_DIR)/g_phys.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_save.o :       $(ROGUE_DIR)/g_save.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_spawn.o :      $(ROGUE_DIR)/g_spawn.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_sphere.o :     $(ROGUE_DIR)/g_sphere.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_svcmds.o :     $(ROGUE_DIR)/g_svcmds.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_target.o :     $(ROGUE_DIR)/g_target.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_trigger.o :    $(ROGUE_DIR)/g_trigger.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_turret.o :     $(ROGUE_DIR)/g_turret.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_utils.o :      $(ROGUE_DIR)/g_utils.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/g_weapon.o :     $(ROGUE_DIR)/g_weapon.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_actor.o :      $(ROGUE_DIR)/m_actor.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_berserk.o :    $(ROGUE_DIR)/m_berserk.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_boss2.o :      $(ROGUE_DIR)/m_boss2.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_boss3.o :      $(ROGUE_DIR)/m_boss3.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_boss31.o :     $(ROGUE_DIR)/m_boss31.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_boss32.o :     $(ROGUE_DIR)/m_boss32.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_brain.o :      $(ROGUE_DIR)/m_brain.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_carrier.o :    $(ROGUE_DIR)/m_carrier.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_chick.o :      $(ROGUE_DIR)/m_chick.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_flash.o :      $(ROGUE_DIR)/m_flash.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_flipper.o :    $(ROGUE_DIR)/m_flipper.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_float.o :      $(ROGUE_DIR)/m_float.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_flyer.o :      $(ROGUE_DIR)/m_flyer.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_gladiator.o :  $(ROGUE_DIR)/m_gladiator.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_gunner.o :     $(ROGUE_DIR)/m_gunner.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_hover.o :      $(ROGUE_DIR)/m_hover.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_infantry.o :   $(ROGUE_DIR)/m_infantry.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_insane.o :     $(ROGUE_DIR)/m_insane.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_medic.o :      $(ROGUE_DIR)/m_medic.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_move.o :       $(ROGUE_DIR)/m_move.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_mutant.o :     $(ROGUE_DIR)/m_mutant.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_parasite.o :   $(ROGUE_DIR)/m_parasite.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_soldier.o :    $(ROGUE_DIR)/m_soldier.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_stalker.o :    $(ROGUE_DIR)/m_stalker.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_supertank.o :  $(ROGUE_DIR)/m_supertank.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_tank.o :       $(ROGUE_DIR)/m_tank.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_turret.o :     $(ROGUE_DIR)/m_turret.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_widow.o :      $(ROGUE_DIR)/m_widow.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/m_widow2.o :     $(ROGUE_DIR)/m_widow2.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/p_client.o :     $(ROGUE_DIR)/p_client.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/p_hud.o :        $(ROGUE_DIR)/p_hud.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/p_trail.o :      $(ROGUE_DIR)/p_trail.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/p_view.o :       $(ROGUE_DIR)/p_view.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/p_weapon.o :     $(ROGUE_DIR)/p_weapon.c
+	$(DO_SHLIB_CC)
+
+$(BUILDDIR)/rogue/q_shared.o :     $(ROGUE_DIR)/q_shared.c
+	$(DO_SHLIB_CC)
+
+#############################################################################
+# TAR
+#############################################################################
+
+# Make RPMs.  You need to be root to make this work
+RPMDIR = /var/tmp/q2ded-$(VERSION)
+
+tar:
+	if [ ! -d archives ];then mkdir archives;fi
+	$(MAKE) copyfiles COPYDIR=$(RPMDIR)
+	cd $(RPMDIR); tar cvf q2ded-$(VERSION)-$(ARCH)-sun-solaris2.5.1.tar *
+	cd $(RPMDIR); compress q2ded-$(VERSION)-$(ARCH)-sun-solaris2.5.1.tar
+	mv $(RPMDIR)/*.tar.Z archives/.
+	rm -rf $(RPMDIR)
+
+copyfiles:
+	-mkdirhier $(COPYDIR)
+	cp $(BUILD_RELEASE_DIR)/q2ded $(COPYDIR)
+	strip $(COPYDIR)/q2ded
+	chmod 755 $(COPYDIR)/q2ded
+	-mkdir $(COPYDIR)/baseq2
+	chmod 755 $(COPYDIR)/baseq2
+	cp $(BUILD_RELEASE_DIR)/game$(ARCH).$(SHLIBEXT) $(COPYDIR)/baseq2
+	chmod 755 $(COPYDIR)/baseq2/game$(ARCH).$(SHLIBEXT)
+#	-mkdir $(COPYDIR)/ctf
+#	chmod 755 $(COPYDIR)/ctf
+#	cp $(BUILD_RELEASE_DIR)/ctf/game$(ARCH).$(SHLIBEXT) $(COPYDIR)/ctf
+#	chmod 755 $(COPYDIR)/ctf/game$(ARCH).$(SHLIBEXT)
+	-mkdir $(COPYDIR)/xatrix
+	chmod 755 $(COPYDIR)/xatrix
+	cp $(BUILD_RELEASE_DIR)/xatrix/game$(ARCH).$(SHLIBEXT) $(COPYDIR)/xatrix
+	chmod 755 $(COPYDIR)/xatrix/game$(ARCH).$(SHLIBEXT)
+	-mkdir $(COPYDIR)/rogue
+	chmod 755 $(COPYDIR)/rogue
+	cp $(BUILD_RELEASE_DIR)/rogue/game$(ARCH).$(SHLIBEXT) $(COPYDIR)/rogue
+	chmod 755 $(COPYDIR)/rogue/game$(ARCH).$(SHLIBEXT)
+	cp $(MOUNT_DIR)/solaris/readme.solaris $(COPYDIR)/README
+	cp $(MOUNT_DIR)/readme.txt $(COPYDIR)
+	cp $(MOUNT_DIR)/3.19_Changes.txt $(COPYDIR)
+
 
 #############################################################################
 # MISC

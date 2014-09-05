@@ -158,9 +158,9 @@ void CL_RegisterTEntSounds (void)
 	cl_sfx_lightning = S_RegisterSound ("weapons/tesla.wav");
 	cl_sfx_disrexp = S_RegisterSound ("weapons/disrupthit.wav");
 	// version stuff
-	sprintf (name, "weapons/sound%d.wav", ROGUE_VERSION_ID);
-	if (name[0] == 'w')
-		name[0] = 'W';
+//	sprintf (name, "weapons/sound%d.wav", ROGUE_VERSION_ID);
+//	if (name[0] == 'w')
+//		name[0] = 'W';
 //PGM
 }	
 
@@ -857,11 +857,14 @@ void CL_ParseTEnt (void)
 		break;
 
 	// RAFAEL
+// NNS6
+// changes made to make a new effect
 	case TE_PLASMA_EXPLOSION:
 		MSG_ReadPos (&net_message, pos);
 		ex = CL_AllocExplosion ();
 		VectorCopy (pos, ex->ent.origin);
-		ex->type = ex_poly;
+//		ex->type = ex_poly;
+		ex->type =	ex_free;	// no more models
 		ex->ent.flags = RF_FULLBRIGHT;
 		ex->start = cl.frame.servertime - 100;
 		ex->light = 350;
@@ -869,14 +872,15 @@ void CL_ParseTEnt (void)
 		ex->lightcolor[1] = 0.5;
 		ex->lightcolor[2] = 0.5;
 		ex->ent.angles[1] = rand() % 360;
-		ex->ent.model = cl_mod_explo4;
+//		ex->ent.model = cl_mod_explo4;	// removed all models that appear
+//		ex->ent.model = cl_mod_smoke;
 		if (frand() < 0.5)
 			ex->baseframe = 15;
 		ex->frames = 15;
 		CL_ExplosionParticles (pos);
-		S_StartSound (pos, 0, 0, cl_sfx_rockexp, 1, ATTN_NORM, 0);
+//		S_StartSound (pos, 0, 0, cl_sfx_rockexp, 1, ATTN_NORM, 0); // stopped sound
 		break;
-	
+// END
 	case TE_EXPLOSION1:
 	case TE_EXPLOSION1_BIG:						// PMM
 	case TE_ROCKET_EXPLOSION:

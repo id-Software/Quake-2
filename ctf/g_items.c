@@ -141,8 +141,7 @@ void DoRespawn (edict_t *ent)
 
 			choice = rand() % count;
 
-			for (count = 0, ent = master; count < choice; ent = ent->chain, count++)
-				;
+			for (count = 0, ent = master; count < choice; ent = ent->chain, count++);
 		}
 	}
 
@@ -879,7 +878,10 @@ edict_t *Drop_Item (edict_t *ent, gitem_t *item)
 	VectorSet (dropped->maxs, 15, 15, 15);
 	gi.setmodel (dropped, dropped->item->world_model);
 	dropped->solid = SOLID_TRIGGER;
-	dropped->movetype = MOVETYPE_TOSS;  
+//	NNS6 edit changed movetype to bounce for more realistic effect
+//	dropped->movetype = MOVETYPE_TOSS;
+	dropped->movetype = MOVETYPE_BOUNCE;
+//  end
 	dropped->touch = drop_temp_touch;
 	dropped->owner = ent;
 
@@ -901,7 +903,10 @@ edict_t *Drop_Item (edict_t *ent, gitem_t *item)
 	}
 
 	VectorScale (forward, 100, dropped->velocity);
-	dropped->velocity[2] = 300;
+//	NNS6 edit for greater throw distance
+//	dropped->velocity[2] = 300;
+	dropped->velocity[2] = 350;
+//	end
 
 	dropped->think = drop_make_touchable;
 	dropped->nextthink = level.time + 1;
@@ -1083,7 +1088,124 @@ be on an entity that hasn't spawned yet.
 void SpawnItem (edict_t *ent, gitem_t *item)
 {
 	PrecacheItem (item);
+	// NNS6 edit 
+	// to free all the edicts (items and weapons)
+	if (deathmatch->value)
+	{
+		if (strcmp(ent->classname, "weapon_shotgun") == 0)
+		{
+		G_FreeEdict (ent);
+		}
 
+		if (strcmp(ent->classname, "weapon_supershotgun") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "weapon_machinegun") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "weapon_chaingun") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "weapon_grenadelauncher") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "weapon_rocketlauncher") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "weapon_railgun") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "weapon_hyperblaster") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "weapon_bfg") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "ammo_cells") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "ammo_shells") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "ammo_bullets") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "ammo_grenades") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "ammo_rockets") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "ammo_slugs") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "item_health_small") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "item_health_large") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "item_health_mega") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "item_armor_body") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "item_armor_combat") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "item_armor_jacket") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+		if (strcmp(ent->classname, "item_armor_shard") == 0)
+		{
+		G_FreeEdict (ent);
+		}
+
+	}
+
+	// end
+	
 	if (ent->spawnflags)
 	{
 		if (strcmp(ent->classname, "key_power_cube") != 0)
@@ -1144,16 +1266,28 @@ void SpawnItem (edict_t *ent, gitem_t *item)
 
 //ZOID
 //Don't spawn the flags unless enabled
-	if (!ctf->value &&
+/*	if (!ctf->value &&
+		(strcmp(ent->classname, "item_flag_team1") == 0 ||
+		strcmp(ent->classname, "item_flag_team2") == 0)) {
+		G_FreeEdict(ent);
+		return;
+	}*/
+//ZOID
+	// NNS6
+	// to free flag entities
+		if (ctf->value &&
 		(strcmp(ent->classname, "item_flag_team1") == 0 ||
 		strcmp(ent->classname, "item_flag_team2") == 0)) {
 		G_FreeEdict(ent);
 		return;
 	}
-//ZOID
+	// END
 
 	ent->item = item;
-	ent->nextthink = level.time + 2 * FRAMETIME;    // items start after other solids
+	// NNS6 edit 10-4-09
+	// to stop any other annoyance from spawning
+	//ent->nextthink = level.time + 2 * FRAMETIME;    // items start after other solids
+	// END
 	ent->think = droptofloor;
 	ent->s.effects = item->world_model_flags;
 	ent->s.renderfx = RF_GLOW;
@@ -1441,7 +1575,7 @@ always owned, never in the world
 		WEAP_MACHINEGUN,
 		NULL,
 		0,
-/* precache */ "weapons/machgf1b.wav weapons/machgf2b.wav weapons/machgf3b.wav weapons/machgf4b.wav weapons/machgf5b.wav"
+/* precache */ "weapons/machgf1b.wav weapons/machgf2b.wav weapons/machgf3b.wav weapons/machgf4b.wav weapons/machgf5b.wav "
 	},
 
 /*QUAKED weapon_chaingun (.3 .3 1) (-16 -16 -16) (16 16 16)
@@ -2338,8 +2472,84 @@ tank commander's head
 		0,
 /* precache */ "ctf/tech4.wav"
 	},
-
 //ZOID
+
+// NNS6 new droppable health item
+/*item_droppable_health
+gives + 25 health
+*/
+	{
+		"item_droppable_health",
+		Pickup_cHealth,
+		NULL,
+		NULL,
+		NULL,
+		"items/pkup.wav",
+		"models/items/healing/stimpack/tris.md2", EF_ROTATE,
+		NULL,
+/* icon */		"p_adrenaline",
+/* pickup */	"Health Pack",
+/* width */		2,
+		60,
+		NULL,
+		0,
+		0,
+		NULL,
+		0,
+/* precache */ ""
+	},
+// end
+
+// NNS6
+/*item_armor_jacket droppable armor item
+ gives 25 armor
+*/
+	{
+		"item_droppable_armor", 
+		Pickup_cArmor,
+		NULL,
+		NULL,
+		NULL,
+		"misc/ar1_pkup.wav",
+		"models/items/armor/jacket/tris.md2", EF_ROTATE,
+		NULL,
+/* icon */		"i_jacketarmor",
+/* pickup */	"Jacket Armor",
+/* width */		3,
+		0,
+		NULL,
+		IT_ARMOR,
+		0,
+		&jacketarmor_info,
+		ARMOR_JACKET,
+/* precache */ ""
+	},
+// end
+
+// NNS6
+/*item_droppable_ammo 
+// gives ammo
+*/	{
+		"item_droppable_ammo",
+		Pickup_cAmmo,
+		NULL,
+		NULL,
+		NULL,
+		"items/pkup.wav",
+		"models/items/ammo/bullets/medium/tris.md2", EF_ROTATE,
+		NULL,
+/* icon */		"p_bandolier",
+/* pickup */	"Ammo Pack",
+/* width */		2,
+		60,
+		NULL,
+		0,
+		0,
+		NULL,
+		0,
+/* precache */ ""
+	},
+
 
 	// end of list marker
 	{NULL}
@@ -2444,3 +2654,371 @@ void SetItemNames (void)
 	power_screen_index = ITEM_INDEX(FindItem("Power Screen"));
 	power_shield_index = ITEM_INDEX(FindItem("Power Shield"));
 }
+
+// NNS6 10-5-09
+// New health func dealing with assigning health to different classes
+// Each class starts with same health but have differnt max healths.
+qboolean Pickup_cHealth (edict_t *ent, edict_t *other)
+{
+	int currClass;
+	qboolean result = false;
+
+	currClass = other->client->resp.WZ_class;
+
+	switch (currClass)
+	{
+	
+	case 1:
+		if (other->health < 200)
+		{
+			if ((200)-(other->health)<=25)
+			{
+				other->health += (200)-(other->health);	
+			}
+			else
+			{
+				other->health += 25;
+			}
+		result = true;
+		}
+		break;
+
+	case 2:
+		if (other->health < 100)
+		{
+			if ((100)-(other->health)<=25)
+			{
+				other->health += (100)-(other->health);
+			}
+			else 
+			{
+				other->health += 25;
+			}	
+		result = true;
+		}
+		break;
+	
+	case 3:
+		if (other->health < 150)
+		{
+			if ((150)-(other->health)<=25)
+			{
+				other->health += (150)-(other->health);
+			}
+			else 
+				other->health += 25;
+		result = true;
+		}
+		break;
+	}
+
+	return result;
+	
+}
+// end
+
+// NNS6 edit
+// Ammo func, checks ammo pickup according to class
+qboolean Pickup_cAmmo (edict_t *ent, edict_t *other)
+{
+	gitem_t	*item;
+	int		index;
+	// Weird double qboolean with and OR operation to check both weapons
+	// even if 1 of the weapon needs ammo, the pack is picked up
+	// first class check is done
+	// assigning all ammo without checking classes didn't sound like a good idea
+	qboolean check; 
+	qboolean double_check;
+	qboolean result = false;
+
+	if(other->client->resp.WZ_class == 1)
+	{
+		item = FindItem("Rockets");
+		index = ITEM_INDEX(item);
+		if (other->client->pers.inventory[index] < other->client->pers.max_rockets)
+		{	
+			other->client->pers.inventory[index] += item->quantity;
+			if (other->client->pers.inventory[index] > other->client->pers.max_rockets)
+				other->client->pers.inventory[index] = other->client->pers.max_rockets;
+			
+			check = true;
+		}
+		else 
+		{
+			check = false;
+		}
+
+		item = FindItem("Shells");
+		index = ITEM_INDEX(item);
+		if (other->client->pers.inventory[index] < other->client->pers.max_shells)
+		{
+			other->client->pers.inventory[index] += item->quantity;
+			if (other->client->pers.inventory[index] > other->client->pers.max_shells)
+				other->client->pers.inventory[index] = other->client->pers.max_shells;
+			
+			double_check = true;		
+		}
+		else 
+		{
+			double_check = false;
+		}
+		
+		result = (check || double_check);
+	}
+
+	else if(other->client->resp.WZ_class == 2)
+	{
+		item = FindItem("Shells");
+		index = ITEM_INDEX(item);
+		if (other->client->pers.inventory[index] < other->client->pers.max_shells)
+		{	
+			other->client->pers.inventory[index] += item->quantity;
+			if (other->client->pers.inventory[index] > other->client->pers.max_shells)
+				other->client->pers.inventory[index] = other->client->pers.max_shells;
+
+			check = true;
+		}
+		else 
+		{
+			check = false;
+		}
+
+		item = FindItem("bullets");
+		index = ITEM_INDEX(item);
+		if (other->client->pers.inventory[index] < other->client->pers.max_bullets)
+		{
+			other->client->pers.inventory[index] += item->quantity;
+			if (other->client->pers.inventory[index] > other->client->pers.max_bullets)
+				other->client->pers.inventory[index] = other->client->pers.max_bullets;
+
+			double_check = true;		
+		}
+		else 
+		{
+			double_check = false;
+		}
+		result = (check || double_check);
+	}
+	
+	else if(other->client->resp.WZ_class == 3)
+	{
+		item = FindItem("Slugs");
+		index = ITEM_INDEX(item);
+		if (other->client->pers.inventory[index] < other->client->pers.max_slugs)
+		{	
+			other->client->pers.inventory[index] += item->quantity;
+			if (other->client->pers.inventory[index] > other->client->pers.max_slugs)
+				other->client->pers.inventory[index] = other->client->pers.max_slugs;
+			
+			check = true;
+		}
+		else 
+		{
+			check = false;
+		}
+
+		item = FindItem("bullets");
+		index = ITEM_INDEX(item);
+		if (other->client->pers.inventory[index] < other->client->pers.max_bullets)
+		{
+			other->client->pers.inventory[index] += item->quantity;
+			if (other->client->pers.inventory[index] > other->client->pers.max_bullets)
+				other->client->pers.inventory[index] = other->client->pers.max_bullets;
+			
+			double_check = true;		
+		}
+		else 
+		{
+			double_check = false;
+		}
+		result = (check || double_check);
+	}
+	
+	else 
+	{
+		gi.centerprintf(ent,"\nFirst choose a class.");
+	}
+	
+	return result;
+}
+
+// end
+
+// NNS6 edit
+// Armor pickup for each class
+qboolean Pickup_cArmor (edict_t *ent, edict_t *other )
+{
+	qboolean result = false;
+	int currClass = 0;
+
+	currClass = other->client->resp.WZ_class;
+
+	// starts with 0 armor
+	// max armor is set according to class
+	switch (currClass)
+	{
+	
+	case 1:
+	
+		if(other->client->pers.inventory[jacket_armor_index] < 200)
+		{
+			other->client->pers.inventory[jacket_armor_index] += 25;
+			if (other->client->pers.inventory[jacket_armor_index] > 200)
+			{ 
+				other->client->pers.inventory[jacket_armor_index] = 200; 
+			}
+			result = true;
+		}
+		break;
+	
+	  case 2:
+	
+		if(other->client->pers.inventory[jacket_armor_index] < 100)
+		{
+			other->client->pers.inventory[jacket_armor_index] += 25;
+			if (other->client->pers.inventory[jacket_armor_index] > 100)
+			{ 
+				other->client->pers.inventory[jacket_armor_index] = 100; 
+			}
+			result = true;
+		}
+		break;
+
+	  case 3:
+	
+		if(other->client->pers.inventory[jacket_armor_index] < 150)
+		{
+			other->client->pers.inventory[jacket_armor_index] += 25;
+			if (other->client->pers.inventory[jacket_armor_index] > 150)
+			{ 
+				other->client->pers.inventory[jacket_armor_index] = 150; 
+			}
+			result = true;
+		}
+		break;
+	}
+
+	return result;
+}
+
+// end
+
+// Func dealing with which class gets what item to drop
+// also manages item count
+void Class_Items(edict_t *ent)
+{
+	gitem_t *item;
+	
+	if(ent->client->resp.WZ_class == 1)
+	{
+		item = FindItemByClassname ("item_droppable_armor");
+		
+		if (ent->client->pers.max_cItems > 0)
+		{
+			ent->client->pers.max_cItems -= 1;
+			gi.centerprintf(ent,"\nArmor dropped.");
+			Drop_Item (ent, item);
+		}
+		else 
+		{
+			gi.centerprintf(ent,"\nOut of Armor");
+		}
+	}
+	else if(ent->client->resp.WZ_class == 2)
+	{
+		item = FindItemByClassname ("item_droppable_health");
+		
+		if (ent->client->pers.max_cItems > 0)
+		{
+			ent->client->pers.max_cItems -= 1;
+			gi.centerprintf(ent,"\nHealth pack dropped.");
+			Drop_Item (ent, item);
+		}
+		else 
+		{
+			gi.centerprintf(ent,"\nOut of Health packs");
+		}
+	}
+	else if(ent->client->resp.WZ_class == 3)
+	{
+		item = FindItemByClassname ("item_droppable_ammo");
+		
+		if (ent->client->pers.max_cItems > 0)
+		{
+			ent->client->pers.max_cItems -= 1;
+			gi.centerprintf(ent,"\nAmmo pack dropped.");
+			Drop_Item (ent, item);
+		}
+		else 
+		{
+			gi.centerprintf(ent,"\nOut of Ammo packs");
+		}
+	}
+}
+// END
+
+// Func dealing with class abilities
+// also manages Xp count for the abilities
+// total Xp is different from Xp needed to get abilites
+// total XP will stay through out the game but regular XP
+// will be reset each time u die
+// forcing you to get required amount of XP before u die
+void Class_Abilities(edict_t *ent)
+{
+	gitem_t *item;
+	int needed;
+	int index;
+	
+	needed = (ent->client->pers.req_xp) - (ent->client->pers.curr_xp);
+
+	if(ent->client->resp.WZ_class == 1)
+	{
+		if (ent->client->pers.curr_xp >= ent->client->pers.req_xp)
+		{
+			item = FindItem("grenades");
+			index = ITEM_INDEX(item);
+			ent->client->pers.inventory[index] += item->quantity - 3;
+			gi.centerprintf(ent,"\nGrapple Grenade Activated");
+			ent->client->pers.curr_xp -= (ent->client->pers.req_xp);
+			
+		} 
+		else 
+		{
+			gi.centerprintf(ent,"\nXP needed:\n%d",needed);
+		}
+	}
+	else if(ent->client->resp.WZ_class == 2)
+	{
+		
+		if (ent->client->pers.curr_xp >= ent->client->pers.req_xp)
+		{
+			gi.centerprintf(ent,"\nHaste ON");
+			ent->client->pers.curr_xp -= (ent->client->pers.req_xp);
+			ent->client->pers.ability_engaged = true;
+			ent->client->pers.rem_time = 1800;
+			
+		}
+		else 
+		{
+			gi.centerprintf(ent,"\nXP needed:\n%d",needed);
+		}
+	}
+
+	else if(ent->client->resp.WZ_class == 3)
+	{
+		if (ent->client->pers.curr_xp >= ent->client->pers.req_xp)
+		{
+			gi.centerprintf(ent,"\nCloak Engaged");
+			ent->client->pers.curr_xp -= (ent->client->pers.req_xp);
+			ent->client->pers.rem_time = 1800;
+			ent->client->pers.ability_engaged = true;
+		}
+		else 
+		{
+			gi.centerprintf(ent,"\nXP needed:\n%d",needed);
+		}
+	}
+}
+// END
+
+

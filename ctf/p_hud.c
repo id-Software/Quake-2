@@ -520,12 +520,35 @@ void G_SetStats (edict_t *ent)
 		if (ent->client->showinventory && ent->client->pers.health > 0)
 			ent->client->ps.stats[STAT_LAYOUTS] |= 2;
 	}
-
+	
 	//
 	// frags
 	//
-	ent->client->ps.stats[STAT_FRAGS] = ent->client->resp.score;
+	// NNS6
+	// new frag count that increases by 10
+	// ent->client->ps.stats[STAT_FRAGS] = ent->client->resp.score;
+	ent->client->ps.stats[STAT_FRAGS] = ent->client->resp.score*10;
 
+	// hud timers for speed and cloak mode
+	if (ent->client->pers.ability_engaged == true)
+	{
+		if (ent->client->resp.WZ_class == 3)
+		{
+			ent->client->ps.stats[STAT_TIMER_ICON] = gi.imageindex ("p_envirosuit");
+			ent->client->ps.stats[STAT_TIMER] = (ent->client->pers.rem_time)/60;
+		}
+
+		if(ent->client->resp.WZ_class == 2)
+		{
+			ent->client->ps.stats[STAT_TIMER_ICON] = gi.imageindex ("p_rebreather");
+			ent->client->ps.stats[STAT_TIMER] = (ent->client->pers.rem_time)/60;
+		}
+	}
+	// END
+
+	// NNS6
+	// XP updates for the hud
+	ent->client->ps.stats[STAT_CURR_XP] = ent->client->pers.curr_xp;
 	//
 	// help icon / current weapon if not shown
 	//
@@ -540,5 +563,6 @@ void G_SetStats (edict_t *ent)
 //ZOID
 	SetCTFStats(ent);
 //ZOID
+
 }
 

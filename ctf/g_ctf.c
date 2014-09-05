@@ -45,6 +45,7 @@ typedef struct ctfgame_s
 	match_t match;		// match state
 	float matchtime;	// time for match start/end (depends on state)
 	int lasttime;		// last time update
+	qboolean countdown;	// has audio countdown started?
 
 	elect_t election;	// election type
 	edict_t *etarget;	// for admin election, who's being elected
@@ -53,6 +54,7 @@ typedef struct ctfgame_s
 	int needvotes;		// votes needed
 	float electtime;	// remaining time until election times out
 	char emsg[256];		// election name
+	int warnactive; // true if stat string 30 is active
 
 
 	ghost_t ghosts[MAX_CLIENTS]; // ghost codes
@@ -70,7 +72,25 @@ cvar_t *matchtime;
 cvar_t *matchsetuptime;
 cvar_t *matchstarttime;
 cvar_t *admin_password;
+cvar_t *allow_admin;
 cvar_t *warp_list;
+cvar_t *warn_unbalanced;
+
+// Index for various CTF pics, this saves us from calling gi.imageindex
+// all the time and saves a few CPU cycles since we don't have to do
+// a bunch of string compares all the time.
+// These are set in CTFPrecache() called from worldspawn
+int imageindex_i_ctf1;
+int imageindex_i_ctf2;
+int imageindex_i_ctf1d;
+int imageindex_i_ctf2d;
+int imageindex_i_ctf1t;
+int imageindex_i_ctf2t;
+int imageindex_i_ctfj;
+int imageindex_sbfctf1;
+int imageindex_sbfctf2;
+int imageindex_ctfsb1;
+int imageindex_ctfsb2;
 
 char *ctf_statusbar =
 "yb	-24 "
@@ -179,11 +199,15 @@ char *ctf_statusbar =
 
 // id view state
 "if 27 "
-  "xv 0 "
+  "xv 112 "
   "yb -58 "
-  "string \"Viewing\" "
-  "xv 64 "
   "stat_string 27 "
+"endif "
+
+"if 29 "
+  "xv 96 "
+  "yb -58 "
+  "pic 29 "
 "endif "
 
 "if 28 "
@@ -191,6 +215,21 @@ char *ctf_statusbar =
   "yb -78 "
   "stat_string 28 "
 "endif "
+
+"if 30 "
+  "xl 0 "
+  "yb -88 "
+  "stat_string 30 "
+"endif "
+
+// NNS6
+// XP
+// To display xp earned in 1 life on the hud
+"xr	-50 "
+"yt 25 "
+"num 3 31 "
+// END
+
 ;
 
 static char *tnames[] = {
@@ -319,7 +358,28 @@ void CTFInit(void)
 	matchsetuptime = gi.cvar("matchsetuptime", "10", 0);
 	matchstarttime = gi.cvar("matchstarttime", "20", 0);
 	admin_password = gi.cvar("admin_password", "", 0);
+	allow_admin = gi.cvar("allow_admin", "1", 0);
 	warp_list = gi.cvar("warp_list", "q2ctf1 q2ctf2 q2ctf3 q2ctf4 q2ctf5", 0);
+	warn_unbalanced = gi.cvar("warn_unbalanced", "1", 0);
+}
+
+/*
+ * Precache CTF items
+ */
+
+void CTFPrecache(void)
+{
+	imageindex_i_ctf1 =   gi.imageindex("i_ctf1"); 
+	imageindex_i_ctf2 =   gi.imageindex("i_ctf2"); 
+	imageindex_i_ctf1d =  gi.imageindex("i_ctf1d");
+	imageindex_i_ctf2d =  gi.imageindex("i_ctf2d");
+	imageindex_i_ctf1t =  gi.imageindex("i_ctf1t");
+	imageindex_i_ctf2t =  gi.imageindex("i_ctf2t");
+	imageindex_i_ctfj =   gi.imageindex("i_ctfj"); 
+	imageindex_sbfctf1 =  gi.imageindex("sbfctf1");
+	imageindex_sbfctf2 =  gi.imageindex("sbfctf2");
+	imageindex_ctfsb1 =   gi.imageindex("ctfsb1");
+	imageindex_ctfsb2 =   gi.imageindex("ctfsb2");
 }
 
 /*--------------------------------------------------------------------------*/
@@ -332,7 +392,7 @@ char *CTFTeamName(int team)
 	case CTF_TEAM2:
 		return "BLUE";
 	}
-	return "UKNOWN";
+	return "UNKNOWN"; // Hanzo pointed out this was spelled wrong as "UKNOWN"
 }
 
 char *CTFOtherTeamName(int team)
@@ -343,7 +403,7 @@ char *CTFOtherTeamName(int team)
 	case CTF_TEAM2:
 		return "RED";
 	}
-	return "UKNOWN";
+	return "UNKNOWN"; // Hanzo pointed out this was spelled wrong as "UKNOWN"
 }
 
 int CTFOtherTeam(int team)
@@ -356,6 +416,24 @@ int CTFOtherTeam(int team)
 	}
 	return -1; // invalid value
 }
+
+
+// NNS6 
+// Function needed to provide class name to the player
+char *WZ_ClassName(int pClass)
+{
+	switch (pClass) 
+	{
+	case WZ_CLASS1:
+		return "ASSAULT";
+	case WZ_CLASS2:
+		return "SCOUT";
+	case WZ_CLASS3:
+		return "SUPPORT";
+	}
+	return "UNKNOWN"; 
+}
+// END
 
 /*--------------------------------------------------------------------------*/
 
@@ -371,7 +449,8 @@ void CTFAssignSkin(edict_t *ent, char *s)
 
 	Com_sprintf(t, sizeof(t), "%s", s);
 
-	if ((p = strrchr(t, '/')) != NULL)
+	
+	if ((p = strchr(t, '/')) != NULL)
 		p[1] = 0;
 	else
 		strcpy(t, "male/");
@@ -392,6 +471,7 @@ void CTFAssignSkin(edict_t *ent, char *s)
 	}
 //	gi.cprintf(ent, PRINT_HIGH, "You have been assigned to %s team.\n", ent->client->pers.netname);
 }
+
 
 void CTFAssignTeam(gclient_t *who)
 {
@@ -446,13 +526,18 @@ edict_t *SelectCTFSpawnPoint (edict_t *ent)
 	float	range, range1, range2;
 	char	*cname;
 
-	if (ent->client->resp.ctf_state)
+// NNS6
+// Commented out because, this helps me to force the players to spawn only in their 
+// own base and not in the no man's land region or the enemy base.
+/*	if (ent->client->resp.ctf_state)
 		if ( (int)(dmflags->value) & DF_SPAWN_FARTHEST)
 			return SelectFarthestDeathmatchSpawnPoint ();
 		else
 			return SelectRandomDeathmatchSpawnPoint ();
 
 	ent->client->resp.ctf_state++;
+*/
+//  END
 
 	switch (ent->client->resp.ctf_team) {
 	case CTF_TEAM1:
@@ -982,7 +1067,13 @@ static void CTFSetIDView(edict_t *ent)
 	float	bd = 0, d;
 	int i;
 
+	// only check every few frames
+	if (level.time - ent->client->resp.lastidtime < 0.25)
+		return;
+	ent->client->resp.lastidtime = level.time;
+
 	ent->client->ps.stats[STAT_CTF_ID_VIEW] = 0;
+	ent->client->ps.stats[STAT_CTF_ID_VIEW_COLOR] = 0;
 
 	AngleVectors(ent->client->v_angle, forward, NULL, NULL);
 	VectorScale(forward, 1024, forward);
@@ -990,7 +1081,11 @@ static void CTFSetIDView(edict_t *ent)
 	tr = gi.trace(ent->s.origin, NULL, NULL, forward, ent, MASK_SOLID);
 	if (tr.fraction < 1 && tr.ent && tr.ent->client) {
 		ent->client->ps.stats[STAT_CTF_ID_VIEW] = 
-			CS_PLAYERSKINS + (ent - g_edicts - 1);
+			CS_GENERAL + (tr.ent - g_edicts - 1);
+		if (tr.ent->client->resp.ctf_team == CTF_TEAM1)
+			ent->client->ps.stats[STAT_CTF_ID_VIEW_COLOR] = imageindex_sbfctf1;
+		else if (tr.ent->client->resp.ctf_team == CTF_TEAM2)
+			ent->client->ps.stats[STAT_CTF_ID_VIEW_COLOR] = imageindex_sbfctf2;
 		return;
 	}
 
@@ -1008,9 +1103,14 @@ static void CTFSetIDView(edict_t *ent)
 			best = who;
 		}
 	}
-	if (bd > 0.90)
+	if (bd > 0.90) {
 		ent->client->ps.stats[STAT_CTF_ID_VIEW] = 
-			CS_PLAYERSKINS + (best - g_edicts - 1);
+			CS_GENERAL + (best - g_edicts - 1);
+		if (best->client->resp.ctf_team == CTF_TEAM1)
+			ent->client->ps.stats[STAT_CTF_ID_VIEW_COLOR] = imageindex_sbfctf1;
+		else if (best->client->resp.ctf_team == CTF_TEAM2)
+			ent->client->ps.stats[STAT_CTF_ID_VIEW_COLOR] = imageindex_sbfctf2;
+	}
 }
 
 void SetCTFStats(edict_t *ent)
@@ -1025,6 +1125,11 @@ void SetCTFStats(edict_t *ent)
 	else
 		ent->client->ps.stats[STAT_CTF_MATCH] = 0;
 
+	if (ctfgame.warnactive)
+		ent->client->ps.stats[STAT_CTF_TEAMINFO] = CONFIG_CTF_TEAMINFO;
+	else
+		ent->client->ps.stats[STAT_CTF_TEAMINFO] = 0;
+
 	//ghosting
 	if (ent->client->resp.ghost) {
 		ent->client->resp.ghost->score = ent->client->resp.score;
@@ -1033,8 +1138,8 @@ void SetCTFStats(edict_t *ent)
 	}
 
 	// logo headers for the frag display
-	ent->client->ps.stats[STAT_CTF_TEAM1_HEADER] = gi.imageindex ("ctfsb1");
-	ent->client->ps.stats[STAT_CTF_TEAM2_HEADER] = gi.imageindex ("ctfsb2");
+	ent->client->ps.stats[STAT_CTF_TEAM1_HEADER] = imageindex_ctfsb1;
+	ent->client->ps.stats[STAT_CTF_TEAM2_HEADER] = imageindex_ctfsb2;
 
 	// if during intermission, we must blink the team header of the winning team
 	if (level.intermissiontime && (level.framenum & 8)) { // blink 1/8th second
@@ -1070,7 +1175,7 @@ void SetCTFStats(edict_t *ent)
 	//   flag at base
 	//   flag taken
 	//   flag dropped
-	p1 = gi.imageindex ("i_ctf1");
+	p1 = imageindex_i_ctf1;
 	e = G_Find(NULL, FOFS(classname), "item_flag_team1");
 	if (e != NULL) {
 		if (e->solid == SOLID_NOT) {
@@ -1078,18 +1183,18 @@ void SetCTFStats(edict_t *ent)
 
 			// not at base
 			// check if on player
-			p1 = gi.imageindex ("i_ctf1d"); // default to dropped
+			p1 = imageindex_i_ctf1d; // default to dropped
 			for (i = 1; i <= maxclients->value; i++)
 				if (g_edicts[i].inuse &&
 					g_edicts[i].client->pers.inventory[ITEM_INDEX(flag1_item)]) {
 					// enemy has it
-					p1 = gi.imageindex ("i_ctf1t");
+					p1 = imageindex_i_ctf1t;
 					break;
 				}
 		} else if (e->spawnflags & DROPPED_ITEM)
-			p1 = gi.imageindex ("i_ctf1d"); // must be dropped
+			p1 = imageindex_i_ctf1d; // must be dropped
 	}
-	p2 = gi.imageindex ("i_ctf2");
+	p2 = imageindex_i_ctf2;
 	e = G_Find(NULL, FOFS(classname), "item_flag_team2");
 	if (e != NULL) {
 		if (e->solid == SOLID_NOT) {
@@ -1097,16 +1202,16 @@ void SetCTFStats(edict_t *ent)
 
 			// not at base
 			// check if on player
-			p2 = gi.imageindex ("i_ctf2d"); // default to dropped
+			p2 = imageindex_i_ctf2d; // default to dropped
 			for (i = 1; i <= maxclients->value; i++)
 				if (g_edicts[i].inuse &&
 					g_edicts[i].client->pers.inventory[ITEM_INDEX(flag2_item)]) {
 					// enemy has it
-					p2 = gi.imageindex ("i_ctf2t");
+					p2 = imageindex_i_ctf2t;
 					break;
 				}
 		} else if (e->spawnflags & DROPPED_ITEM)
-			p2 = gi.imageindex ("i_ctf2d"); // must be dropped
+			p2 = imageindex_i_ctf2d; // must be dropped
 	}
 
 
@@ -1133,23 +1238,26 @@ void SetCTFStats(edict_t *ent)
 	if (ent->client->resp.ctf_team == CTF_TEAM1 &&
 		ent->client->pers.inventory[ITEM_INDEX(flag2_item)] &&
 		(level.framenum & 8))
-		ent->client->ps.stats[STAT_CTF_FLAG_PIC] = gi.imageindex ("i_ctf2");
+		ent->client->ps.stats[STAT_CTF_FLAG_PIC] = imageindex_i_ctf2;
 
 	else if (ent->client->resp.ctf_team == CTF_TEAM2 &&
 		ent->client->pers.inventory[ITEM_INDEX(flag1_item)] &&
 		(level.framenum & 8))
-		ent->client->ps.stats[STAT_CTF_FLAG_PIC] = gi.imageindex ("i_ctf1");
+		ent->client->ps.stats[STAT_CTF_FLAG_PIC] = imageindex_i_ctf1;
 
 	ent->client->ps.stats[STAT_CTF_JOINED_TEAM1_PIC] = 0;
 	ent->client->ps.stats[STAT_CTF_JOINED_TEAM2_PIC] = 0;
 	if (ent->client->resp.ctf_team == CTF_TEAM1)
-		ent->client->ps.stats[STAT_CTF_JOINED_TEAM1_PIC] = gi.imageindex ("i_ctfj");
+		ent->client->ps.stats[STAT_CTF_JOINED_TEAM1_PIC] = imageindex_i_ctfj;
 	else if (ent->client->resp.ctf_team == CTF_TEAM2)
-		ent->client->ps.stats[STAT_CTF_JOINED_TEAM2_PIC] = gi.imageindex ("i_ctfj");
+		ent->client->ps.stats[STAT_CTF_JOINED_TEAM2_PIC] = imageindex_i_ctfj;
 
-	ent->client->ps.stats[STAT_CTF_ID_VIEW] = 0;
 	if (ent->client->resp.id_state)
 		CTFSetIDView(ent);
+	else {
+		ent->client->ps.stats[STAT_CTF_ID_VIEW] = 0;
+		ent->client->ps.stats[STAT_CTF_ID_VIEW_COLOR] = 0;
+	}
 }
 
 /*------------------------------------------------------------------------*/
@@ -1548,25 +1656,28 @@ void CTFTeam_f (edict_t *ent)
 		return;
 	}
 
-////
+
 	ent->svflags = 0;
 	ent->flags &= ~FL_GODMODE;
 	ent->client->resp.ctf_team = desired_team;
 	ent->client->resp.ctf_state = 0;
 	s = Info_ValueForKey (ent->client->pers.userinfo, "skin");
 	CTFAssignSkin(ent, s);
-
-	if (ent->solid == SOLID_NOT) { // spectator
+// NNS6
+// prevents player to spawn before 
+// player chooses a class 
+/*	if (ent->solid == SOLID_NOT) { // spectator
 		PutClientInServer (ent);
 		// add a teleportation effect
 		ent->s.event = EV_PLAYER_TELEPORT;
 		// hold in place briefly
 		ent->client->ps.pmove.pm_flags = PMF_TIME_TELEPORT;
-		ent->client->ps.pmove.pm_time = 14;
+		ent->client->ps.pmove.pm_time = 14;	
+*/
+// END
 		gi.bprintf(PRINT_HIGH, "%s joined the %s team.\n",
 			ent->client->pers.netname, CTFTeamName(desired_team));
-		return;
-	}
+//		return;
 
 	ent->health = 0;
 	player_die (ent, ent, ent, 100000, vec3_origin);
@@ -1579,6 +1690,78 @@ void CTFTeam_f (edict_t *ent)
 	gi.bprintf(PRINT_HIGH, "%s changed to the %s team.\n",
 		ent->client->pers.netname, CTFTeamName(desired_team));
 }
+
+// NNS6
+// Assigns and displays class name
+
+void WZ_Class_f (edict_t *ent)
+{
+	char *t, *s;
+	int desired_class;
+
+	t = gi.args();
+	if (!*t) {
+		gi.cprintf(ent, PRINT_HIGH, "You are %s \n",
+			WZ_ClassName(ent->client->resp.WZ_class));
+		return;
+	}
+
+	if (ctfgame.match > MATCH_SETUP) {
+		gi.cprintf(ent, PRINT_HIGH, "Can't change classes in a match.\n");
+		return;
+	}
+
+	if (Q_stricmp(t, "assault") == 0)
+		desired_class = WZ_CLASS1;
+	else if (Q_stricmp(t, "scout") == 0)
+		desired_class = WZ_CLASS2;
+	else if (Q_stricmp(t, "support") == 0)
+		desired_class = WZ_CLASS3;
+	else {
+		gi.cprintf(ent, PRINT_HIGH, "Unknown class %s.\n", t);
+		return;
+	}
+
+	if (ent->client->resp.ctf_team == desired_class) {
+		gi.cprintf(ent, PRINT_HIGH, "You are already %s class\n",
+			WZ_ClassName(ent->client->resp.WZ_class));
+		return;
+	}
+
+////
+	ent->svflags = 0;
+	ent->flags &= ~FL_GODMODE;
+	ent->client->resp.ctf_team = desired_class;
+	ent->client->resp.ctf_state = 0;
+	s = Info_ValueForKey (ent->client->pers.userinfo, "skin");
+	CTFAssignSkin(ent, s);
+
+	if (ent->solid == SOLID_NOT) { // spectator
+		PutClientInServer (ent);
+		// add a teleportation effect
+		ent->s.event = EV_PLAYER_TELEPORT;
+		// hold in place briefly
+		ent->client->ps.pmove.pm_flags = PMF_TIME_TELEPORT;
+		ent->client->ps.pmove.pm_time = 14;	
+
+		gi.bprintf(PRINT_HIGH, "%s is %s class.\n",
+			ent->client->pers.netname, WZ_ClassName(desired_class));
+		return;
+	}
+
+	ent->health = 0;
+	player_die (ent, ent, ent, 100000, vec3_origin);
+	// don't even bother waiting for death frames
+	ent->deadflag = DEAD_DEAD;
+	respawn (ent);
+
+	ent->client->resp.score = 0;
+
+	gi.bprintf(PRINT_HIGH, "%s changed to the %s class.\n",
+		ent->client->pers.netname, WZ_ClassName(desired_class));
+}
+
+// END
 
 /*
 ==================
@@ -1884,7 +2067,11 @@ void CTFDeadDropTech(edict_t *ent)
 	int i;
 
 	i = 0;
-	while (tnames[i]) {
+// NNS6
+	// this prevents any sort of tech items from being picked up because
+	// it was originally put in becuase some abilities used tech items 
+	// now though useless, there is not point changing it.
+	/*	while (tnames[i]) {
 		if ((tech = FindItemByClassname(tnames[i])) != NULL &&
 			ent->client->pers.inventory[ITEM_INDEX(tech)]) {
 			dropped = Drop_Item(ent, tech);
@@ -1897,12 +2084,17 @@ void CTFDeadDropTech(edict_t *ent)
 			ent->client->pers.inventory[ITEM_INDEX(tech)] = 0;
 		}
 		i++;
-	}
+	}*/
+// END
 }
 
 static void SpawnTech(gitem_t *item, edict_t *spot)
 {
-	edict_t	*ent;
+// NNS6
+	// Prevents any sort of tech spawning on the map 
+	// I had already tried according to freeing the edict
+	// but it did not seem to work for tech items 
+/*	edict_t	*ent;
 	vec3_t	forward, right;
 	vec3_t  angles;
 
@@ -1934,12 +2126,15 @@ static void SpawnTech(gitem_t *item, edict_t *spot)
 	ent->nextthink = level.time + CTF_TECH_TIMEOUT;
 	ent->think = TechThink;
 
-	gi.linkentity (ent);
+	gi.linkentity (ent);*/
+// END
 }
 
 static void SpawnTechs(edict_t *ent)
 {
-	gitem_t *tech;
+// NNS6
+// again prevents any sort of tech spawns
+/*	gitem_t *tech;
 	edict_t *spot;
 	int i;
 
@@ -1952,6 +2147,7 @@ static void SpawnTechs(edict_t *ent)
 	}
 	if (ent)
 		G_FreeEdict(ent);
+// END */
 }
 
 // frees the passed edict!
@@ -2385,8 +2581,8 @@ static void CTFSay_Team_Sight(edict_t *who, char *buf)
 
 void CTFSay_Team(edict_t *who, char *msg)
 {
-	char outmsg[1024];
-	char buf[1024];
+	char outmsg[256];
+	char buf[256];
 	int i;
 	char *p;
 	edict_t *cl_ent;
@@ -2401,45 +2597,57 @@ void CTFSay_Team(edict_t *who, char *msg)
 		msg++;
 	}
 
-	for (p = outmsg; *msg && (p - outmsg) < sizeof(outmsg) - 1; msg++) {
+	for (p = outmsg; *msg && (p - outmsg) < sizeof(outmsg) - 2; msg++) {
 		if (*msg == '%') {
 			switch (*++msg) {
 				case 'l' :
 				case 'L' :
 					CTFSay_Team_Location(who, buf);
-					strcpy(p, buf);
-					p += strlen(buf);
+					if (strlen(buf) + (p - outmsg) < sizeof(outmsg) - 2) {
+						strcpy(p, buf);
+						p += strlen(buf);
+					}
 					break;
 				case 'a' :
 				case 'A' :
 					CTFSay_Team_Armor(who, buf);
-					strcpy(p, buf);
-					p += strlen(buf);
+					if (strlen(buf) + (p - outmsg) < sizeof(outmsg) - 2) {
+						strcpy(p, buf);
+						p += strlen(buf);
+					}
 					break;
 				case 'h' :
 				case 'H' :
 					CTFSay_Team_Health(who, buf);
-					strcpy(p, buf);
-					p += strlen(buf);
+					if (strlen(buf) + (p - outmsg) < sizeof(outmsg) - 2) {
+						strcpy(p, buf);
+						p += strlen(buf);
+					}
 					break;
 				case 't' :
 				case 'T' :
 					CTFSay_Team_Tech(who, buf);
-					strcpy(p, buf);
-					p += strlen(buf);
+					if (strlen(buf) + (p - outmsg) < sizeof(outmsg) - 2) {
+						strcpy(p, buf);
+						p += strlen(buf);
+					}
 					break;
 				case 'w' :
 				case 'W' :
 					CTFSay_Team_Weapon(who, buf);
-					strcpy(p, buf);
-					p += strlen(buf);
+					if (strlen(buf) + (p - outmsg) < sizeof(outmsg) - 2) {
+						strcpy(p, buf);
+						p += strlen(buf);
+					}
 					break;
 
 				case 'n' :
 				case 'N' :
 					CTFSay_Team_Sight(who, buf);
-					strcpy(p, buf);
-					p += strlen(buf);
+					if (strlen(buf) + (p - outmsg) < sizeof(outmsg) - 2) {
+						strcpy(p, buf);
+						p += strlen(buf);
+					}
 					break;
 
 				default :
@@ -2653,6 +2861,7 @@ void CTFStartMatch(void)
 
 	ctfgame.match = MATCH_GAME;
 	ctfgame.matchtime = level.time + matchtime->value * 60;
+	ctfgame.countdown = false;
 
 	ctfgame.team1 = ctfgame.team2 = 0;
 
@@ -2847,6 +3056,8 @@ void CTFReady(edict_t *ent)
 		gi.bprintf(PRINT_CHAT, "All players have commited.  Match starting\n");
 		ctfgame.match = MATCH_PREGAME;
 		ctfgame.matchtime = level.time + matchstarttime->value;
+		ctfgame.countdown = false;
+		gi.positioned_sound (world->s.origin, world, CHAN_AUTO | CHAN_RELIABLE, gi.soundindex("misc/talk1.wav"), 1, ATTN_NONE, 0);
 	}
 }
 
@@ -2940,6 +3151,32 @@ void CTFJoinTeam2(edict_t *ent, pmenuhnd_t *p);
 void CTFCredits(edict_t *ent, pmenuhnd_t *p);
 void CTFReturnToMain(edict_t *ent, pmenuhnd_t *p);
 void CTFChaseCam(edict_t *ent, pmenuhnd_t *p);
+// NNS6
+void WZ_JoinClass1(edict_t *ent, pmenuhnd_t *p);	// func for joining assault class
+void WZ_JoinClass2(edict_t *ent, pmenuhnd_t *p);	// func for joining scout class
+void WZ_JoinClass3(edict_t *ent, pmenuhnd_t *p);	// func for joining support class
+void WZ_Credits(edict_t *ent, pmenuhnd_t *p);		// func for WarZone related credits
+// END
+
+// NNS6 Radio
+// WarZone Comm related funcs
+void Com_One(edict_t *ent, pmenuhnd_t *p);			
+void Com_Two(edict_t *ent, pmenuhnd_t *p);
+void Com_Three(edict_t *ent, pmenuhnd_t *p);
+void Com_Four(edict_t *ent, pmenuhnd_t *p);
+void Com_Five(edict_t *ent, pmenuhnd_t *p);
+void Com_Six(edict_t *ent, pmenuhnd_t *p);
+void Com_Seven(edict_t *ent, pmenuhnd_t *p);
+void Com_Eight(edict_t *ent, pmenuhnd_t *p);
+void Com_Nine(edict_t *ent, pmenuhnd_t *p);
+void Com_Ten(edict_t *ent, pmenuhnd_t *p);
+void Com_Eleven(edict_t *ent, pmenuhnd_t *p);
+void Com_Twelve(edict_t *ent, pmenuhnd_t *p);
+void Com_Thirteen(edict_t *ent, pmenuhnd_t *p);
+void Com_Fourteen(edict_t *ent, pmenuhnd_t *p);
+void Com_Fifteen(edict_t *ent, pmenuhnd_t *p);
+void Com_Sixteen(edict_t *ent, pmenuhnd_t *p);
+// END
 
 pmenu_t creditsmenu[] = {
 	{ "*Quake II",						PMENU_ALIGN_CENTER, NULL },
@@ -2962,12 +3199,70 @@ pmenu_t creditsmenu[] = {
 	{ "Return to Main Menu",			PMENU_ALIGN_LEFT, CTFReturnToMain }
 };
 
+// NNS6
+// credits for Warzone mod
+pmenu_t WZ_creditsmenu[] = {
+	{ "*Quake II",						PMENU_ALIGN_CENTER, NULL },
+	{ "*WarZone",						PMENU_ALIGN_CENTER, NULL },
+	{ NULL,								PMENU_ALIGN_CENTER, NULL },
+	{ "*Programming",					PMENU_ALIGN_CENTER, NULL }, 
+	{ "Neil Shivkar",					PMENU_ALIGN_CENTER, NULL },
+	{ NULL,								PMENU_ALIGN_CENTER, NULL },
+	{ "*Special Thanks",				PMENU_ALIGN_CENTER, NULL },
+	{ "id software for ",				PMENU_ALIGN_CENTER, NULL },
+	{ "releasing the source code.",		PMENU_ALIGN_CENTER, NULL },
+	{ NULL,								PMENU_ALIGN_CENTER, NULL },
+	{ "The modding community.",			PMENU_ALIGN_CENTER, NULL },
+	{ NULL,								PMENU_ALIGN_CENTER, NULL },
+	{ "AND Prof. Kehoe,",				PMENU_ALIGN_CENTER, NULL },
+	{ "without his help this",			PMENU_ALIGN_CENTER, NULL },
+	{ "this project would not have",	PMENU_ALIGN_CENTER, NULL },
+	{ "been possible.",					PMENU_ALIGN_CENTER, NULL },
+	{ NULL,								PMENU_ALIGN_CENTER, NULL },
+	{ "Return to Main Menu",			PMENU_ALIGN_LEFT, CTFReturnToMain }
+};
+// END
+
+// NNS6
+// menu for WarZone radio comm
+
+pmenu_t WZ_radiomenu[] = {
+	{ "*WarZone COM",					PMENU_ALIGN_CENTER, NULL },
+	{ NULL,								PMENU_ALIGN_CENTER, NULL },
+	{ "Lock N Load",					PMENU_ALIGN_CENTER, Com_One },
+	{ "affirmative",					PMENU_ALIGN_CENTER, Com_Two }, 
+	{ "negative",						PMENU_ALIGN_CENTER, Com_Three },
+	{ "cover me",						PMENU_ALIGN_CENTER, Com_Four },
+	{ "need assistance",				PMENU_ALIGN_CENTER, Com_Five },
+	{ "hostile down",					PMENU_ALIGN_CENTER, Com_Six },
+	{ "clear",							PMENU_ALIGN_CENTER, Com_Seven },
+	{ "get in position",				PMENU_ALIGN_CENTER, Com_Eight },
+	{ "hold position",					PMENU_ALIGN_CENTER, Com_Nine },
+	{ "GO!",							PMENU_ALIGN_CENTER, Com_Ten },
+	{ "regroup",						PMENU_ALIGN_CENTER, Com_Eleven },
+	{ "hostile inbound",				PMENU_ALIGN_CENTER, Com_Twelve },
+	{ "cover VIP",						PMENU_ALIGN_CENTER, Com_Thirteen },
+	{ "VIP DOWN!",						PMENU_ALIGN_CENTER, Com_Fourteen },
+	{ "enemy spotted",					PMENU_ALIGN_CENTER, Com_Fifteen },
+	{ "grenade",						PMENU_ALIGN_CENTER, Com_Sixteen },
+};
+
+// END
+
 static const int jmenu_level = 2;
 static const int jmenu_match = 3;
 static const int jmenu_red = 5;
 static const int jmenu_blue = 7;
 static const int jmenu_chase = 9;
 static const int jmenu_reqmatch = 11;
+
+// NNS6
+// new vars dealing with class selection
+static const int cmenu_assault = 5;
+static const int cmenu_scout = 7;
+static const int cmenu_support = 9;
+// END
+
 
 pmenu_t joinmenu[] = {
 	{ "*Quake II",			PMENU_ALIGN_CENTER, NULL },
@@ -2987,8 +3282,32 @@ pmenu_t joinmenu[] = {
 	{ "ENTER to select",	PMENU_ALIGN_LEFT, NULL },
 	{ "ESC to Exit Menu",	PMENU_ALIGN_LEFT, NULL },
 	{ "(TAB to Return)",	PMENU_ALIGN_LEFT, NULL },
-	{ "v" CTF_STRING_VERSION,	PMENU_ALIGN_RIGHT, NULL },
+	{ "v" CTF_STRING_VERSION,	PMENU_ALIGN_RIGHT, NULL }
 };
+
+// NNS6
+// menu for class selection
+pmenu_t classmenu[] = {
+	{ "*Quake II",			PMENU_ALIGN_CENTER, NULL },
+	{ "*WarZone",			PMENU_ALIGN_CENTER, NULL },
+	{ NULL,					PMENU_ALIGN_CENTER, NULL },
+	{ NULL,					PMENU_ALIGN_CENTER, NULL },
+	{ NULL,					PMENU_ALIGN_CENTER, NULL },
+	{ "Assault",			PMENU_ALIGN_LEFT, WZ_JoinClass1 },
+	{ NULL,					PMENU_ALIGN_LEFT, NULL },
+	{ "Scout",				PMENU_ALIGN_LEFT, WZ_JoinClass2 },
+	{ NULL,					PMENU_ALIGN_LEFT, NULL },
+	{ "Support",			PMENU_ALIGN_LEFT, WZ_JoinClass3 },
+	{ NULL,					PMENU_ALIGN_LEFT, NULL },
+	{ "Credits",			PMENU_ALIGN_LEFT, WZ_Credits },
+	{ NULL,					PMENU_ALIGN_LEFT, NULL },
+	{ "Use [ and ] to move cursor",	PMENU_ALIGN_LEFT, NULL },
+	{ "ENTER to select",	PMENU_ALIGN_LEFT, NULL },
+	{ "ESC to Exit Menu",	PMENU_ALIGN_LEFT, NULL },
+	{ "(TAB to Return)",	PMENU_ALIGN_LEFT, NULL },
+	{ "v" WZ_STRING_VERSION,	PMENU_ALIGN_RIGHT, NULL }
+};
+// END
 
 pmenu_t nochasemenu[] = {
 	{ "*Quake II",			PMENU_ALIGN_CENTER, NULL },
@@ -3005,10 +3324,64 @@ void CTFJoinTeam(edict_t *ent, int desired_team)
 	char *s;
 
 	PMenu_Close(ent);
+	// NNS6
+	// Open join class menu after team menu
+	WZ_OpenJoinMenu(ent);
+	// END
 
-	ent->svflags &= ~SVF_NOCLIENT;
+// NNS6
+// so that player is not assined any model or skin till 
+// class is chosen
+//	ent->svflags &= ~SVF_NOCLIENT;
 	ent->client->resp.ctf_team = desired_team;
 	ent->client->resp.ctf_state = 0;
+//	s = Info_ValueForKey (ent->client->pers.userinfo, "skin");
+//	CTFAssignSkin(ent, s);
+ // END
+
+	// assign a ghost if we are in match mode
+	if (ctfgame.match == MATCH_GAME) {
+		if (ent->client->resp.ghost)
+			ent->client->resp.ghost->code = 0;
+		ent->client->resp.ghost = NULL;
+		CTFAssignGhost(ent);
+	}
+// NNS6
+// prevents player from spawning till a class has been chosen
+//	PutClientInServer (ent);
+
+	// add a teleportation effect
+//	ent->s.event = EV_PLAYER_TELEPORT;
+	// hold in place briefly
+//	ent->client->ps.pmove.pm_flags = PMF_TIME_TELEPORT;
+//	ent->client->ps.pmove.pm_time = 14;
+// END
+	gi.bprintf(PRINT_HIGH, "%s joined the %s team.\n",
+		ent->client->pers.netname, CTFTeamName(desired_team));
+// NNS6
+	// other unnecessary stuff that could be dealt in the class menu
+/*
+	if (ctfgame.match == MATCH_SETUP) {
+		gi.centerprintf(ent,	"***********************\n"
+								"Type \"ready\" in console\n"
+								"to ready up.\n"
+								"***********************");
+	}
+*/
+// END
+}
+
+// NNS6
+// func that allots the class and spawns the player
+void WZ_JoinClass(edict_t *ent, int desired_class)
+{
+	char *s;
+
+	PMenu_Close(ent);
+
+	ent->svflags &= ~SVF_NOCLIENT;
+	ent->client->resp.WZ_class = desired_class;
+	ent->client->resp.WZ_state = 0;
 	s = Info_ValueForKey (ent->client->pers.userinfo, "skin");
 	CTFAssignSkin(ent, s);
 
@@ -3019,15 +3392,21 @@ void CTFJoinTeam(edict_t *ent, int desired_team)
 		ent->client->resp.ghost = NULL;
 		CTFAssignGhost(ent);
 	}
-
+	
+	// NNS6
+	// check to keep player from killing himself and spawnning as a differnt class each time
+	// player has to die to change class
+	if (ent->client->resp.WZ_alive == 0){
 	PutClientInServer (ent);
 	// add a teleportation effect
 	ent->s.event = EV_PLAYER_TELEPORT;
 	// hold in place briefly
 	ent->client->ps.pmove.pm_flags = PMF_TIME_TELEPORT;
 	ent->client->ps.pmove.pm_time = 14;
-	gi.bprintf(PRINT_HIGH, "%s joined the %s team.\n",
-		ent->client->pers.netname, CTFTeamName(desired_team));
+	gi.bprintf(PRINT_HIGH, "%s selected the %s class.\n",
+		ent->client->pers.netname, WZ_ClassName(desired_class));
+	}
+	// END
 
 	if (ctfgame.match == MATCH_SETUP) {
 		gi.centerprintf(ent,	"***********************\n"
@@ -3036,24 +3415,191 @@ void CTFJoinTeam(edict_t *ent, int desired_team)
 								"***********************");
 	}
 }
+// END
+
+// NNS6
+// RADIO MENU
+void Com_One(edict_t *ent, pmenuhnd_t *p)
+{
+	if (random() > 0.5)
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/locknload.wav"), 1, ATTN_NORM, 0);
+	else
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/locknload2.wav"), 1, ATTN_NORM, 0);
+	PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+	PMenu_Close(ent);
+}
+
+void Com_Two(edict_t *ent, pmenuhnd_t *p)
+{
+	if (random() > 0.5)
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/roger.wav"), 1, ATTN_NORM, 0);
+	else
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/roger2.wav"), 1, ATTN_NORM, 0);
+	PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+	PMenu_Close(ent);
+}
+
+void Com_Three(edict_t *ent, pmenuhnd_t *p)
+{
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/negative.wav"), 1, ATTN_NORM, 0);
+		PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+		PMenu_Close(ent);
+}
+
+void Com_Four(edict_t *ent, pmenuhnd_t *p)
+{
+	if (random() > 0.5)
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/coverme.wav"), 1, ATTN_NORM, 0);
+	else
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/coverme2.wav"), 1, ATTN_NORM, 0);
+	PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+	PMenu_Close(ent);
+}
+
+void Com_Five(edict_t *ent, pmenuhnd_t *p)
+{
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/needassistance.wav"), 1, ATTN_NORM, 0);
+		PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+		PMenu_Close(ent);
+}
+
+void Com_Six(edict_t *ent, pmenuhnd_t *p)
+{
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/enemydown.wav"), 1, ATTN_NORM, 0);
+		PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+		PMenu_Close(ent);
+}
+
+void Com_Seven(edict_t *ent, pmenuhnd_t *p)
+{
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/clear.wav"), 1, ATTN_NORM, 0);
+		PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+		PMenu_Close(ent);
+}
+
+void Com_Eight(edict_t *ent, pmenuhnd_t *p)
+{
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/getinpos.wav"), 1, ATTN_NORM, 0);
+		PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+		PMenu_Close(ent);
+}
+
+void Com_Nine(edict_t *ent, pmenuhnd_t *p)
+{
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/holdposition.wav"), 1, ATTN_NORM, 0);
+		PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+		PMenu_Close(ent);
+}
+
+void Com_Ten(edict_t *ent, pmenuhnd_t *p)
+{
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/letsgo.wav"), 1, ATTN_NORM, 0);
+		PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+		PMenu_Close(ent);
+}
+
+void Com_Eleven(edict_t *ent, pmenuhnd_t *p)
+{
+	if (random() > 0.5)
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/regroup.wav"), 1, ATTN_NORM, 0);
+	else
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/regroup2.wav"), 1, ATTN_NORM, 0);
+	PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+	PMenu_Close(ent);
+}
+
+void Com_Twelve(edict_t *ent, pmenuhnd_t *p)
+{
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/hostileinbound.wav"), 1, ATTN_NORM, 0);
+		PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+		PMenu_Close(ent);
+}
+
+void Com_Thirteen(edict_t *ent, pmenuhnd_t *p)
+{
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/coveringprime.wav"), 1, ATTN_NORM, 0);
+		PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+		PMenu_Close(ent);
+}
+
+void Com_Fourteen(edict_t *ent, pmenuhnd_t *p)
+{
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/primedown.wav"), 1, ATTN_NORM, 0);
+		PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+		PMenu_Close(ent);
+}
+
+void Com_Fifteen(edict_t *ent, pmenuhnd_t *p)
+{
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/enemyspotted.wav"), 1, ATTN_NORM, 0);
+		PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+		PMenu_Close(ent);
+}
+
+void Com_Sixteen(edict_t *ent, pmenuhnd_t *p)
+{
+		gi.sound (ent, CHAN_AUTO, gi.soundindex ("weapons/grenade.wav"), 1, ATTN_NORM, 0);
+		PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+		PMenu_Close(ent);
+}
+// END
 
 void CTFJoinTeam1(edict_t *ent, pmenuhnd_t *p)
 {
-	CTFJoinTeam(ent, CTF_TEAM1);
+	if (ent->client->resp.WZ_alive == 0)
+		CTFJoinTeam(ent, CTF_TEAM1);
 }
 
 void CTFJoinTeam2(edict_t *ent, pmenuhnd_t *p)
 {
-	CTFJoinTeam(ent, CTF_TEAM2);
+	if (ent->client->resp.WZ_alive == 0)
+		CTFJoinTeam(ent, CTF_TEAM2);
 }
+
+// NNS6
+// Assigns classes
+void WZ_JoinClass1(edict_t *ent, pmenuhnd_t *p)
+{
+	if (ent->client->resp.WZ_alive == 0)
+	WZ_JoinClass(ent, WZ_CLASS1);
+}
+
+void WZ_JoinClass2(edict_t *ent, pmenuhnd_t *p)
+{
+	if (ent->client->resp.WZ_alive == 0)
+	WZ_JoinClass(ent, WZ_CLASS2);
+}
+
+void WZ_JoinClass3(edict_t *ent, pmenuhnd_t *p)
+{
+	if (ent->client->resp.WZ_alive == 0)
+	WZ_JoinClass(ent, WZ_CLASS3);
+}
+// END
 
 void CTFChaseCam(edict_t *ent, pmenuhnd_t *p)
 {
 	int i;
 	edict_t *e;
+// NNS6
+// there were some problems so i had to put this to enable chase cam
+// in class select mode and to switch back to chase cam if u dint wana play
+	if (ent->client->resp.ctf_team != CTF_NOTEAM)
+	{
+		ent->movetype = MOVETYPE_NOCLIP;
+		ent->solid = SOLID_NOT;
+		ent->svflags |= SVF_NOCLIENT;
+		ent->client->resp.ctf_team = CTF_NOTEAM;
+		ent->client->ps.gunindex = 0;
+		gi.linkentity (ent);
+
+		CTFOpenJoinMenu(ent);
+	}
+// END
 
 	if (ent->client->chase_target) {
 		ent->client->chase_target = NULL;
+		ent->client->ps.pmove.pm_flags &= ~PMF_NO_PREDICTION;
 		PMenu_Close(ent);
 		return;
 	}
@@ -3188,7 +3734,7 @@ int CTFUpdateJoinMenu(edict_t *ent)
 		joinmenu[jmenu_reqmatch].text = "Request Match";
 		joinmenu[jmenu_reqmatch].SelectFunc = CTFRequestMatch;
 	}
-	
+
 	if (num1 > num2)
 		return CTF_TEAM1;
 	else if (num2 > num1)
@@ -3196,10 +3742,135 @@ int CTFUpdateJoinMenu(edict_t *ent)
 	return (rand() & 1) ? CTF_TEAM1 : CTF_TEAM2;
 }
 
+// NNS6
+// to update the join menu as players join
+// Some random things have been commente out which were unnecessary
+int WZ_UpdateJoinMenu(edict_t *ent)
+{
+	static char class1players[32];
+	static char class2players[32];
+	static char class3players[32];
+	int num1, num2, num3, i, tempclass;
+
+	tempclass = -1;
+
+	if (ctfgame.match >= MATCH_PREGAME && matchlock->value) {
+		classmenu[cmenu_assault].text = "MATCH IS LOCKED";
+		classmenu[cmenu_assault].SelectFunc = NULL;
+		classmenu[cmenu_scout].text = "  (entry is not permitted)";
+		classmenu[cmenu_scout].SelectFunc = NULL;
+		classmenu[cmenu_support].text = " DENIED";
+		classmenu[cmenu_support].SelectFunc = NULL;
+	} else {
+		if (ctfgame.match >= MATCH_PREGAME) {
+			classmenu[cmenu_assault].text = "Join Assault class";
+			classmenu[cmenu_scout].text = "Join Scout class";
+			classmenu[cmenu_support].text = "Join Support class";
+		} else {
+			classmenu[cmenu_assault].text = "Assault";
+			classmenu[cmenu_scout].text = "Scout";
+			classmenu[cmenu_support].text = "Support";
+		}
+		classmenu[cmenu_assault].SelectFunc = WZ_JoinClass1;
+		classmenu[cmenu_scout].SelectFunc = WZ_JoinClass2;
+		classmenu[cmenu_support].SelectFunc = WZ_JoinClass3;
+	}
+/*
+	if (ctf_forcejoin->string && *ctf_forcejoin->string) {
+		if (stricmp(ctf_forcejoin->string, "red") == 0) {
+			joinmenu[jmenu_blue].text = NULL;
+			joinmenu[jmenu_blue].SelectFunc = NULL;
+		} else if (stricmp(ctf_forcejoin->string, "blue") == 0) {
+			joinmenu[jmenu_red].text = NULL;
+			joinmenu[jmenu_red].SelectFunc = NULL;
+		}
+	}
+
+	if (ent->client->chase_target)
+		joinmenu[jmenu_chase].text = "Leave Chase Camera";
+	else
+		joinmenu[jmenu_chase].text = "Chase Camera";
+
+	SetLevelName(classmenu + jmenu_level);*/
+
+	num1 = num2 = num3 = 0;
+	for (i = 0; i < maxclients->value; i++) {
+		if (!g_edicts[i+1].inuse)
+			continue;
+		if (game.clients[i].resp.WZ_class == WZ_CLASS1)
+			num1++;
+		else if (game.clients[i].resp.WZ_class == WZ_CLASS2)
+			num2++;
+		else if (game.clients[i].resp.WZ_class == WZ_CLASS3)
+			num3++;
+	}
+
+	sprintf(class1players, "  (%d players)", num1);
+	sprintf(class2players, "  (%d players)", num2);
+	sprintf(class3players, "  (%d players)", num3);
+
+	/*
+	switch (ctfgame.match) {
+	case MATCH_NONE :
+		joinmenu[jmenu_match].text = NULL;
+		break;
+
+	case MATCH_SETUP :
+		joinmenu[jmenu_match].text = "*MATCH SETUP IN PROGRESS";
+		break;
+
+	case MATCH_PREGAME :
+		joinmenu[jmenu_match].text = "*MATCH STARTING";
+		break;
+
+	case MATCH_GAME :
+		joinmenu[jmenu_match].text = "*MATCH IN PROGRESS";
+		break;
+	}
+*/
+	if (classmenu[cmenu_assault].text)
+		classmenu[cmenu_assault+1].text = class1players;
+	else
+		classmenu[cmenu_assault+1].text = NULL;
+	if (classmenu[cmenu_scout].text)
+		classmenu[cmenu_scout+1].text = class2players;
+	else
+		classmenu[cmenu_scout+1].text = NULL;
+	if (classmenu[cmenu_support].text)
+		classmenu[cmenu_support+1].text = class3players;
+	else
+		classmenu[cmenu_support+1].text = NULL;
+
+/*	joinmenu[jmenu_reqmatch].text = NULL;
+	joinmenu[jmenu_reqmatch].SelectFunc = NULL;
+	if (competition->value && ctfgame.match < MATCH_SETUP) {
+		joinmenu[jmenu_reqmatch].text = "Request Match";
+		joinmenu[jmenu_reqmatch].SelectFunc = CTFRequestMatch;
+	}*/
+	
+	if (num1 > num2 && num1 > num3)
+		return WZ_CLASS1;
+	else if (num2 > num1 && num2 > num3)
+		return WZ_CLASS2;
+	else if (num3 > num1 && num3 > num2)
+		return WZ_CLASS3;
+	
+	switch (rand()%2)
+	{
+	case 0:
+		tempclass = WZ_CLASS1;
+	case 1:
+		tempclass = WZ_CLASS2;
+	case 2:
+		tempclass = WZ_CLASS3;
+	}
+	return tempclass;
+}
+// END
+
 void CTFOpenJoinMenu(edict_t *ent)
 {
 	int team;
-
 	team = CTFUpdateJoinMenu(ent);
 	if (ent->client->chase_target)
 		team = 8;
@@ -3210,11 +3881,49 @@ void CTFOpenJoinMenu(edict_t *ent)
 	PMenu_Open(ent, joinmenu, team, sizeof(joinmenu) / sizeof(pmenu_t), NULL);
 }
 
+// NNS6
+// calls func to opeen the join menu
+void WZ_OpenJoinMenu(edict_t *ent)
+{
+	int pClass;
+
+	pClass = WZ_UpdateJoinMenu(ent);
+	if (pClass == WZ_CLASS1)
+		pClass = 4;
+	else if (pClass == WZ_CLASS2)
+		pClass = 6;
+	else if (pClass == WZ_CLASS3)
+		pClass = 8;
+	else 
+		pClass = 0;
+
+	PMenu_Open(ent, classmenu, pClass, sizeof(classmenu) / sizeof(pmenu_t), NULL);
+}
+// END
+
+// NNS6 
+// opens radio menu
+void WZ_radio(edict_t *ent, pmenuhnd_t *p)
+{
+	PMenu_Close(ent);
+	PMenu_Open(ent, WZ_radiomenu, -1, sizeof(WZ_radiomenu) / sizeof(pmenu_t), NULL);
+}
+// END
+
 void CTFCredits(edict_t *ent, pmenuhnd_t *p)
 {
 	PMenu_Close(ent);
 	PMenu_Open(ent, creditsmenu, -1, sizeof(creditsmenu) / sizeof(pmenu_t), NULL);
 }
+
+// NNS6
+// opens credits menu
+void WZ_Credits(edict_t *ent, pmenuhnd_t *p)
+{
+	PMenu_Close(ent);
+	PMenu_Open(ent, WZ_creditsmenu, -1, sizeof(WZ_creditsmenu) / sizeof(pmenu_t), NULL);
+}
+// END
 
 qboolean CTFStartClient(edict_t *ent)
 {
@@ -3238,22 +3947,25 @@ qboolean CTFStartClient(edict_t *ent)
 
 void CTFObserver(edict_t *ent)
 {
+	char		userinfo[MAX_INFO_STRING];
+
 	// start as 'observer'
-	if (ent->movetype == MOVETYPE_NOCLIP) {
-		gi.cprintf(ent, PRINT_HIGH, "You are already an observer.\n");
-		return;
-	}
+	if (ent->movetype == MOVETYPE_NOCLIP)
 
 	CTFPlayerResetGrapple(ent);
 	CTFDeadDropFlag(ent);
 	CTFDeadDropTech(ent);
 
+	ent->deadflag = DEAD_NO;
 	ent->movetype = MOVETYPE_NOCLIP;
 	ent->solid = SOLID_NOT;
 	ent->svflags |= SVF_NOCLIENT;
 	ent->client->resp.ctf_team = CTF_NOTEAM;
 	ent->client->ps.gunindex = 0;
 	ent->client->resp.score = 0;
+	memcpy (userinfo, ent->client->pers.userinfo, sizeof(userinfo));
+	InitClientPersistant(ent->client);
+	ClientUserinfoChanged (ent, userinfo);
 	gi.linkentity (ent);
 	CTFOpenJoinMenu(ent);
 }
@@ -3280,6 +3992,9 @@ qboolean CTFCheckRules(void)
 	if (ctfgame.match != MATCH_NONE) {
 		t = ctfgame.matchtime - level.time;
 
+		// no team warnings in match mode
+		ctfgame.warnactive = 0;
+
 		if (t <= 0) { // time ended on something
 			switch (ctfgame.match) {
 			case MATCH_SETUP :
@@ -3297,11 +4012,13 @@ qboolean CTFCheckRules(void)
 			case MATCH_PREGAME :
 				// match started!
 				CTFStartMatch();
+				gi.positioned_sound (world->s.origin, world, CHAN_AUTO | CHAN_RELIABLE, gi.soundindex("misc/tele_up.wav"), 1, ATTN_NONE, 0);
 				return false;
 
 			case MATCH_GAME :
 				// match ended!
 				CTFEndMatch();
+				gi.positioned_sound (world->s.origin, world, CHAN_AUTO | CHAN_RELIABLE, gi.soundindex("misc/bigtele.wav"), 1, ATTN_NONE, 0);
 				return false;
 			}
 		}
@@ -3336,16 +4053,63 @@ qboolean CTFCheckRules(void)
 			sprintf(text, "%02d:%02d UNTIL START",
 				t / 60, t % 60);
 			gi.configstring (CONFIG_CTF_MATCH, text);
+
+			if (t <= 10 && !ctfgame.countdown) {
+				ctfgame.countdown = true;
+				gi.positioned_sound (world->s.origin, world, CHAN_AUTO | CHAN_RELIABLE, gi.soundindex("world/10_0.wav"), 1, ATTN_NONE, 0);
+			}
 			break;
 
 		case MATCH_GAME:
 			sprintf(text, "%02d:%02d MATCH",
 				t / 60, t % 60);
 			gi.configstring (CONFIG_CTF_MATCH, text);
+			if (t <= 10 && !ctfgame.countdown) {
+				ctfgame.countdown = true;
+				gi.positioned_sound (world->s.origin, world, CHAN_AUTO | CHAN_RELIABLE, gi.soundindex("world/10_0.wav"), 1, ATTN_NONE, 0);
+			}
 			break;
 		}
 		return false;
+
+	} else {
+		int team1 = 0, team2 = 0;
+
+		if (level.time == ctfgame.lasttime)
+			return false;
+		ctfgame.lasttime = level.time;
+		// this is only done in non-match (public) mode
+
+		if (warn_unbalanced->value) {
+			// count up the team totals
+			for (i = 1; i <= maxclients->value; i++) {
+				ent = g_edicts + i;
+				if (!ent->inuse)
+					continue;
+				if (ent->client->resp.ctf_team == CTF_TEAM1)
+					team1++;
+				else if (ent->client->resp.ctf_team == CTF_TEAM2)
+					team2++;
+			}
+
+			if (team1 - team2 >= 2 && team2 >= 2) {
+				if (ctfgame.warnactive != CTF_TEAM1) {
+					ctfgame.warnactive = CTF_TEAM1;
+					gi.configstring (CONFIG_CTF_TEAMINFO, "WARNING: Red has too many players");
+				}
+			} else if (team2 - team1 >= 2 && team1 >= 2) {
+				if (ctfgame.warnactive != CTF_TEAM2) {
+					ctfgame.warnactive = CTF_TEAM2;
+					gi.configstring (CONFIG_CTF_TEAMINFO, "WARNING: Blue has too many players");
+				}
+			} else
+				ctfgame.warnactive = 0;
+		} else
+			ctfgame.warnactive = 0;
+
 	}
+
+
 
 	if (capturelimit->value && 
 		(ctfgame.team1 >= capturelimit->value ||
@@ -3736,6 +4500,8 @@ void CTFAdmin_MatchSet(edict_t *ent, pmenuhnd_t *p)
 		gi.bprintf(PRINT_CHAT, "Match has been forced to start.\n");
 		ctfgame.match = MATCH_PREGAME;
 		ctfgame.matchtime = level.time + matchstarttime->value;
+		gi.positioned_sound (world->s.origin, world, CHAN_AUTO | CHAN_RELIABLE, gi.soundindex("misc/talk1.wav"), 1, ATTN_NONE, 0);
+		ctfgame.countdown = false;
 	} else if (ctfgame.match == MATCH_GAME) {
 		gi.bprintf(PRINT_CHAT, "Match has been forced to terminate.\n");
 		ctfgame.match = MATCH_SETUP;
@@ -3754,6 +4520,17 @@ void CTFAdmin_MatchMode(edict_t *ent, pmenuhnd_t *p)
 		ctfgame.match = MATCH_SETUP;
 		CTFResetAllPlayers();
 	}
+}
+
+void CTFAdmin_Reset(edict_t *ent, pmenuhnd_t *p)
+{
+	PMenu_Close(ent);
+
+	// go back to normal mode
+	gi.bprintf(PRINT_CHAT, "Match mode has been terminated, reseting to normal game.\n");
+	ctfgame.match = MATCH_NONE;
+	gi.cvar_set("competition", "1");
+	CTFResetAllPlayers();
 }
 
 void CTFAdmin_Cancel(edict_t *ent, pmenuhnd_t *p)
@@ -3776,16 +4553,21 @@ void CTFOpenAdminMenu(edict_t *ent)
 {
 	adminmenu[3].text = NULL;
 	adminmenu[3].SelectFunc = NULL;
+	adminmenu[4].text = NULL;
+	adminmenu[4].SelectFunc = NULL;
 	if (ctfgame.match == MATCH_SETUP) {
 		adminmenu[3].text = "Force start match";
 		adminmenu[3].SelectFunc = CTFAdmin_MatchSet;
-	} else if (ctfgame.match == MATCH_GAME) {
+		adminmenu[4].text = "Reset to pickup mode";
+		adminmenu[4].SelectFunc = CTFAdmin_Reset;
+	} else if (ctfgame.match == MATCH_GAME || ctfgame.match == MATCH_PREGAME) {
 		adminmenu[3].text = "Cancel match";
 		adminmenu[3].SelectFunc = CTFAdmin_MatchSet;
 	} else if (ctfgame.match == MATCH_NONE && competition->value) {
 		adminmenu[3].text = "Switch to match mode";
 		adminmenu[3].SelectFunc = CTFAdmin_MatchMode;
 	}
+
 
 //	if (ent->client->menu)
 //		PMenu_Close(ent->client->menu);
@@ -3796,6 +4578,11 @@ void CTFOpenAdminMenu(edict_t *ent)
 void CTFAdmin(edict_t *ent)
 {
 	char text[1024];
+
+	if (!allow_admin->value) {
+		gi.cprintf(ent, PRINT_HIGH, "Administration is disabled\n");
+		return;
+	}
 
 	if (gi.argc() > 1 && admin_password->string && *admin_password->string &&
 		!ent->client->resp.admin && strcmp(admin_password->string, gi.argv(1)) == 0) {
@@ -3824,7 +4611,7 @@ void CTFStats(edict_t *ent)
 	int i, e;
 	ghost_t *g;
 	char st[80];
-	char text[1400];
+	char text[1024];
 	edict_t *e2;
 
 	*text = 0;
@@ -3888,6 +4675,7 @@ void CTFPlayerList(edict_t *ent)
 	char text[1400];
 	edict_t *e2;
 
+#if 0
 	*text = 0;
 	if (ctfgame.match == MATCH_SETUP) {
 		for (i = 1; i <= maxclients->value; i++) {
@@ -3901,16 +4689,18 @@ void CTFPlayerList(edict_t *ent)
 			}
 		}
 	}
+#endif
 
 	// number, name, connect time, ping, score, admin
 
 	*text = 0;
-	for (i = 0, e2 = g_edicts + 1; i < maxclients->value; i++, e2++) {
+	for (i = 1; i <= maxclients->value; i++) {
+		e2 = g_edicts + i;
 		if (!e2->inuse)
 			continue;
 
-		sprintf(st, "%3d %-16.16s %02d:%02d %4d %3d%s%s\n",
-			i + 1,
+		Com_sprintf(st, sizeof(st), "%3d %-16.16s %02d:%02d %4d %3d%s%s\n",
+			i,
 			e2->client->pers.netname,
 			(level.framenum - e2->client->resp.enterframe) / 600,
 			((level.framenum - e2->client->resp.enterframe) % 600)/10,
@@ -3919,6 +4709,7 @@ void CTFPlayerList(edict_t *ent)
 			(ctfgame.match == MATCH_SETUP || ctfgame.match == MATCH_PREGAME) ?
 			(e2->client->resp.ready ? " (ready)" : " (notready)") : "",
 			e2->client->resp.admin ? " (admin)" : "");
+
 		if (strlen(text) + strlen(st) > sizeof(text) - 50) {
 			sprintf(text+strlen(text), "And more...\n");
 			gi.cprintf(ent, PRINT_HIGH, "%s", text);
@@ -4013,4 +4804,13 @@ void CTFBoot(edict_t *ent)
 }
 
 
-		
+void CTFSetPowerUpEffect(edict_t *ent, int def)
+{
+	if (ent->client->resp.ctf_team == CTF_TEAM1)
+		ent->s.effects |= EF_PENT; // red
+	else if (ent->client->resp.ctf_team == CTF_TEAM2)
+		ent->s.effects |= EF_QUAD; // red
+	else
+		ent->s.effects |= def;
+}
+

@@ -838,17 +838,10 @@ void SP_worldspawn (edict_t *ent)
 //ZOID
 		if (ctf->value) {
 			gi.configstring (CS_STATUSBAR, ctf_statusbar);
-			//precaches
-			gi.imageindex("i_ctf1");
-			gi.imageindex("i_ctf2");
-			gi.imageindex("i_ctf1d");
-			gi.imageindex("i_ctf2d");
-			gi.imageindex("i_ctf1t");
-			gi.imageindex("i_ctf2t");
-			gi.imageindex("i_ctfj");
+			CTFPrecache();
 		} else
 //ZOID
-		gi.configstring (CS_STATUSBAR, dm_statusbar);
+			gi.configstring (CS_STATUSBAR, dm_statusbar);
 	else
 		gi.configstring (CS_STATUSBAR, single_statusbar);
 
@@ -900,7 +893,6 @@ void SP_worldspawn (edict_t *ent)
 	gi.soundindex ("*pain100_1.wav");
 	gi.soundindex ("*pain100_2.wav");
 
-#if 0 //DISABLED
 	// sexed models
 	// THIS ORDER MUST MATCH THE DEFINES IN g_local.h
 	// you can add more, max 15
@@ -916,7 +908,6 @@ void SP_worldspawn (edict_t *ent)
 	gi.modelindex ("#w_railgun.md2");
 	gi.modelindex ("#w_bfg.md2");
 	gi.modelindex ("#w_grapple.md2");
-#endif
 
 	//-------------------
 

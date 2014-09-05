@@ -1163,7 +1163,6 @@ void SCR_ExecuteLayoutString (char *s)
 			continue;
 		}
 
-
 		if (!strcmp(token, "stat_string"))
 		{
 			token = COM_Parse (&s);
@@ -1219,7 +1218,6 @@ void SCR_ExecuteLayoutString (char *s)
 
 			continue;
 		}
-
 
 	}
 }

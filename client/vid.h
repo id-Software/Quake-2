@@ -26,8 +26,7 @@ typedef struct vrect_s
 
 typedef struct
 {
-	int		width;		
-	int		height;
+	unsigned		width, height;			// coordinates from main game
 } viddef_t;
 
 extern	viddef_t	viddef;				// global video state
