@@ -32,7 +32,7 @@ to have your **source changes released**, we could still negotiate a separate  l
 
 <sub>**John D. Carmack** (born August 20, 1970) is an American **game programmer**, **aerospace** and **virtual reality** engineer. He co-founded **id Software**. Carmack was the lead programmer of the id video games **Commander Keen**, **Wolfenstein 3D**, **Doom**, **Quake**, **Rage** and their sequels. **Carmack** is best known for his innovations in **3D graphics**, such as his famous Carmack's **Reverse algorithm** for **shadow volumes**, and is also a **rocketry enthusiast** and the founder and lead engineer of **Armadillo Aerospace**. In August 2013, Carmack took the position of **CTO** at **Oculus VR**.[3]</sub>
 
-<img src="https://upload.wikimedia.org/wikipedia/commons/d/dc/John_Carmack_GDC_2010.jpg" width="75">
+<img src="https://upload.wikimedia.org/wikipedia/commons/d/dc/John_Carmack_GDC_2010.jpg" width="45">
 
 ---
 
@@ -42,7 +42,7 @@ to have your **source changes released**, we could still negotiate a separate  l
 
 <sub>The soundtrack for **Quake II** was mainly provided by **Sonic Mayhem**, with some additional tracks by **Bill Brown**; the main theme was also composed by **Bill Brown** and **Rob Zombie**, and one track was by **Jer Sypult**.</sub>
 
-<img src="https://upload.wikimedia.org/wikipedia/en/b/b5/Quake2box.jpg" width="75">
+<img src="https://upload.wikimedia.org/wikipedia/en/b/b5/Quake2box.jpg" width="45">
 
 ---
 
@@ -56,4 +56,4 @@ to have your **source changes released**, we could still negotiate a separate  l
 
 <sub>On **June 24, 2009, ZeniMax Media** acquired the company.</sub>
 
-<img src="http://retrocdn.net/images/6/6d/IdSoftware_logo.svg" width="75"> <img src="http://tesall.ru/uploads/imgs/pre_1378816134__zenimax_media_inc_logo.jpg" width="150">
+<img src="http://retrocdn.net/images/6/6d/IdSoftware_logo.svg" width="45"> <img src="http://tesall.ru/uploads/imgs/pre_1378816134__zenimax_media_inc_logo.jpg" width="75">
