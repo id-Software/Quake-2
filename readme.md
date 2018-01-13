@@ -23,8 +23,8 @@ to have your **source changes released**, we could still negotiate a separate  l
 
 <sub>Thanks to **Robert Duffy** for doing the grunt work of building this release.</sub>
 
-**John Carmack**
-**Id Software**
+<sub>**John Carmack**</sub>
+<sub>**Id Software**</sub>
 
 ---
 
