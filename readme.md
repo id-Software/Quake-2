@@ -2,7 +2,7 @@
 
 ## Table of Contents (ToC)
 
-* [OVerall Consirations](#overall-considerations)
+* [Overall Consirations](#overall-considerations)
 * [About Quake 2](#about-quake-2)
 * [About Id Software](#about-id-software)
 
