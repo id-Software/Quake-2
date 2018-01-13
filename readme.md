@@ -34,7 +34,7 @@ Thanks to **Robert Duffy** for doing the grunt work of building this release.
 
 **John D. Carmack** (born August 20, 1970) is an American **game programmer**, **aerospace** and **virtual reality** engineer. He co-founded **id Software**. Carmack was the lead programmer of the id video games **Commander Keen**, **Wolfenstein 3D**, **Doom**, **Quake**, **Rage** and their sequels. **Carmack** is best known for his innovations in **3D graphics**, such as his famous Carmack's **Reverse algorithm** for **shadow volumes**, and is also a **rocketry enthusiast** and the founder and lead engineer of **Armadillo Aerospace**. In August 2013, Carmack took the position of **CTO** at **Oculus VR**.[3]
 
-<img src="https://upload.wikimedia.org/wikipedia/commons/d/dc/John_Carmack_GDC_2010.jpg" width="320" height="320">
+<img src="https://upload.wikimedia.org/wikipedia/commons/d/dc/John_Carmack_GDC_2010.jpg" width="150">
 
 ---
 
