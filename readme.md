@@ -6,6 +6,8 @@
 * [About Quake 2](#about-quake-2)
 * [About Id Software](#about-id-software)
 
+---
+
 ## Overall Considerations
 
 This is the complete source code for **Quake 2**, version **3.19**, buildable with
