@@ -54,8 +54,8 @@ The soundtrack for **Quake II** was mainly provided by **Sonic Mayhem**, with so
 
 The company was also heavily involved in the creation of the **first-person shooter genre**. **Wolfenstein 3D** is often considered as the first true **FPS**, **Doom** was a game that popularized the genre and PC gaming in general, and **Quake** is the first shooter to have **online multiplayer**, which is a widespread feature used in today's games of the same genre, as well as id's first true **3D first-person shooter**.
 
-<img src="http://retrocdn.net/images/6/6d/IdSoftware_logo.svg" width="150">
-
 On **June 24, 2009, ZeniMax Media** acquired the company.
+
+<img src="http://retrocdn.net/images/6/6d/IdSoftware_logo.svg" width="150">
 
 <img src="http://tesall.ru/uploads/imgs/pre_1378816134__zenimax_media_inc_logo.jpg" width="150">
