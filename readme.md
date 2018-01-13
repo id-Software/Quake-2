@@ -1,4 +1,4 @@
-##Quake 2 Engine Source
+## Quake 2 Engine Source
 -----------------------
 
 This is the complete source code for **Quake 2**, version **3.19**, buildable with
