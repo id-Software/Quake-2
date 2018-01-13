@@ -48,7 +48,7 @@ The soundtrack for **Quake II** was mainly provided by **Sonic Mayhem**, with so
 
 ## About Id Software
 
-**id Software** (/ɪd/; see **Company name**) is an **American video game development company** with its **headquarters** in **Richardson, Texas**. The company was founded on **February 1, 1991, ** by **four members** of the computer company **Softdisk**: programmers **John Carmack** and **John Romero**, game designer **Tom Hall**, and artist **Adrian Carmack** (no relation to **John Carmack**). Business manager **Jay Wilbur** was also involved.[2]
+**id Software** (/ɪd/; see **Company name**) is an **American video game development company** with its **headquarters** in **Richardson, Texas**. The company was founded on **February 1, 1991,** by **four members** of the computer company **Softdisk**: programmers **John Carmack** and **John Romero**, game designer **Tom Hall**, and artist **Adrian Carmack** (no relation to **John Carmack**). Business manager **Jay Wilbur** was also involved.[2]
 
 **id made** important technological developments in **video game technologies** for the **PC** (running **MS-DOS** and **Windows**), including work done for the **Wolfenstein**, **Doom**, and **Quake franchises**. id's work was particularly important in **3D computer graphics technology** and in **game engines** that are **heavily** used throughout the **video game industry**.
 
