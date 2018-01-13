@@ -1,6 +1,6 @@
 # Quake 2 Engine Source
 
-## Table of Contents (ToC)
+### Table of Contents (ToC)
 
 * [Overall Consirations](#overall-considerations)
 * [About Quake 2](#about-quake-2)
@@ -8,7 +8,7 @@
 
 ---
 
-## Overall Considerations
+#### Overall Considerations
 
 <sub>This is the complete source code for **Quake 2**, version **3.19**, buildable with **visual C++ 6.0**.  The **Linux** version should be buildable, but we haven't
 tested it for the release.</sub>
