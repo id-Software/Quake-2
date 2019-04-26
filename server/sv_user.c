@@ -248,7 +248,7 @@ void SV_Begin_f (void)
 	}
 
 	sv_client->state = cs_spawned;
-
+	
 	// call the game begin function
 	ge->ClientBegin (sv_player);
 

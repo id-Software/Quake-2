@@ -158,9 +158,9 @@ void CL_RegisterTEntSounds (void)
 	cl_sfx_lightning = S_RegisterSound ("weapons/tesla.wav");
 	cl_sfx_disrexp = S_RegisterSound ("weapons/disrupthit.wav");
 	// version stuff
-	sprintf (name, "weapons/sound%d.wav", ROGUE_VERSION_ID);
-	if (name[0] == 'w')
-		name[0] = 'W';
+//	sprintf (name, "weapons/sound%d.wav", ROGUE_VERSION_ID);
+//	if (name[0] == 'w')
+//		name[0] = 'W';
 //PGM
 }	
 
