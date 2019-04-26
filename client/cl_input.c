@@ -316,6 +316,12 @@ void CL_ClampPitch (void)
 	pitch = SHORT2ANGLE(cl.frame.playerstate.pmove.delta_angles[PITCH]);
 	if (pitch > 180)
 		pitch -= 360;
+
+	if (cl.viewangles[PITCH] + pitch < -360)
+		cl.viewangles[PITCH] += 360; // wrapped
+	if (cl.viewangles[PITCH] + pitch > 360)
+		cl.viewangles[PITCH] -= 360; // wrapped
+
 	if (cl.viewangles[PITCH] + pitch > 89)
 		cl.viewangles[PITCH] = 89 - pitch;
 	if (cl.viewangles[PITCH] + pitch < -89)

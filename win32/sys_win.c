@@ -508,6 +508,7 @@ void *Sys_GetGameAPI (void *parms)
 	}
 	else
 	{
+#ifdef DEBUG
 		// check the current directory for other development purposes
 		Com_sprintf (name, sizeof(name), "%s/%s", cwd, gamename);
 		game_library = LoadLibrary ( name );
@@ -516,6 +517,7 @@ void *Sys_GetGameAPI (void *parms)
 			Com_DPrintf ("LoadLibrary (%s)\n", name);
 		}
 		else
+#endif
 		{
 			// now run through the search paths
 			path = NULL;

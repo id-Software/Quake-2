@@ -554,7 +554,10 @@ Called to find where to write a file (demos, savegames, etc)
 */
 char *FS_Gamedir (void)
 {
-	return fs_gamedir;
+	if (*fs_gamedir)
+		return fs_gamedir;
+	else
+		return BASEDIRNAME;
 }
 
 /*

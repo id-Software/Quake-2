@@ -1,0 +1,23 @@
+12-22-2001
+
+Some notes about this release on linux:
+
+#1: it is recommended that you have a working Quake2 installation already
+(i.e. download precompiled binaries and stuff, have /usr/local/games/quake2
+with all the files etc.)
+
+#2: it builds in debug, only ref_glx.so has been tested
+
+once compiled, you need to create baseq2/ directory,
+and symlink the pak, symlink debugi386-glibc/gamei386.so
+
+then to start Q2, in debugi386-glibc:
+ln -s /usr/local/games/quake2/baseq2
+./quake2 +set vid_ref glx +set gl_driver /usr/lib/libGL.so
+
+you will need to edit /etc/quake2.conf, make it point to the right place
+for loading of ref_glx.so
+(I just put '.' in my quake2.conf to rely on current dir)
+
+TTimo (ttimo@idsoftware.com)
+
