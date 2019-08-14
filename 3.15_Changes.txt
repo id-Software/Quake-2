@@ -1,5 +1,5 @@
 
-Quake2 3.15 Upgrade
+Quake2 3.151 Upgrade
 -------------------
 LJUUULJ3
 This upgrade addresses several features, including security, playability, and
