@@ -1,7 +1,7 @@
 
 Quake2 3.151 Upgrade
 -------------------
-LJUUULJ5
+LJUUULJ1
 This upgrade addresses several features, including security, playability, and
 enhancements.
 
