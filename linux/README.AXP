@@ -1,0 +1,53 @@
+Quake2 Dedicated 3.18 For Linux AXP
+-----------------------------------
+
+Please see the readme.txt file included for general information about the
+game.  This file contains Linux/AXP specific information.
+
+Requirements
+------------
+
+Linux Alpha kernel 2.0.30 or later, Redhat 5.0 (glibc) or later.
+
+Installation
+------------
+
+To install the Quake2 data files, mount your Quake2 CD and copy
+the directory install/data to the location where you want Quake2.  You
+can also symlink it, but I don't recommend that.  Around 200MB of disk
+space is required for a full installation.
+
+For example:
+  cp -r /mnt/cdrom/install/data/* /usr/games/quake2
+
+This binary only runs as a dedicated server and requires no special
+user permissions.
+
+You can also set dmflags, timelimit, etc. in a config file, like so:
+  set timelimit 20
+  set fraglimit 25
+  set dmflags 532
+  map fact3
+
+Then exec that config file on load, like so:
+
+  ./q2ded +exec server.cfg
+
+If you use a config file, you must put a 'map' command in it or the
+server won't load a map.
+
+To run a dedicated server in the background, use this;
+
+	nohup ./q2ded +exec server.cfg &
+
+A better way is to run Quake2 on a tty via screen.  screen can be found
+at ftp://prep.ai.mit.edu/pub/gnu/screen-3.7.4.tar.gz.
+
+-----------------------------------------------------------------------------
+
+Linux Quake2 is an unsupported product.  Usage of this product is bound by 
+the legal notice found on the distribution Quake2 CDROM.
+
+/// Zoid
+zoid@idsoftware.com
+

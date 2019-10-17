@@ -1115,24 +1115,17 @@ static void ControlsResetDefaultsFunc( void *unused )
 
 static void InvertMouseFunc( void *unused )
 {
-	if ( s_options_invertmouse_box.curvalue == 0 )
-	{
-		Cvar_SetValue( "m_pitch", fabs( m_pitch->value ) );
-	}
-	else
-	{
-		Cvar_SetValue( "m_pitch", -fabs( m_pitch->value ) );
-	}
+	Cvar_SetValue( "m_pitch", -m_pitch->value );
 }
 
 static void LookspringFunc( void *unused )
 {
-	Cvar_SetValue( "lookspring", s_options_lookspring_box.curvalue );
+	Cvar_SetValue( "lookspring", !lookspring->value );
 }
 
 static void LookstrafeFunc( void *unused )
 {
-	Cvar_SetValue( "lookstrafe", s_options_lookstrafe_box.curvalue );
+	Cvar_SetValue( "lookstrafe", !lookstrafe->value );
 }
 
 static void UpdateVolumeFunc( void *unused )

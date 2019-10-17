@@ -17,13 +17,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// disable data conversion warnings
-
-#if 0
-#pragma warning(disable : 4244)     // MIPS
-#pragma warning(disable : 4136)     // X86
-#pragma warning(disable : 4051)     // ALPHA
-#endif
 
 #ifdef _WIN32
 #  include <windows.h>
@@ -35,8 +28,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <GL/glu.h>
 #include <math.h>
 
+#ifndef __linux__
 #ifndef GL_COLOR_INDEX8_EXT
 #define GL_COLOR_INDEX8_EXT GL_COLOR_INDEX
+#endif
 #endif
 
 #include "../client/ref.h"
@@ -55,10 +50,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	ROLL	2
 
 
+#ifndef __VIDDEF_T
+#define __VIDDEF_T
 typedef struct
 {
 	unsigned		width, height;			// coordinates from main game
 } viddef_t;
+#endif
 
 extern	viddef_t	vid;
 

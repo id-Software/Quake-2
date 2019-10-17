@@ -1,4 +1,23 @@
 /*
+Copyright (C) 1997-2001 Id Software, Inc.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+*/
+/*
 ** RW_X11.C
 **
 ** This file contains ALL Linux specific stuff having to do with the
@@ -29,6 +48,7 @@
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
 #include <X11/extensions/XShm.h>
+#include <X11/extensions/xf86dga.h>
 
 #include "../ref_soft/r_local.h"
 #include "../client/keys.h"
@@ -37,22 +57,25 @@
 /*****************************************************************************/
 
 static qboolean			doShm;
-static Display			*x_disp;
+static Display			*dpy;
 static Colormap			x_cmap;
-static Window			x_win;
+static Window			win;
 static GC				x_gc;
 static Visual			*x_vis;
 static XVisualInfo		*x_visinfo;
-//static XImage			*x_image;
+static int win_x, win_y;
 
-#define STD_EVENT_MASK (StructureNotifyMask | KeyPressMask \
-	     | KeyReleaseMask | ExposureMask | PointerMotionMask | \
-	     ButtonPressMask | ButtonReleaseMask)
+#define KEY_MASK (KeyPressMask | KeyReleaseMask)
+#define MOUSE_MASK (ButtonPressMask | ButtonReleaseMask | \
+		    PointerMotionMask | ButtonMotionMask )
+#define X_MASK (KEY_MASK | MOUSE_MASK | VisibilityChangeMask | StructureNotifyMask | ExposureMask )
 
 static int				x_shmeventtype;
 //static XShmSegmentInfo	x_shminfo;
 
 static qboolean			oktodraw = false;
+static qboolean			ignorefirst = false;
+static qboolean			exposureflag = false;
 static qboolean			X11_active = false;
 
 int XShmQueryExtension(Display *);
@@ -62,19 +85,158 @@ int current_framebuffer;
 static XImage			*x_framebuffer[2] = { 0, 0 };
 static XShmSegmentInfo	x_shminfo[2];
 
-struct
-{
-	int key;
-	int down;
-} keyq[64];
-int keyq_head=0;
-int keyq_tail=0;
-
 int config_notify=0;
 int config_notify_width;
 int config_notify_height;
 						      
-typedef unsigned short PIXEL;
+typedef unsigned short PIXEL16;
+typedef unsigned long PIXEL24;
+static PIXEL16 st2d_8to16table[256];
+static PIXEL24 st2d_8to24table[256];
+static int shiftmask_fl=0;
+static long r_shift,g_shift,b_shift;
+static unsigned long r_mask,g_mask,b_mask;
+
+void shiftmask_init(void)
+{
+    unsigned int x;
+    r_mask=x_vis->red_mask;
+    g_mask=x_vis->green_mask;
+    b_mask=x_vis->blue_mask;
+    for(r_shift=-8,x=1;x<r_mask;x=x<<1)r_shift++;
+    for(g_shift=-8,x=1;x<g_mask;x=x<<1)g_shift++;
+    for(b_shift=-8,x=1;x<b_mask;x=x<<1)b_shift++;
+    shiftmask_fl=1;
+}
+
+PIXEL16 xlib_rgb16(int r,int g,int b)
+{
+    PIXEL16 p;
+    if(shiftmask_fl==0) shiftmask_init();
+    p=0;
+
+    if(r_shift>0) {
+        p=(r<<(r_shift))&r_mask;
+    } else if(r_shift<0) {
+        p=(r>>(-r_shift))&r_mask;
+    } else p|=(r&r_mask);
+
+    if(g_shift>0) {
+        p|=(g<<(g_shift))&g_mask;
+    } else if(g_shift<0) {
+        p|=(g>>(-g_shift))&g_mask;
+    } else p|=(g&g_mask);
+
+    if(b_shift>0) {
+        p|=(b<<(b_shift))&b_mask;
+    } else if(b_shift<0) {
+        p|=(b>>(-b_shift))&b_mask;
+    } else p|=(b&b_mask);
+
+    return p;
+}
+
+PIXEL24 xlib_rgb24(int r,int g,int b)
+{
+    PIXEL24 p;
+    if(shiftmask_fl==0) shiftmask_init();
+    p=0;
+
+    if(r_shift>0) {
+        p=(r<<(r_shift))&r_mask;
+    } else if(r_shift<0) {
+        p=(r>>(-r_shift))&r_mask;
+    } else p|=(r&r_mask);
+
+    if(g_shift>0) {
+        p|=(g<<(g_shift))&g_mask;
+    } else if(g_shift<0) {
+        p|=(g>>(-g_shift))&g_mask;
+    } else p|=(g&g_mask);
+
+    if(b_shift>0) {
+        p|=(b<<(b_shift))&b_mask;
+    } else if(b_shift<0) {
+        p|=(b>>(-b_shift))&b_mask;
+    } else p|=(b&b_mask);
+
+    return p;
+}
+
+
+void st2_fixup( XImage *framebuf, int x, int y, int width, int height)
+{
+	int xi,yi;
+	unsigned char *src;
+	PIXEL16 *dest;
+	register int count, n;
+
+	if( (x<0)||(y<0) )return;
+
+	for (yi = y; yi < (y+height); yi++) {
+		src = &framebuf->data [yi * framebuf->bytes_per_line];
+
+		// Duff's Device
+		count = width;
+		n = (count + 7) / 8;
+		dest = ((PIXEL16 *)src) + x+width - 1;
+		src += x+width - 1;
+
+		switch (count % 8) {
+		case 0:	do {	*dest-- = st2d_8to16table[*src--];
+		case 7:			*dest-- = st2d_8to16table[*src--];
+		case 6:			*dest-- = st2d_8to16table[*src--];
+		case 5:			*dest-- = st2d_8to16table[*src--];
+		case 4:			*dest-- = st2d_8to16table[*src--];
+		case 3:			*dest-- = st2d_8to16table[*src--];
+		case 2:			*dest-- = st2d_8to16table[*src--];
+		case 1:			*dest-- = st2d_8to16table[*src--];
+				} while (--n > 0);
+		}
+
+//		for(xi = (x+width-1); xi >= x; xi--) {
+//			dest[xi] = st2d_8to16table[src[xi]];
+//		}
+	}
+}
+
+void st3_fixup( XImage *framebuf, int x, int y, int width, int height)
+{
+	int xi,yi;
+	unsigned char *src;
+	PIXEL24 *dest;
+	register int count, n;
+
+	if( (x<0)||(y<0) )return;
+
+	for (yi = y; yi < (y+height); yi++) {
+		src = &framebuf->data [yi * framebuf->bytes_per_line];
+
+		// Duff's Device
+		count = width;
+		n = (count + 7) / 8;
+		dest = ((PIXEL24 *)src) + x+width - 1;
+		src += x+width - 1;
+
+		switch (count % 8) {
+		case 0:	do {	*dest-- = st2d_8to24table[*src--];
+		case 7:			*dest-- = st2d_8to24table[*src--];
+		case 6:			*dest-- = st2d_8to24table[*src--];
+		case 5:			*dest-- = st2d_8to24table[*src--];
+		case 4:			*dest-- = st2d_8to24table[*src--];
+		case 3:			*dest-- = st2d_8to24table[*src--];
+		case 2:			*dest-- = st2d_8to24table[*src--];
+		case 1:			*dest-- = st2d_8to24table[*src--];
+				} while (--n > 0);
+		}
+
+//		for(xi = (x+width-1); xi >= x; xi--) {
+//			dest[xi] = st2d_8to16table[src[xi]];
+//		}
+	}
+}
+
+
 
 // Console variables that we need to access from this module
 
@@ -84,18 +246,21 @@ typedef unsigned short PIXEL;
 
 // this is inside the renderer shared lib, so these are called from vid_so
 
-static qboolean        mouse_avail;
-static int     mouse_buttonstate;
-static int     mouse_oldbuttonstate;
-static int   mouse_x, mouse_y;
-static int	old_mouse_x, old_mouse_y;
+static qboolean	mouse_avail;
+static int		mouse_buttonstate;
+static int		mouse_oldbuttonstate;
+static int		old_mouse_x, old_mouse_y;
 static int		mx, my;
-static float old_windowed_mouse;
-static int p_mouse_x, p_mouse_y;
 
-static cvar_t	*_windowed_mouse;
+static qboolean mouse_active = false;
+static qboolean dgamouse = false;
+
 static cvar_t	*m_filter;
 static cvar_t	*in_mouse;
+static cvar_t	*in_dgamouse;
+
+static cvar_t	*vid_xpos;			// X coordinate of window position
+static cvar_t	*vid_ypos;			// Y coordinate of window position
 
 static qboolean	mlooking;
 
@@ -134,9 +299,9 @@ void RW_IN_Init(in_state_t *in_state_p)
 	in_state = in_state_p;
 
 	// mouse variables
-	_windowed_mouse = ri.Cvar_Get ("_windowed_mouse", "0", CVAR_ARCHIVE);
 	m_filter = ri.Cvar_Get ("m_filter", "0", 0);
-    in_mouse = ri.Cvar_Get ("in_mouse", "1", CVAR_ARCHIVE);
+    in_mouse = ri.Cvar_Get ("in_mouse", "0", CVAR_ARCHIVE);
+    in_dgamouse = ri.Cvar_Get ("in_dgamouse", "1", CVAR_ARCHIVE);
 	freelook = ri.Cvar_Get( "freelook", "0", 0 );
 	lookstrafe = ri.Cvar_Get ("lookstrafe", "0", 0);
 	sensitivity = ri.Cvar_Get ("sensitivity", "3", 0);
@@ -150,7 +315,6 @@ void RW_IN_Init(in_state_t *in_state_p)
 
 	ri.Cmd_AddCommand ("force_centerview", Force_CenterView_f);
 
-	mouse_x = mouse_y = 0.0;
 	mouse_avail = true;
 }
 
@@ -193,117 +357,33 @@ void RW_IN_Move (usercmd_t *cmd)
    
 	if (m_filter->value)
 	{
-		mouse_x = (mx + old_mouse_x) * 0.5;
-		mouse_y = (my + old_mouse_y) * 0.5;
-	} else {
-		mouse_x = mx;
-		mouse_y = my;
+		mx = (mx + old_mouse_x) * 0.5;
+		my = (my + old_mouse_y) * 0.5;
 	}
 
 	old_mouse_x = mx;
 	old_mouse_y = my;
 
-	if (!mouse_x && !mouse_y)
-		return;
-
-	mouse_x *= sensitivity->value;
-	mouse_y *= sensitivity->value;
+	mx *= sensitivity->value;
+	my *= sensitivity->value;
 
 // add mouse X/Y movement to cmd
 	if ( (*in_state->in_strafe_state & 1) || 
 		(lookstrafe->value && mlooking ))
-		cmd->sidemove += m_side->value * mouse_x;
+		cmd->sidemove += m_side->value * mx;
 	else
-		in_state->viewangles[YAW] -= m_yaw->value * mouse_x;
+		in_state->viewangles[YAW] -= m_yaw->value * mx;
 
 	if ( (mlooking || freelook->value) && 
 		!(*in_state->in_strafe_state & 1))
 	{
-		in_state->viewangles[PITCH] += m_pitch->value * mouse_y;
+		in_state->viewangles[PITCH] += m_pitch->value * my;
 	}
 	else
 	{
-		cmd->forwardmove -= m_forward->value * mouse_y;
+		cmd->forwardmove -= m_forward->value * my;
 	}
 	mx = my = 0;
-}
-
-void RW_IN_Frame (void)
-{
-}
-
-void RW_IN_Activate(void)
-{
-}
-
-/*****************************************************************************/
-
-static PIXEL st2d_8to16table[256];
-static int shiftmask_fl=0;
-static long r_shift,g_shift,b_shift;
-static unsigned long r_mask,g_mask,b_mask;
-
-void shiftmask_init()
-{
-    unsigned int x;
-    r_mask=x_vis->red_mask;
-    g_mask=x_vis->green_mask;
-    b_mask=x_vis->blue_mask;
-    for(r_shift=-8,x=1;x<r_mask;x=x<<1)r_shift++;
-    for(g_shift=-8,x=1;x<g_mask;x=x<<1)g_shift++;
-    for(b_shift=-8,x=1;x<b_mask;x=x<<1)b_shift++;
-    shiftmask_fl=1;
-}
-
-PIXEL xlib_rgb(int r,int g,int b)
-{
-    PIXEL p;
-    if(shiftmask_fl==0) shiftmask_init();
-    p=0;
-
-    if(r_shift>0) {
-        p=(r<<(r_shift))&r_mask;
-    } else if(r_shift<0) {
-        p=(r>>(-r_shift))&r_mask;
-    } else p|=(r&r_mask);
-
-    if(g_shift>0) {
-        p|=(g<<(g_shift))&g_mask;
-    } else if(g_shift<0) {
-        p|=(g>>(-g_shift))&g_mask;
-    } else p|=(g&g_mask);
-
-    if(b_shift>0) {
-        p|=(b<<(b_shift))&b_mask;
-    } else if(b_shift<0) {
-        p|=(b>>(-b_shift))&b_mask;
-    } else p|=(b&b_mask);
-
-    return p;
-}
-
-void st2_fixup( XImage *framebuf, int x, int y, int width, int height)
-{
-	int xi,yi;
-	unsigned char *src;
-	PIXEL *dest;
-
-	if( (x<0)||(y<0) )return;
-
-	for (yi = y; yi < (y+height); yi++) {
-		src = &framebuf->data [yi * framebuf->bytes_per_line];
-		dest = (PIXEL*)src;
-		for(xi = (x+width-1); xi >= x; xi -= 8) {
-			dest[xi  ] = st2d_8to16table[src[xi  ]];
-			dest[xi-1] = st2d_8to16table[src[xi-1]];
-			dest[xi-2] = st2d_8to16table[src[xi-2]];
-			dest[xi-3] = st2d_8to16table[src[xi-3]];
-			dest[xi-4] = st2d_8to16table[src[xi-4]];
-			dest[xi-5] = st2d_8to16table[src[xi-5]];
-			dest[xi-6] = st2d_8to16table[src[xi-6]];
-			dest[xi-7] = st2d_8to16table[src[xi-7]];
-		}
-	}
 }
 
 // ========================================================================
@@ -332,6 +412,103 @@ static Cursor CreateNullCursor(Display *display, Window root)
     return cursor;
 }
 
+static void install_grabs(void)
+{
+
+// inviso cursor
+	XDefineCursor(dpy, win, CreateNullCursor(dpy, win));
+
+	XGrabPointer(dpy, win,
+				 True,
+				 0,
+				 GrabModeAsync, GrabModeAsync,
+				 win,
+				 None,
+				 CurrentTime);
+
+	if (in_dgamouse->value) {
+		int MajorVersion, MinorVersion;
+
+		if (!XF86DGAQueryVersion(dpy, &MajorVersion, &MinorVersion)) { 
+			// unable to query, probalby not supported
+			ri.Con_Printf( PRINT_ALL, "Failed to detect XF86DGA Mouse\n" );
+			ri.Cvar_Set( "in_dgamouse", "0" );
+		} else {
+			dgamouse = true;
+			XF86DGADirectVideo(dpy, DefaultScreen(dpy), XF86DGADirectMouse);
+			XWarpPointer(dpy, None, win, 0, 0, 0, 0, 0, 0);
+		}
+	} else
+		XWarpPointer(dpy, None, win, 0, 0, 0, 0, vid.width / 2, vid.height / 2);
+
+	XGrabKeyboard(dpy, win,
+				  False,
+				  GrabModeAsync, GrabModeAsync,
+				  CurrentTime);
+
+	mouse_active = true;
+
+	ignorefirst = true;
+
+//	XSync(dpy, True);
+}
+
+static void uninstall_grabs(void)
+{
+	if (!dpy || !win)
+		return;
+
+	if (dgamouse) {
+		dgamouse = false;
+		XF86DGADirectVideo(dpy, DefaultScreen(dpy), 0);
+	}
+
+	XUngrabPointer(dpy, CurrentTime);
+	XUngrabKeyboard(dpy, CurrentTime);
+
+// inviso cursor
+	XUndefineCursor(dpy, win);
+
+	mouse_active = false;
+}
+
+static void IN_DeactivateMouse( void ) 
+{
+	if (!mouse_avail || !dpy || !win)
+		return;
+
+	if (mouse_active) {
+		uninstall_grabs();
+		mouse_active = false;
+	}
+}
+
+static void IN_ActivateMouse( void ) 
+{
+	if (!mouse_avail || !dpy || !win)
+		return;
+
+	if (!mouse_active) {
+		mx = my = 0; // don't spazz
+		install_grabs();
+		mouse_active = true;
+	}
+}
+
+void RW_IN_Frame (void)
+{
+}
+
+void RW_IN_Activate(qboolean active)
+{
+	if (active)
+		IN_ActivateMouse();
+	else
+		IN_DeactivateMouse ();
+}
+
+/*****************************************************************************/
+
 void ResetFrameBuffer(void)
 {
 	int mem;
@@ -348,7 +525,7 @@ void ResetFrameBuffer(void)
 	if (pwidth == 3) pwidth = 4;
 	mem = ((vid.width*pwidth+7)&~7) * vid.height;
 
-	x_framebuffer[0] = XCreateImage(	x_disp,
+	x_framebuffer[0] = XCreateImage(dpy,
 		x_vis,
 		x_visinfo->depth,
 		ZPixmap,
@@ -376,13 +553,13 @@ void ResetSharedFrameBuffers(void)
 	// free up old frame buffer memory
 		if (x_framebuffer[frm])
 		{
-			XShmDetach(x_disp, &x_shminfo[frm]);
+			XShmDetach(dpy, &x_shminfo[frm]);
 			free(x_framebuffer[frm]);
 			shmdt(x_shminfo[frm].shmaddr);
 		}
 
 	// create the image
-		x_framebuffer[frm] = XShmCreateImage(	x_disp,
+		x_framebuffer[frm] = XShmCreateImage(	dpy,
 						x_vis,
 						x_visinfo->depth,
 						ZPixmap,
@@ -407,18 +584,16 @@ void ResetSharedFrameBuffers(void)
 		x_shminfo[frm].shmaddr =
 			(void *) shmat(x_shminfo[frm].shmid, 0, 0);
 
-		ri.Con_Printf(PRINT_ALL, 
-			"MITSHM shared memory (id=%d, addr=0x%lx)\n", 
-			x_shminfo[frm].shmid,
-			(long) x_shminfo[frm].shmaddr);
+		ri.Con_Printf(PRINT_DEVELOPER, "MITSHM shared memory (id=%d, addr=0x%lx)\n", 
+			x_shminfo[frm].shmid, (long) x_shminfo[frm].shmaddr);
 
 		x_framebuffer[frm]->data = x_shminfo[frm].shmaddr;
 
 	// get the X server to attach to it
 
-		if (!XShmAttach(x_disp, &x_shminfo[frm]))
+		if (!XShmAttach(dpy, &x_shminfo[frm]))
 			Sys_Error("VID: XShmAttach() failed\n");
-		XSync(x_disp, 0);
+		XSync(dpy, 0);
 		shmctl(x_shminfo[frm].shmid, IPC_RMID, 0);
 	}
 
@@ -430,8 +605,8 @@ void ResetSharedFrameBuffers(void)
 
 void TragicDeath(int signal_num)
 {
-	XAutoRepeatOn(x_disp);
-	XCloseDisplay(x_disp);
+//	XAutoRepeatOn(dpy);
+	XCloseDisplay(dpy);
 	Sys_Error("This death brought to you by the number %d\n", signal_num);
 }
 
@@ -565,88 +740,111 @@ int XLateKey(XKeyEvent *ev)
 	return key;
 }
 
-void GetEvent(void)
+void HandleEvents(void)
 {
-	XEvent x_event;
+	XEvent event;
 	int b;
+	qboolean dowarp = false;
+	int mwx = vid.width/2;
+	int mwy = vid.height/2;
    
-	XNextEvent(x_disp, &x_event);
-	switch(x_event.type) {
-	case KeyPress:
-		keyq[keyq_head].key = XLateKey(&x_event.xkey);
-		keyq[keyq_head].down = true;
-		keyq_head = (keyq_head + 1) & 63;
-		break;
-	case KeyRelease:
-		keyq[keyq_head].key = XLateKey(&x_event.xkey);
-		keyq[keyq_head].down = false;
-		keyq_head = (keyq_head + 1) & 63;
-		break;
+	while (XPending(dpy)) {
 
-	case MotionNotify:
-		if (_windowed_mouse->value) {
-			mx += ((int)x_event.xmotion.x - (int)(vid.width/2));
-			my += ((int)x_event.xmotion.y - (int)(vid.height/2));
+		XNextEvent(dpy, &event);
 
-			/* move the mouse to the window center again */
-			XSelectInput(x_disp,x_win, STD_EVENT_MASK & ~PointerMotionMask);
-			XWarpPointer(x_disp,None,x_win,0,0,0,0, 
-				(vid.width/2),(vid.height/2));
-			XSelectInput(x_disp,x_win, STD_EVENT_MASK);
-		} else {
-			mx = ((int)x_event.xmotion.x - (int)p_mouse_x);
-			my = ((int)x_event.xmotion.y - (int)p_mouse_y);
-			p_mouse_x=x_event.xmotion.x;
-			p_mouse_y=x_event.xmotion.y;
+		switch(event.type) {
+		case KeyPress:
+		case KeyRelease:
+			if (in_state && in_state->Key_Event_fp)
+				in_state->Key_Event_fp (XLateKey(&event.xkey), event.type == KeyPress);
+			break;
+
+		case MotionNotify:
+			if (ignorefirst) {
+				ignorefirst = false;
+				break;
+			}
+
+			if (mouse_active) {
+				if (dgamouse) {
+					mx += (event.xmotion.x + win_x) * 2;
+					my += (event.xmotion.y + win_y) * 2;
+				} 
+				else 
+				{
+					mx += ((int)event.xmotion.x - mwx) * 2;
+					my += ((int)event.xmotion.y - mwy) * 2;
+					mwx = event.xmotion.x;
+					mwy = event.xmotion.y;
+
+					if (mx || my)
+						dowarp = true;
+				}
+			}
+			break;
+
+
+			break;
+
+		case ButtonPress:
+			b=-1;
+			if (event.xbutton.button == 1)
+				b = 0;
+			else if (event.xbutton.button == 2)
+				b = 2;
+			else if (event.xbutton.button == 3)
+				b = 1;
+			if (b>=0)
+				mouse_buttonstate |= 1<<b;
+			break;
+
+		case ButtonRelease:
+			b=-1;
+			if (event.xbutton.button == 1)
+				b = 0;
+			else if (event.xbutton.button == 2)
+				b = 2;
+			else if (event.xbutton.button == 3)
+				b = 1;
+			if (b>=0)
+				mouse_buttonstate &= ~(1<<b);
+			break;
+		
+		case CreateNotify :
+			ri.Cvar_Set( "vid_xpos", va("%d", event.xcreatewindow.x));
+			ri.Cvar_Set( "vid_ypos", va("%d", event.xcreatewindow.y));
+			vid_xpos->modified = false;
+			vid_ypos->modified = false;
+			win_x = event.xcreatewindow.x;
+			win_y = event.xcreatewindow.y;
+			break;
+
+		case ConfigureNotify :
+			ri.Cvar_Set( "vid_xpos", va("%d", event.xcreatewindow.x));
+			ri.Cvar_Set( "vid_ypos", va("%d", event.xcreatewindow.y));
+			vid_xpos->modified = false;
+			vid_ypos->modified = false;
+			win_x = event.xconfigure.x;
+			win_y = event.xconfigure.y;
+			config_notify_width = event.xconfigure.width;
+			config_notify_height = event.xconfigure.height;
+			if (config_notify_width != vid.width ||
+				config_notify_height != vid.height)
+				XMoveResizeWindow(dpy, win, win_x, win_y, vid.width, vid.height);
+			config_notify = 1;
+			break;
+
+		default:
+			if (doShm && event.type == x_shmeventtype)
+				oktodraw = true;
+			if (event.type == Expose && !event.xexpose.count)
+				exposureflag = true;
 		}
-		break;
-
-	case ButtonPress:
-		b=-1;
-		if (x_event.xbutton.button == 1)
-			b = 0;
-		else if (x_event.xbutton.button == 2)
-			b = 2;
-		else if (x_event.xbutton.button == 3)
-			b = 1;
-		if (b>=0)
-			mouse_buttonstate |= 1<<b;
-		break;
-
-	case ButtonRelease:
-		b=-1;
-		if (x_event.xbutton.button == 1)
-			b = 0;
-		else if (x_event.xbutton.button == 2)
-			b = 2;
-		else if (x_event.xbutton.button == 3)
-			b = 1;
-		if (b>=0)
-			mouse_buttonstate &= ~(1<<b);
-		break;
-	
-	case ConfigureNotify:
-		config_notify_width = x_event.xconfigure.width;
-		config_notify_height = x_event.xconfigure.height;
-		config_notify = 1;
-		break;
-
-	default:
-		if (doShm && x_event.type == x_shmeventtype)
-			oktodraw = true;
 	}
-   
-	if (old_windowed_mouse != _windowed_mouse->value) {
-		old_windowed_mouse = _windowed_mouse->value;
-
-		if (!_windowed_mouse->value) {
-			/* ungrab the pointer */
-			XUngrabPointer(x_disp,CurrentTime);
-		} else {
-			/* grab the pointer */
-			XGrabPointer(x_disp,x_win,True,0,GrabModeAsync,
-				GrabModeAsync,x_win,None,CurrentTime);
-		}
+	   
+	if (dowarp) {
+		/* move the mouse to the window center again */
+		XWarpPointer(dpy,None,win,0,0,0,0, vid.width/2,vid.height/2);
 	}
 }
 
@@ -660,9 +858,13 @@ void GetEvent(void)
 */
 int SWimp_Init( void *hInstance, void *wndProc )
 {
+
+	vid_xpos = ri.Cvar_Get ("vid_xpos", "3", CVAR_ARCHIVE);
+	vid_ypos = ri.Cvar_Get ("vid_ypos", "22", CVAR_ARCHIVE);
+
 // open the display
-	x_disp = XOpenDisplay(0);
-	if (!x_disp)
+	dpy = XOpenDisplay(0);
+	if (!dpy)
 	{
 		if (getenv("DISPLAY"))
 			Sys_Error("VID: Could not open display [%s]\n",
@@ -700,6 +902,7 @@ static qboolean SWimp_InitGraphics( qboolean fullscreen )
 	XVisualInfo template;
 	int num_visuals;
 	int template_mask;
+	Window root;
 
 	srandom(getpid());
 
@@ -709,10 +912,10 @@ static qboolean SWimp_InitGraphics( qboolean fullscreen )
 	// let the sound and input subsystems know about the new window
 	ri.Vid_NewWindow (vid.width, vid.height);
 
-	XAutoRepeatOff(x_disp);
+//	XAutoRepeatOff(dpy);
 
 // for debugging only
-	XSynchronize(x_disp, True);
+	XSynchronize(dpy, True);
 
 // check for command-line window size
 	template_mask = 0;
@@ -732,14 +935,14 @@ static qboolean SWimp_InitGraphics( qboolean fullscreen )
 #endif
 	{
 		int screen;
-		screen = XDefaultScreen(x_disp);
+		screen = XDefaultScreen(dpy);
 		template.visualid =
-			XVisualIDFromVisual(XDefaultVisual(x_disp, screen));
+			XVisualIDFromVisual(XDefaultVisual(dpy, screen));
 		template_mask = VisualIDMask;
 	}
 
 // pick a visual- warn if more than one was available
-	x_visinfo = XGetVisualInfo(x_disp, template_mask, &template, &num_visuals);
+	x_visinfo = XGetVisualInfo(dpy, template_mask, &template, &num_visuals);
 	if (num_visuals > 1)
 	{
 		printf("Found more than one visual id at depth %d:\n", template.depth);
@@ -755,19 +958,17 @@ static qboolean SWimp_InitGraphics( qboolean fullscreen )
 	}
 
 #if 0
-	if (verbose)
-	{
-		printf("Using visualid %d:\n", (int)(x_visinfo->visualid));
-		printf("	screen %d\n", x_visinfo->screen);
-		printf("	red_mask 0x%x\n", (int)(x_visinfo->red_mask));
-		printf("	green_mask 0x%x\n", (int)(x_visinfo->green_mask));
-		printf("	blue_mask 0x%x\n", (int)(x_visinfo->blue_mask));
-		printf("	colormap_size %d\n", x_visinfo->colormap_size);
-		printf("	bits_per_rgb %d\n", x_visinfo->bits_per_rgb);
-	}
+	printf("Using visualid %d:\n", (int)(x_visinfo->visualid));
+	printf("	screen %d\n", x_visinfo->screen);
+	printf("	red_mask 0x%x\n", (int)(x_visinfo->red_mask));
+	printf("	green_mask 0x%x\n", (int)(x_visinfo->green_mask));
+	printf("	blue_mask 0x%x\n", (int)(x_visinfo->blue_mask));
+	printf("	colormap_size %d\n", x_visinfo->colormap_size);
+	printf("	bits_per_rgb %d\n", x_visinfo->bits_per_rgb);
 #endif
 
 	x_vis = x_visinfo->visual;
+	root = XRootWindow(dpy, x_visinfo->screen);
 
 // setup attributes for main window
 	{
@@ -775,28 +976,20 @@ static qboolean SWimp_InitGraphics( qboolean fullscreen )
 	   XSetWindowAttributes attribs;
 	   Colormap tmpcmap;
 	   
-	   tmpcmap = XCreateColormap(x_disp, XRootWindow(x_disp,
-							 x_visinfo->screen), x_vis, AllocNone);
+	   tmpcmap = XCreateColormap(dpy, root, x_vis, AllocNone);
 	   
-	   attribs.event_mask = STD_EVENT_MASK;
+	   attribs.event_mask = X_MASK;
 	   attribs.border_pixel = 0;
 	   attribs.colormap = tmpcmap;
 
 // create the main window
-		x_win = XCreateWindow(	x_disp,
-			XRootWindow(x_disp, x_visinfo->screen),
-			0, 0,	// x, y
-			vid.width, vid.height,
-			0, // borderwidth
-			x_visinfo->depth,
-			InputOutput,
-			x_vis,
-			attribmask,
-			&attribs );
-		XStoreName(x_disp, x_win, "Quake II");
+		win = XCreateWindow(dpy, root, (int)vid_xpos->value, (int)vid_ypos->value, 
+			vid.width, vid.height, 0, x_visinfo->depth, InputOutput, x_vis, 
+			attribmask, &attribs );
+		XStoreName(dpy, win, "Quake II");
 
 		if (x_visinfo->class != TrueColor)
-			XFreeColormap(x_disp, tmpcmap);
+			XFreeColormap(dpy, tmpcmap);
 	}
 
 	if (x_visinfo->depth == 8)
@@ -804,40 +997,36 @@ static qboolean SWimp_InitGraphics( qboolean fullscreen )
 	// create and upload the palette
 		if (x_visinfo->class == PseudoColor)
 		{
-			x_cmap = XCreateColormap(x_disp, x_win, x_vis, AllocAll);
-			XSetWindowColormap(x_disp, x_win, x_cmap);
+			x_cmap = XCreateColormap(dpy, win, x_vis, AllocAll);
+			XSetWindowColormap(dpy, win, x_cmap);
 		}
 
 	}
-
-// inviso cursor
-	XDefineCursor(x_disp, x_win, CreateNullCursor(x_disp, x_win));
 
 // create the GC
 	{
 		XGCValues xgcvalues;
 		int valuemask = GCGraphicsExposures;
 		xgcvalues.graphics_exposures = False;
-		x_gc = XCreateGC(x_disp, x_win, valuemask, &xgcvalues );
+		x_gc = XCreateGC(dpy, win, valuemask, &xgcvalues );
 	}
 
-// map the window
-	XMapWindow(x_disp, x_win);
+	XMapWindow(dpy, win);
+	XMoveWindow(dpy, win, (int)vid_xpos->value, (int)vid_ypos->value);
 
 // wait for first exposure event
 	{
 		XEvent event;
+		exposureflag = false;
 		do
 		{
-			XNextEvent(x_disp, &event);
-			if (event.type == Expose && !event.xexpose.count)
-				oktodraw = true;
-		} while (!oktodraw);
+			HandleEvents();
+		} while (!exposureflag);
 	}
 // now safe to draw
 
 // even if MITSHM is available, make sure it's a local connection
-	if (XShmQueryExtension(x_disp))
+	if (XShmQueryExtension(dpy))
 	{
 		char *displayname;
 		doShm = true;
@@ -854,7 +1043,7 @@ static qboolean SWimp_InitGraphics( qboolean fullscreen )
 
 	if (doShm)
 	{
-		x_shmeventtype = XShmGetEventBase(x_disp) + ShmCompletion;
+		x_shmeventtype = XShmGetEventBase(dpy) + ShmCompletion;
 		ResetSharedFrameBuffers();
 	}
 	else
@@ -864,7 +1053,7 @@ static qboolean SWimp_InitGraphics( qboolean fullscreen )
 	vid.rowbytes = x_framebuffer[0]->bytes_per_line;
 	vid.buffer = x_framebuffer[0]->data;
 
-//	XSynchronize(x_disp, False);
+//	XSynchronize(dpy, False);
 
 	X11_active = true;
 
@@ -903,29 +1092,28 @@ void SWimp_EndFrame (void)
 
 	if (doShm)
 	{
-
-		if (x_visinfo->depth != 8)
-			st2_fixup( x_framebuffer[current_framebuffer], 
-				0, 0, vid.width, vid.height);	
-		if (!XShmPutImage(x_disp, x_win, x_gc,
-			x_framebuffer[current_framebuffer], 0, 0,
-			0, 0, vid.width, vid.height, True))
-				Sys_Error("VID_Update: XShmPutImage failed\n");
+		if (x_visinfo->depth == 16)
+			st2_fixup( x_framebuffer[current_framebuffer], 0, 0, vid.width, vid.height);
+		else if (x_visinfo->depth == 24)
+			st3_fixup( x_framebuffer[current_framebuffer], 0, 0, vid.width, vid.height);
+		if (!XShmPutImage(dpy, win, x_gc,
+			x_framebuffer[current_framebuffer], 0, 0, 0, 0, vid.width, vid.height, True))
+			Sys_Error("VID_Update: XShmPutImage failed\n");
 		oktodraw = false;
 		while (!oktodraw) 
-			GetEvent();
+			HandleEvents();
 		current_framebuffer = !current_framebuffer;
 		vid.buffer = x_framebuffer[current_framebuffer]->data;
-		XSync(x_disp, False);
+		XSync(dpy, False);
 	}
 	else
 	{
-		if (x_visinfo->depth != 8)
-			st2_fixup( x_framebuffer[current_framebuffer], 
-				0, 0, vid.width, vid.height);
-		XPutImage(x_disp, x_win, x_gc, x_framebuffer[0],
-			0, 0, 0, 0, vid.width, vid.height);
-		XSync(x_disp, False);
+		if (x_visinfo->depth == 16)
+			st2_fixup( x_framebuffer[current_framebuffer], 0, 0, vid.width, vid.height);
+		else if (x_visinfo->depth == 24)
+			st3_fixup( x_framebuffer[current_framebuffer], 0, 0, vid.width, vid.height);
+		XPutImage(dpy, win, x_gc, x_framebuffer[0], 0, 0, 0, 0, vid.width, vid.height);
+		XSync(dpy, False);
 	}
 }
 
@@ -974,9 +1162,10 @@ void SWimp_SetPalette( const unsigned char *palette )
     if ( !palette )
         palette = ( const unsigned char * ) sw_state.currentpalette;
  
-	for(i=0;i<256;i++)
-		st2d_8to16table[i]= xlib_rgb(palette[i*4],
-			palette[i*4+1],palette[i*4+2]);
+	for(i=0;i<256;i++) {
+		st2d_8to16table[i]= xlib_rgb16(palette[i*4], palette[i*4+1],palette[i*4+2]);
+		st2d_8to24table[i]= xlib_rgb24(palette[i*4], palette[i*4+1],palette[i*4+2]);
+	}
 
 	if (x_visinfo->class == PseudoColor && x_visinfo->depth == 8)
 	{
@@ -988,7 +1177,7 @@ void SWimp_SetPalette( const unsigned char *palette )
 			colors[i].green = palette[i*4+1] * 257;
 			colors[i].blue = palette[i*4+2] * 257;
 		}
-		XStoreColors(x_disp, x_cmap, colors, 256);
+		XStoreColors(dpy, x_cmap, colors, 256);
 	}
 }
 
@@ -1008,7 +1197,7 @@ void SWimp_Shutdown( void )
 	if (doShm) {
 		for (i = 0; i < 2; i++)
 			if (x_framebuffer[i]) {
-				XShmDetach(x_disp, &x_shminfo[i]);
+				XShmDetach(dpy, &x_shminfo[i]);
 				free(x_framebuffer[i]);
 				shmdt(x_shminfo[i].shmaddr);
 				x_framebuffer[i] = NULL;
@@ -1019,10 +1208,10 @@ void SWimp_Shutdown( void )
 		x_framebuffer[0] = NULL;
 	}
 
-	XDestroyWindow(	x_disp, x_win );
+	XDestroyWindow(	dpy, win );
 
-	XAutoRepeatOn(x_disp);
-//	XCloseDisplay(x_disp);
+//	XAutoRepeatOn(dpy);
+//	XCloseDisplay(dpy);
 
 	X11_active = false;
 }
@@ -1074,16 +1263,7 @@ void KBD_Init(Key_Event_fp_t fp)
 void KBD_Update(void)
 {
 // get events from x server
-	if (x_disp)
-	{
-		while (XPending(x_disp)) 
-			GetEvent();
-		while (keyq_head != keyq_tail)
-		{
-			Key_Event_fp(keyq[keyq_tail].key, keyq[keyq_tail].down);
-			keyq_tail = (keyq_tail + 1) & 63;
-		}
-	}
+	HandleEvents();
 }
 
 void KBD_Close(void)

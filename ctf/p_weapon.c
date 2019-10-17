@@ -419,10 +419,6 @@ static void Weapon_Generic2 (edict_t *ent, int FRAME_ACTIVATE_LAST, int FRAME_FI
 		{
 			ent->client->weaponstate = WEAPON_READY;
 			ent->client->ps.gunframe = FRAME_IDLE_FIRST;
-			// we go recursive here to instant ready the weapon
-			Weapon_Generic2 (ent, FRAME_ACTIVATE_LAST, FRAME_FIRE_LAST, 
-				FRAME_IDLE_LAST, FRAME_DEACTIVATE_LAST, pause_frames, 
-				fire_frames, fire);
 			return;
 		}
 
@@ -1421,7 +1417,7 @@ void weapon_bfg_fire (edict_t *ent)
 
 		ent->client->ps.gunframe++;
 
-		PlayerNoise(ent, ent->s.origin, PNOISE_WEAPON);
+		PlayerNoise(ent, start, PNOISE_WEAPON);
 		return;
 	}
 
