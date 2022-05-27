@@ -160,7 +160,7 @@ char *CopyString (char *in);
 void Info_Print (char *s);
 
 
-/* crc.h */
+//============================================================================
 
 void CRC_Init(unsigned short *crcvalue);
 void CRC_ProcessByte(unsigned short *crcvalue, byte data);
