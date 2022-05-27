@@ -89,7 +89,6 @@ add_executable(quake2 WIN32
     client/snd_mix.c
     client/snd_dma.c
     client/snd_mem.c
-    client/x86.c
     
     server/sv_user.c
     server/sv_ents.c
