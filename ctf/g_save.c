@@ -193,6 +193,7 @@ void InitGame (void)
 	instantweap = gi.cvar ("instantweap", "0", CVAR_SERVERINFO);
 //ZOID
  	password = gi.cvar ("password", "", CVAR_USERINFO);
+	filterban = gi.cvar ("filterban", "1", 0);
 
 	g_select_empty = gi.cvar ("g_select_empty", "0", CVAR_ARCHIVE);
 

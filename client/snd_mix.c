@@ -378,8 +378,10 @@ void S_PaintChannelFrom8 (channel_t *ch, sfxcache_t *sc, int count, int offset)
 	if (ch->rightvol > 255)
 		ch->rightvol = 255;
 		
-	lscale = snd_scaletable[ ch->leftvol >> 11];
-	rscale = snd_scaletable[ ch->rightvol >> 11];
+	//ZOID-- >>11 has been changed to >>3, >>11 didn't make much sense
+	//as it would always be zero.
+	lscale = snd_scaletable[ ch->leftvol >> 3];
+	rscale = snd_scaletable[ ch->rightvol >> 3];
 	sfx = (signed char *)sc->data + ch->pos;
 
 	samp = &paintbuffer[offset];

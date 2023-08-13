@@ -1,5 +1,5 @@
 
-This is the complete source code for Quake 2, version 3.19, buildable with
+This is the complete source code for Quake 2, version 3.21, buildable with
 visual C++ 6.0.  The linux version should be buildable, but we haven't
 tested it for the release.
 

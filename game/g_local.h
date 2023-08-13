@@ -522,6 +522,7 @@ extern	cvar_t	*fraglimit;
 extern	cvar_t	*timelimit;
 extern	cvar_t	*password;
 extern	cvar_t	*spectator_password;
+extern	cvar_t	*needpass;
 extern	cvar_t	*g_select_empty;
 extern	cvar_t	*dedicated;
 
