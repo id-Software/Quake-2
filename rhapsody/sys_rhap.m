@@ -236,7 +236,7 @@ Sys_Init
 */
 void Sys_Init(void)
 {
-    moncontrol(0);	// turn off profiling except during real Quake work
+    // moncontrol(0);	// turn off profiling except during real Quake work
 
 // change stdin to non blocking
      fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) | FNDELAY);	
@@ -307,7 +307,7 @@ char *Sys_ConsoleInput (void)
 main
 =============
 */
-void main (int argc, char **argv)
+int main (int argc, char **argv)
 {
     int		frame;
     NSAutoreleasePool *pool;
@@ -324,13 +324,13 @@ void main (int argc, char **argv)
     {
         pool =[[NSAutoreleasePool alloc] init];
 
-        if (++frame > 10)
-            moncontrol(1);// profile only while we do each Quake frame
+        // if (++frame > 10)
+            // moncontrol(1); // profile only while we do each Quake frame
 
 		t = Sys_Milliseconds ();
         Qcommon_Frame (t - oldtime);
 		oldtime = t;
-        moncontrol(0);
+        // moncontrol(0);
 
         [pool release];
     }
