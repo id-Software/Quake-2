@@ -10,12 +10,12 @@ all: $(TARGETS)
 
 SERVERFILES = sv_ccmds.o sv_ents.o sv_game.o sv_init.o sv_main.o sv_send.o sv_user.o sv_world.o
 
-GAMEFILES = g_ai.o g_cmds.o g_combat.o g_func.o g_items.o g_main.o g_misc.o g_monster.o g_phys.o g_save.o g_spawn.o g_target.o g_trigger.o g_utils.o g_weapon.o g_turret.o m_actor.o m_berserk.o m_boss2.o m_boss3.o m_boss31.o m_boss32.o m_brain.o m_chick.o m_flipper.o m_float.o m_flyer.o m_gladiator.o m_gunner.o m_hover.o m_infantry.o m_insane.o m_medic.o m_move.o m_mutant.o m_parasite.o m_soldier.o m_supertank.o m_tank.o p_client.o p_hud.o p_trail.o p_view.o p_weapon.o
+GAMEFILES = g_ai.o g_cmds.o g_chase.o g_svcmds.o g_combat.o g_func.o g_items.o g_main.o g_misc.o g_monster.o g_phys.o g_save.o g_spawn.o g_target.o g_trigger.o g_utils.o g_weapon.o g_turret.o m_actor.o m_berserk.o m_boss2.o m_boss3.o m_boss31.o m_boss32.o m_brain.o m_chick.o m_flipper.o m_float.o m_flyer.o m_gladiator.o m_gunner.o m_hover.o m_infantry.o m_insane.o m_medic.o m_move.o m_mutant.o m_parasite.o m_soldier.o m_supertank.o m_tank.o p_client.o p_hud.o p_trail.o p_view.o p_weapon.o
 
-CLIENTFILES = cl_ents.o cl_fx.o cl_input.o cl_inv.o cl_main.o cl_parse.o cl_pred.o cl_scrn.o cl_cin.o cl_tent.o cl_view.o console.o keys.o menu.o qmenu.o snd_dma.o snd_mem.o snd_mix.o
+CLIENTFILES = cl_ents.o cl_fx.o cl_input.o cl_inv.o cl_main.o cl_parse.o cl_pred.o cl_scrn.o cl_cin.o cl_tent.o cl_view.o console.o keys.o menu.o qmenu.o snd_dma.o snd_mem.o snd_mix.o cl_newfx.o
 
 # commonfiles are used by both client and server
-COMMONFILES = m_flash.o cmd.o cmodel.o common.o cvar.o files.o md4.o net_chan.o net_udp.o pmove.o
+COMMONFILES = m_flash.o cmd.o cmodel.o common.o cvar.o files.o md4.o net_chan.o net_udp.o pmove.o crc.o
 
 REFGLFILES = gl_draw.o gl_light.o gl_mesh.o gl_model.o gl_rmain.o gl_rmisc.o gl_rsurf.o gl_warp.o gl_image.o
 

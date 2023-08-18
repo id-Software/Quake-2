@@ -539,7 +539,8 @@ void NET_Sleep(int msec)
     struct timeval timeout;
 	fd_set	fdset;
 	extern cvar_t *dedicated;
-	extern qboolean stdin_active;
+	
+	qboolean stdin_active = true;
 
 	if (!ip_sockets[NS_SERVER] || (dedicated && !dedicated->value))
 		return; // we're not a server, just run full speed
