@@ -28,7 +28,7 @@ REF_SOFT_FILES = $(ODIR)/d_polyse.o $(ODIR)/d_scan.o $(ODIR)/draw.o  $(ODIR)/mod
 
 CLIENT_SYSTEM_FILES = $(ODIR)/in_next.o $(ODIR)/cd_null.o $(ODIR)/snd_next.o $(ODIR)/vid_null.o 
 SOUND_FILES = $(ODIR)/snd_dma.o $(ODIR)/snd_mix.o $(ODIR)/snd_mem.o
-CLIENT_FILES = $(ODIR)/cl_demo.o $(ODIR)/cl_ents.o $(ODIR)/cl_input.o  $(ODIR)/cl_main.o $(ODIR)/cl_parse.o $(ODIR)/cl_pred.o $(ODIR)/cl_tent.o $(ODIR)/console.o $(ODIR)/keys.o $(ODIR)/menu.o $(ODIR)/sbar.o $(ODIR)/screen.o $(ODIR)/view.o $(SOUND_FILES) $(CLIENT_SYSTEM_FILES) $(REF_SOFT_FILES)
+CLIENT_FILES = $(ODIR)/cl_ents.o $(ODIR)/cl_input.o  $(ODIR)/cl_main.o $(ODIR)/cl_parse.o $(ODIR)/cl_pred.o $(ODIR)/cl_tent.o $(ODIR)/console.o $(ODIR)/keys.o $(ODIR)/menu.o $(SOUND_FILES) $(CLIENT_SYSTEM_FILES) $(REF_SOFT_FILES)
 #CLIENT_FILES = $(ODIR)/cl_null.o
 
 
@@ -48,9 +48,6 @@ $(ODIR)/cl_null.o : client/cl_null.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
 	
-$(ODIR)/cl_demo.o : client/cl_demo.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
 $(ODIR)/cl_ents.o : client/cl_ents.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
@@ -76,15 +73,6 @@ $(ODIR)/keys.o : client/keys.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
 $(ODIR)/menu.o : client/menu.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/sbar.o : client/sbar.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/screen.o : client/screen.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/view.o : client/view.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
 
