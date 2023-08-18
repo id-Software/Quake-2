@@ -38,6 +38,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdbool.h>
 
 #if (defined _M_IX86 || defined __i386__) && !defined C_ONLY && !defined __sun__
 #define id386	1
@@ -52,7 +53,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 typedef unsigned char 		byte;
-typedef enum {false, true}	qboolean;
+
+// Foundation.h > CoreFoundation.h > stdbool.h
+// This results in a identifier conflict.
+// I simply redefinded bool as qboolean.
+// Old Defintion:
+// typedef enum {false, true}	qboolean;
+typedef bool qboolean;
 
 
 #ifndef NULL
