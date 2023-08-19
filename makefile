@@ -24,9 +24,9 @@ clean:
 
 REF_SOFT_SYSTEM_FILES = $(ODIR)/r_next.o 
 
-REF_SOFT_FILES = $(ODIR)/d_polyse.o $(ODIR)/d_scan.o $(ODIR)/draw.o  $(ODIR)/model.o $(ODIR)/r_aclip.o $(ODIR)/r_alias.o $(ODIR)/r_bsp.o $(ODIR)/r_draw.o $(ODIR)/r_edge.o $(ODIR)/r_efrag.o $(ODIR)/r_inter.o $(ODIR)/r_light.o $(ODIR)/r_main.o $(ODIR)/r_misc.o $(ODIR)/r_part.o $(ODIR)/r_sky.o $(ODIR)/r_sprite.o $(ODIR)/r_surf.o $(REF_SOFT_SYSTEM_FILES)
+REF_SOFT_FILES = $(ODIR)/r_polyse.o $(ODIR)/r_scan.o  $(ODIR)/r_model.o $(ODIR)/r_aclip.o $(ODIR)/r_alias.o $(ODIR)/r_bsp.o $(ODIR)/r_draw.o $(ODIR)/r_edge.o $(ODIR)/r_light.o $(ODIR)/r_main.o $(ODIR)/r_misc.o $(ODIR)/r_part.o $(ODIR)/r_sprite.o $(ODIR)/r_surf.o $(REF_SOFT_SYSTEM_FILES)
 
-CLIENT_SYSTEM_FILES = $(ODIR)/in_next.o $(ODIR)/cd_null.o $(ODIR)/snd_next.o $(ODIR)/vid_null.o 
+CLIENT_SYSTEM_FILES = $(ODIR)/in_next.o 
 SOUND_FILES = $(ODIR)/snd_dma.o $(ODIR)/snd_mix.o $(ODIR)/snd_mem.o
 CLIENT_FILES = $(ODIR)/cl_ents.o $(ODIR)/cl_input.o  $(ODIR)/cl_main.o $(ODIR)/cl_parse.o $(ODIR)/cl_pred.o $(ODIR)/cl_tent.o $(ODIR)/console.o $(ODIR)/keys.o $(ODIR)/menu.o $(SOUND_FILES) $(CLIENT_SYSTEM_FILES) $(REF_SOFT_FILES)
 #CLIENT_FILES = $(ODIR)/cl_null.o
@@ -86,23 +86,16 @@ $(ODIR)/snd_mem.o : client/snd_mem.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
 
-$(ODIR)/cd_null.o : client/cd_null.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
 $(ODIR)/in_null.o : client/in_null.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
 $(ODIR)/snd_null.o : client/snd_null.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/vid_null.o : client/vid_null.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
 
 $(ODIR)/in_next.o : rhapsody/in_next.m
 	cc $(CFLAGS) -o $@ $?
-$(ODIR)/snd_next.o : rhapsody/snd_next.m
-	cc $(CFLAGS) -o $@ $?
+
 
 #===========================================================================
 
@@ -149,16 +142,13 @@ $(ODIR)/world.o : server/world.c
 
 #===========================================================================
 
-$(ODIR)/d_polyse.o : ref_soft/d_polyse.c
+$(ODIR)/r_polyse.o : ref_soft/r_polyse.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/d_scan.o : ref_soft/d_scan.c
+$(ODIR)/r_scan.o : ref_soft/r_scan.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/draw.o : ref_soft/draw.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/model.o : ref_soft/model.c
+$(ODIR)/r_model.o : ref_soft/r_model.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
 $(ODIR)/r_aclip.o : ref_soft/r_aclip.c
@@ -176,12 +166,6 @@ $(ODIR)/r_draw.o : ref_soft/r_draw.c
 $(ODIR)/r_edge.o : ref_soft/r_edge.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/r_efrag.o : ref_soft/r_efrag.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/r_inter.o : ref_soft/r_inter.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
 $(ODIR)/r_light.o : ref_soft/r_light.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
@@ -192,9 +176,6 @@ $(ODIR)/r_misc.o : ref_soft/r_misc.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
 $(ODIR)/r_part.o : ref_soft/r_part.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/r_sky.o : ref_soft/r_sky.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
 $(ODIR)/r_sprite.o : ref_soft/r_sprite.c
