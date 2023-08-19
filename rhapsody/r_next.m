@@ -2,6 +2,9 @@
 #import <AppKit/AppKit.h>
 #include "../ref_soft/r_local.h"
 
+extern	host_t	task_self_;
+#define	task_self()	task_self_
+
 /*
 ====================================================================
 
@@ -22,6 +25,7 @@ unsigned	*buffernative;
 
 
 int Draw_SetResolution (void);
+void Sys_SetPalette (byte *palette);
 
 #define	TYPE_FULLSCREEN	0
 #define	TYPE_WINDOWED	1
@@ -233,6 +237,7 @@ int Draw_SetResolution (void)
         vid.width = resolutions[(int)(vid_mode->value)][0];
 	vid.height = resolutions[(int)(vid_mode->value)][1];
 
+    /*
 	vid.win_width = vid.width;
 	vid.win_height = vid.height;
 	if (vid_stretched->value)
@@ -240,14 +245,15 @@ int Draw_SetResolution (void)
 		vid.win_width <<= 1;
 		vid.win_height <<= 1;
 	}
+    */
 
-	vid.aspect = 1;
+	// vid.aspect = 1;
 	vid.buffer = malloc (vid.width*vid.height);
 	vid.rowbytes = vid.width;
         d_pzbuffer = malloc(vid.width*vid.height*2);
         buffernative = malloc(vid.width*vid.height*4);
 
-	D_InitCaches ();
+	// D_InitCaches ();
 
 	Sys_SetPalette ((byte *)d_8to24table);
 
@@ -258,7 +264,7 @@ int Draw_SetResolution (void)
 //
 // open a window
 //
-        content = NSMakeRect (vid_x->value,vid_y->value,vid.win_width, vid.win_height);
+        content = NSMakeRect (vid_x->value,vid_y->value,vid.width, vid.height);
    vid_window_i = [[NSWindow alloc]
                        initWithContentRect:	content
                                  styleMask:	NSTitledWindowMask
@@ -286,7 +292,7 @@ int Draw_SetResolution (void)
    // leave focus locked forever
    [vid_view_i lockFocus];
    
-	ri.VID_SetSize (vid.width, vid.height);
+	// ri.VID_SetSize (vid.width, vid.height);
 
 	return 0;
 }
@@ -325,7 +331,7 @@ int Draw_Init (void *window)
 
 	Draw_SetResolution ();
 
-	R_Init ();
+	R_Init (NULL, NULL);
 
 	return 0;
 }
@@ -456,7 +462,7 @@ hunkheader_t	*membase;
 int		maxsize;
 int		cursize;
 
-void *Hunk_Begin (void)
+void *Hunk_Begin (int maxsize)
 {
     kern_return_t	r;
 
@@ -631,19 +637,19 @@ keymap_t flagmaps[] =
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
-    Key_Event (K_MOUSE1, true);
+    Key_Event (K_MOUSE1, true, 0);
 }
 - (void)mouseUp:(NSEvent *)theEvent
 {
-    Key_Event (K_MOUSE1, false);
+    Key_Event (K_MOUSE1, false, 0);
 }
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
-    Key_Event (K_MOUSE2, true);
+    Key_Event (K_MOUSE2, true, 0);
 }
 - (void)rightMouseUp:(NSEvent *)theEvent
 {
-    Key_Event (K_MOUSE2, false);
+    Key_Event (K_MOUSE2, false, 0);
 }
 
 
@@ -664,7 +670,7 @@ keymap_t flagmaps[] =
     for (km=keymaps;km->source!=-1;km++)
         if (ch == km->source)
         {
-            Key_Event (km->dest, true);
+            Key_Event (km->dest, true, 0);
             return;
         }
 
@@ -674,7 +680,7 @@ keymap_t flagmaps[] =
     if (ch>=256)
         return;
 
-    Key_Event (ch, true);
+    Key_Event (ch, true, 0);
 }
 
 - (void)flagsChanged:(NSEvent *)theEvent
@@ -697,9 +703,9 @@ keymap_t flagmaps[] =
             if ( (1<<i) == km->source)
             {
                 if (newflags & (1<<i))
-                    Key_Event (km->dest, true);
+                    Key_Event (km->dest, true, 0);
                 else
-                    Key_Event (km->dest, false);
+                    Key_Event (km->dest, false, 0);
             }
 
     }
@@ -718,7 +724,7 @@ keymap_t flagmaps[] =
     for (km=keymaps;km->source!=-1;km++)
         if (ch == km->source)
         {
-            Key_Event (km->dest, false);
+            Key_Event (km->dest, false, 0);
             return;
         }
 
@@ -727,7 +733,7 @@ keymap_t flagmaps[] =
         ch += 'a' - 'A';
     if (ch>=256)
         return;
-    Key_Event (ch, false);
+    Key_Event (ch, false, 0);
 }
 
 @end

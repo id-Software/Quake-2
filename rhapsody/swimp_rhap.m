@@ -1,5 +1,5 @@
 #import <AppKit/AppKit.h>
-#import <Interceptor/NSDirectScreen.h>
+// #import <Interceptor/NSDirectScreen.h>
 #import <AppKit/NSColor.h>
 #include "../ref_soft/r_local.h"
 
@@ -8,7 +8,7 @@
 
 NSWindow	*vid_window_i;
 QuakeView	*vid_view_i;
-NSDirectScreen *vid_screen;
+// NSDirectScreen *vid_screen;
 byte		*vid_buffer;		// real framebuffer
 int			vid_rowbytes;		// framebuffer rowbytes
 
@@ -34,6 +34,7 @@ FULLSCREEN
 /*
 ** InitFullscreen
 */
+/*
 rserr_t InitFullscreen (int width, int height)
 {
     NSDictionary *mode, *bestMode;
@@ -89,10 +90,11 @@ rserr_t InitFullscreen (int width, int height)
 
     return rserr_ok;
 }
+*/
 
 void ShutdownFullscreen (void)
 {
-	[vid_screen dealloc];
+	// [vid_screen dealloc];
 	[NSCursor unhide];
 }
 
@@ -242,7 +244,9 @@ void BlitWindowed (void)
                 );
 
     [vid_view_i unlockFocus];
-	PSWait ();
+	
+    // TODO: PSWait doesn't seem to exist anymore. Find counter-part. Process wait!?
+    // PSWait ();
 }
 
 
@@ -307,7 +311,7 @@ rserr_t SWimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen)
 
     if (fullscreen) {
         rhap_mode = rhap_fullscreen;
-        ret = InitFullscreen (*pwidth, *pheight);        
+        // ret = InitFullscreen (*pwidth, *pheight);        
     } else {
         rhap_mode = rhap_windowed;
         ret = InitWindowed (*pwidth, *pheight);

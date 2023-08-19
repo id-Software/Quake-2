@@ -1013,7 +1013,11 @@ CONTROLS MENU
 =======================================================================
 */
 static cvar_t *win_noalttab;
-extern cvar_t *in_joystick;
+
+// TODO: Implement Cvar_Get inside IN_init for macOS
+#ifndef __APPLE__
+	extern cvar_t *in_joystick;
+#endif
 
 static menuframework_s	s_options_menu;
 static menuaction_s		s_options_defaults_action;
@@ -1099,8 +1103,13 @@ static void ControlsSetMenuItemValues( void )
 	Cvar_SetValue( "crosshair", ClampCvar( 0, 3, crosshair->value ) );
 	s_options_crosshair_box.curvalue		= crosshair->value;
 
-	Cvar_SetValue( "in_joystick", ClampCvar( 0, 1, in_joystick->value ) );
-	s_options_joystick_box.curvalue		= in_joystick->value;
+	// TODO: Properly implement CVAR system here
+	// Cvar_SetValue( "in_joystick", ClampCvar( 0, 1, in_joystick->value ) );
+	// s_options_joystick_box.curvalue		= in_joystick->value;
+
+	// Added by LT
+	Cvar_SetValue( "in_joystick", ClampCvar( 0, 1, 0 ) );
+	s_options_joystick_box.curvalue		= 0;
 
 	s_options_noalttab_box.curvalue			= win_noalttab->value;
 }

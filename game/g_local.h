@@ -458,9 +458,10 @@ extern	spawn_temp_t	st;
 extern	int	sm_meat_index;
 extern	int	snd_fry;
 
-extern	int	jacket_armor_index;
-extern	int	combat_armor_index;
-extern	int	body_armor_index;
+// Removed by LT because of compile-error
+// extern	int	jacket_armor_index;
+// extern	int	combat_armor_index;
+// extern	int	body_armor_index;
 
 
 // means of death

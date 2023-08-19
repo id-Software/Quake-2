@@ -1,7 +1,7 @@
 // in_next.m
 
 #import <AppKit/AppKit.h>
-#import <drivers/event_status_driver.h>
+// #import <drivers/event_status_driver.h>
 #include "../client/client.h"
 
 float	mousex, mousey;
@@ -14,7 +14,7 @@ void PSshowcursor (void);
 void PShidecursor (void);
 void PScurrentmouse (int win, float *x, float *y);
 
-extern	NSView	*vid_view_i;
+extern	NSView	        *vid_view_i;
 extern	NSWindow	*vid_window_i;
 
 qboolean	mlooking;
@@ -29,7 +29,8 @@ int		old_mouse_x, old_mouse_y;
 
 cvar_t	in_mouse = {"in_mouse", "0", CVAR_ARCHIVE};
 cvar_t	m_filter = {"m_filter", "0", CVAR_ARCHIVE};
-cvar_t	freelook = {"in_freelook", "0", CVAR_ARCHIVE};
+cvar_t	g_freelook = {"in_freelook", "0", CVAR_ARCHIVE};
+cvar_t* freelook = &g_freelook;
 
 
 /*
@@ -114,13 +115,13 @@ void IN_MouseEvent (int mstate)
                 if ( (mstate & (1<<i)) &&
                         !(mouse_oldbuttonstate & (1<<i)) )
                 {
-                        Key_Event (K_MOUSE1 + i, true);
+                        Key_Event (K_MOUSE1 + i, true, 0);
                 }
 
                 if ( !(mstate & (1<<i)) &&
                         (mouse_oldbuttonstate & (1<<i)) )
                 {
-                                Key_Event (K_MOUSE1 + i, false);
+                                Key_Event (K_MOUSE1 + i, false, 0);
                 }
         }	
 
@@ -229,18 +230,18 @@ void IN_MouseMove (usercmd_t *cmd)
         if (!mouseactive)
                 return;
 
-        mouse_x *= sensitivity.value;
-        mouse_y *= sensitivity.value;
+        mouse_x *= sensitivity->value;
+        mouse_y *= sensitivity->value;
 
 // add mouse X/Y movement to cmd
-        if ( (in_strafe.state & 1) || (lookstrafe.value && mlooking ))
-                cmd->sidemove += m_side.value * mouse_x;
+        if ( (in_strafe.state & 1) || (lookstrafe->value && mlooking ))
+                cmd->sidemove += m_side->value * mouse_x;
         else
-                cl.viewangles[YAW] -= m_yaw.value * mouse_x;
+                cl.viewangles[YAW] -= m_yaw->value * mouse_x;
 
-        if ( (mlooking || freelook.value) && !(in_strafe.state & 1))
+        if ( (mlooking || freelook->value) && !(in_strafe.state & 1))
         {
-                cl.viewangles[PITCH] += m_pitch.value * mouse_y;
+                cl.viewangles[PITCH] += m_pitch->value * mouse_y;
                 if (cl.viewangles[PITCH] > 80)
                         cl.viewangles[PITCH] = 80;
                 if (cl.viewangles[PITCH] < -70)
@@ -248,7 +249,7 @@ void IN_MouseMove (usercmd_t *cmd)
         }
         else
         {
-                cmd->forwardmove -= m_forward.value * mouse_y;
+                cmd->forwardmove -= m_forward->value * mouse_y;
         }
 
 }
@@ -263,9 +264,9 @@ void IN_HideMouse (void)
     PShidecursor ();
 }
 
-NXEventHandle	eventhandle;
-NXMouseScaling	oldscaling, newscaling;
-NXMouseButton	oldbutton;
+// NXEventHandle	eventhandle;
+// NXMouseScaling	oldscaling, newscaling;
+// NXMouseButton	oldbutton;
 
 /*
  =============
@@ -274,9 +275,9 @@ NXMouseButton	oldbutton;
  */
 void IN_Init (void)
 {
-    Cvar_RegisterVariable (&in_mouse);
-    Cvar_RegisterVariable (&m_filter);
-    Cvar_RegisterVariable (&freelook);
+    // Cvar_RegisterVariable (&in_mouse);
+    // Cvar_RegisterVariable (&m_filter);
+    // Cvar_RegisterVariable (&freelook);
 
     Cmd_AddCommand ("showmouse", IN_ShowMouse);
     Cmd_AddCommand ("hidemouse", IN_HideMouse);
@@ -284,11 +285,11 @@ void IN_Init (void)
     IN_StartupMouse ();
 
     // open the event status driver
-    eventhandle = NXOpenEventStatus();
-    NXGetMouseScaling (eventhandle, &oldscaling);
-    NXSetMouseScaling (eventhandle, &newscaling);
-    oldbutton = NXMouseButtonEnabled (eventhandle);
-    NXEnableMouseButton (eventhandle, 2);
+    // eventhandle = NXOpenEventStatus();
+    // NXGetMouseScaling (eventhandle, &oldscaling);
+    // NXSetMouseScaling (eventhandle, &newscaling);
+    // oldbutton = NXMouseButtonEnabled (eventhandle);
+    // NXEnableMouseButton (eventhandle, 2);
 }
 
 /*
@@ -301,9 +302,9 @@ void IN_Shutdown (void)
     IN_DeactivateMouse ();
 
     // put mouse scaling back the way it was
-    NXSetMouseScaling (eventhandle, &oldscaling);
-    NXEnableMouseButton (eventhandle, oldbutton);
-    NXCloseEventStatus (eventhandle);
+    // NXSetMouseScaling (eventhandle, &oldscaling);
+    // NXEnableMouseButton (eventhandle, oldbutton);
+    // NXCloseEventStatus (eventhandle);
 }
 
 void IN_Move (usercmd_t *cmd)
@@ -326,7 +327,7 @@ VIEW CENTERING
 
 void V_StopPitchDrift (void)
 {
-	cl.laststop = cl.time;
-	cl.nodrift = true;
-	cl.pitchvel = 0;
+	// cl.laststop = cl.time;
+	// cl.nodrift = true;
+	// cl.pitchvel = 0;
 }
