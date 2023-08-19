@@ -1,6 +1,6 @@
 
 CFLAGS = -Wall -c -g -DNO_PRIVATE
-LDFLAGS = -sectcreate __ICON __header rhapsody/QuakeWorld.iconheader -segprot __ICON r r -sectcreate __ICON app rhapsody/QuakeWorld.tiff -framework AppKit -framework Foundation
+LDFLAGS = -sectcreate __ICON __header rhapsody/quake2.iconheader -segprot __ICON r r -sectcreate __ICON app rhapsody/quake2.tiff -framework AppKit -framework Foundation
 ODIR = rhapsody/output
 
 EXEBASE = QuakeWorld
@@ -32,12 +32,12 @@ CLIENT_FILES = $(ODIR)/cl_ents.o $(ODIR)/cl_input.o  $(ODIR)/cl_main.o $(ODIR)/c
 #CLIENT_FILES = $(ODIR)/cl_null.o
 
 
-SERVER_FILES = $(ODIR)/pr_cmds.o $(ODIR)/pr_edict.o $(ODIR)/pr_exec.o $(ODIR)/sv_ccmds.o  $(ODIR)/sv_ents.o $(ODIR)/sv_init.o $(ODIR)/sv_main.o $(ODIR)/sv_move.o $(ODIR)/sv_phys.o $(ODIR)/sv_send.o $(ODIR)/sv_user.o $(ODIR)/world.o
+SERVER_FILES = $(ODIR)/sv_ccmds.o  $(ODIR)/sv_ents.o $(ODIR)/sv_init.o $(ODIR)/sv_main.o $(ODIR)/sv_send.o $(ODIR)/sv_user.o $(ODIR)/sv_world.o
 #SERVER_FILES = $(ODIR)/sv_null.o
 
 
-QCOMMON_SYSTEM_FILES = $(ODIR)/net_udp.o $(ODIR)/sys_next.o 
-QCOMMON_FILES = $(ODIR)/cmd.o $(ODIR)/cmodel.o $(ODIR)/common.o $(ODIR)/crc.o   $(ODIR)/cvar.o $(ODIR)/files.o $(ODIR)/mathlib.o $(ODIR)/net_chan.o $(ODIR)/pmove.o $(QCOMMON_SYSTEM_FILES)
+# QCOMMON_SYSTEM_FILES = $(ODIR)/sys_next.o 
+QCOMMON_FILES = $(ODIR)/cmd.o $(ODIR)/cmodel.o $(ODIR)/common.o $(ODIR)/crc.o   $(ODIR)/cvar.o $(ODIR)/files.o $(ODIR)/net_chan.o $(ODIR)/pmove.o $(QCOMMON_SYSTEM_FILES)
 
 $(EXE): $(CLIENT_FILES) $(SERVER_FILES) $(QCOMMON_FILES)
 	cc -o $(EXE) $(CLIENT_FILES) $(SERVER_FILES) $(QCOMMON_FILES) $(LDFLAGS) 
@@ -103,15 +103,6 @@ $(ODIR)/sv_null.o : server/sv_null.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
 
-$(ODIR)/pr_cmds.o : server/pr_cmds.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/pr_edict.o : server/pr_edict.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/pr_exec.o : server/pr_exec.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
 $(ODIR)/sv_ccmds.o : server/sv_ccmds.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
@@ -124,19 +115,13 @@ $(ODIR)/sv_init.o : server/sv_init.c
 $(ODIR)/sv_main.o : server/sv_main.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/sv_move.o : server/sv_move.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/sv_phys.o : server/sv_phys.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
 $(ODIR)/sv_send.o : server/sv_send.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
 $(ODIR)/sv_user.o : server/sv_user.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/world.o : server/world.c
+$(ODIR)/sv_world.o : server/sv_world.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
 
@@ -208,13 +193,7 @@ $(ODIR)/cvar.o : qcommon/cvar.c
 $(ODIR)/files.o : qcommon/files.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/mathlib.o : qcommon/mathlib.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
 $(ODIR)/net_chan.o : qcommon/net_chan.c
-	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
-	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/net_udp.o : qcommon/net_udp.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
 $(ODIR)/pmove.o : qcommon/pmove.c
@@ -224,5 +203,3 @@ $(ODIR)/pmove.o : qcommon/pmove.c
 $(ODIR)/sys_null.o : qcommon/sys_null.c
 	cc $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i
 	cc $(CFLAGS) -o $@ /tmp/temp.i
-$(ODIR)/sys_next.o : rhapsody/sys_next.m
-	cc $(CFLAGS) -o $@ $?
